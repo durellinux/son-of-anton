@@ -20,7 +20,6 @@ async function runAnton() {
   try {
     const subprocess = execa('gemini', [
         '-p', 'use anton-main skill',
-        '-o', 'stream-json',
         '--approval-mode', 'yolo'
     ]);
 
@@ -28,14 +27,9 @@ async function runAnton() {
       subprocess.stdout?.on('data', (chunk) => {
           const data = chunk.toString();
           try {
-              // Each line is a JSON object with a 'text' chunk or 'tool_call'
-              const parsed = JSON.parse(data);
-              if (parsed.text) {
-                  process.stdout.write(parsed.text); // Print stream to console
-                  // Here you could: fastify.io.emit('progress', parsed.text)
-              }
+              process.stdout.write(data)
           } catch (e) {
-              // Handle non-JSON lines (like status messages)
+              process.stderr.write("Error handling model output");
           }
       });
 
@@ -43,14 +37,9 @@ async function runAnton() {
       subprocess.stderr?.on('data', (chunk) => {
           const data = chunk.toString();
           try {
-              // Each line is a JSON object with a 'text' chunk or 'tool_call'
-              const parsed = JSON.parse(data);
-              if (parsed.text) {
-                  process.stderr.write(parsed.text); // Print stream to console
-                  // Here you could: fastify.io.emit('progress', parsed.text)
-              }
+              process.stderr.write(data)
           } catch (e) {
-              // Handle non-JSON lines (like status messages)
+              process.stderr.write("Error handling model output");
           }
       });
 
