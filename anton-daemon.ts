@@ -51,16 +51,18 @@ async function runAnton() {
 }
 
 // Start the polling loop
-function startPolling() {
-  runAnton(); // Initial run
-  setInterval(runAnton, POLL_INTERVAL);
+async function startPolling() {
+  while (true) {
+    await runAnton();
+    await new Promise(resolve => setTimeout(resolve, POLL_INTERVAL));
+  }
 }
 
 const start = async () => {
   try {
     await fastify.listen({ port: 3000, host: '0.0.0.0' });
     fastify.log.info('Son of Anton Daemon is running on port 3000');
-    startPolling();
+    await startPolling();
   } catch (err) {
     fastify.log.error(err);
     process.exit(1);
