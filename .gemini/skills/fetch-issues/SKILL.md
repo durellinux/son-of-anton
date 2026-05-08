@@ -1,6 +1,6 @@
 # Fetch Issues Skill
 
-This skill fetches open issues labeled with "anton-fix" from GitHub.
+This skill fetches open issues labeled with "son-of-anton" from GitHub.
 
 ## Tasks
 
