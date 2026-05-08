@@ -1,0 +1,21 @@
+{
+  "name": "son-of-anton",
+  "version": "1.0.0",
+  "description": "Autonomous issue fixer daemon",
+  "main": "anton-daemon.ts",
+  "scripts": {
+    "start": "ts-node anton-daemon.ts",
+    "dev": "ts-node anton-daemon.ts",
+    "test": "echo \"Warning: no test configured\" && exit 0"
+  },
+  "dependencies": {
+    "fastify": "^4.26.2",
+    "execa": "^8.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.24",
+    "pino-pretty": "^10.3.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  }
+}
