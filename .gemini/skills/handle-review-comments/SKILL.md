@@ -17,12 +17,16 @@ This skill addresses review comments on a Pull Request.
    ```bash
    gh api repos/:owner/:repo/pulls/{{pr_number}}/comments
    ```
-3. For each open/relevant comment:
+3. For each open/relevant comment (skip comments with 👍 already applied):
    - Identify the file and line number.
    - Read the feedback.
    - Research the code around the comment.
    - Apply the requested changes.
    - Verify with tests: `npm test`.
+   - React with 👍 to the comment:
+     ```bash
+     gh api repos/:owner/:repo/pulls/comments/{{comment_id}}/reactions -f content='+1'
+     ```
 4. After addressing all comments:
    - Commit and push changes:
      ```bash
@@ -30,9 +34,3 @@ This skill addresses review comments on a Pull Request.
      git commit -m "address review comments for PR #{{pr_number}}"
      git push origin {{branch_name}}
      ```
-5. Notify completion:
-   ```bash
-   gh pr comment {{pr_number}} --body "I've addressed the review comments and pushed the changes.
-
-Made by: #son-of-anton"
-   ```
