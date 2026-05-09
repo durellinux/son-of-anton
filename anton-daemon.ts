@@ -3,7 +3,7 @@ import { execa } from 'execa';
 import { mkdir } from 'node:fs/promises';
 import { createWriteStream } from 'node:fs';
 import path from 'node:path';
-import { determineIssueState, determinePRState, IssueState, Issue, PullRequest } from './issue-state';
+import { determineIssueState, determinePRState, IssueState, Issue, PullRequest, getUnaddressedPRComments, PRComment } from './issue-state';
 
 const fastify = Fastify({
   logger: {
@@ -113,8 +113,17 @@ async function runAnton() {
       fastify.log.info(`PR #${pr.number} state: ${state}`);
 
       if (state === IssueState.NEEDS_IMPLEMENTATION) {
-        const prompt = `follow the handle-review-comments skill flow for PR ${pr.number} on branch ${pr.headRefName}`;
-        await executeGemini(pr.number, prompt);
+        // Fetch PR comments to be deterministic
+        const { stdout: commentsJson } = await execa('gh', ['api', `repos/durellinux/son-of-anton/pulls/${pr.number}/comments`]);
+        const comments = JSON.parse(commentsJson) as PRComment[];
+        const unaddressedCommentIds = getUnaddressedPRComments(comments);
+
+        if (unaddressedCommentIds.length > 0) {
+            const prompt = `follow the handle-review-comments skill flow for PR ${pr.number} on branch ${pr.headRefName} with comment IDs ${unaddressedCommentIds.join(', ')}`;
+            await executeGemini(pr.number, prompt);
+        } else {
+            fastify.log.info(`PR #${pr.number} has no unaddressed comments. Skipping.`);
+        }
       } else {
         fastify.log.info(`PR #${pr.number} is waiting. Skipping.`);
       }
