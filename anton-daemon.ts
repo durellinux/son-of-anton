@@ -46,7 +46,7 @@ async function runAnton() {
       const logStream = createWriteStream(sessionFilePath);
 
       const subprocess = execa('gemini', [
-        '-p', `use implement-fix skill for issue ${issueNumber}`,
+        '-p', `follow the implement-fix skill flow for issue ${issueNumber}`,
         '--approval-mode', 'yolo'
       ]);
 

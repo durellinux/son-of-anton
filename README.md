@@ -4,7 +4,7 @@ Son of Anton is an autonomous, E2E AI-assisted development daemon. It leverages 
 
 ## How it Works
 
-The daemon runs a polling loop that executes the `anton-main` skill. This skill:
+The daemon runs a polling loop that:
 1. **Fetches** open issues labeled `son-of-anton`.
 2. **Orchestrates** the implementation of fixes for each issue using specialized skills.
 3. **Automatically** creates Pull Requests with the proposed changes.
