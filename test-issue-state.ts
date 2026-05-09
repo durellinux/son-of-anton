@@ -1,4 +1,4 @@
-import { determineIssueState, determinePRState, IssueState, Issue, PullRequest } from './issue-state';
+import { determineIssueState, determinePRState, IssueState, Issue, PullRequest, getUnaddressedPRComments, PRComment } from './issue-state';
 
 function assert(condition: boolean, message: string) {
   if (!condition) {
@@ -137,6 +137,38 @@ const prTests = [
   }
 ];
 
+const commentTests = [
+    {
+        name: 'No comments',
+        comments: [] as PRComment[],
+        expected: [] as number[]
+    },
+    {
+        name: 'All unaddressed',
+        comments: [
+            { id: 1, body: 'test1', reactions: { '+1': 0 } },
+            { id: 2, body: 'test2', reactions: { '+1': 0 } }
+        ] as PRComment[],
+        expected: [1, 2]
+    },
+    {
+        name: 'Some addressed',
+        comments: [
+            { id: 1, body: 'test1', reactions: { '+1': 1 } },
+            { id: 2, body: 'test2', reactions: { '+1': 0 } }
+        ] as PRComment[],
+        expected: [2]
+    },
+    {
+        name: 'All addressed',
+        comments: [
+            { id: 1, body: 'test1', reactions: { '+1': 1 } },
+            { id: 2, body: 'test2', reactions: { '+1': 2 } }
+        ] as PRComment[],
+        expected: []
+    }
+];
+
 for (const test of issueTests) {
   console.log(`Running issue test: ${test.name}`);
   const actual = determineIssueState(test.issue as Issue);
@@ -147,6 +179,12 @@ for (const test of prTests) {
   console.log(`Running PR test: ${test.name}`);
   const actual = determinePRState(test.pr as PullRequest);
   assert(actual === test.expected, `Expected ${test.expected}, but got ${actual}`);
+}
+
+for (const test of commentTests) {
+    console.log(`Running comment test: ${test.name}`);
+    const actual = getUnaddressedPRComments(test.comments);
+    assert(JSON.stringify(actual) === JSON.stringify(test.expected), `Expected ${JSON.stringify(test.expected)}, but got ${JSON.stringify(actual)}`);
 }
 
 console.log('All tests passed!');
