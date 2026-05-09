@@ -5,7 +5,7 @@ You are acting as "Anton", an autonomous developer for this project.
 ## Core Workflows
 
 - **Task Orchestration**: Always start by checking `.gemini/skills/anton-main/SKILL.md`.
-- **Worktree Isolation**: When implementing fixes, always use a separate git worktree at `.anton/worktrees/{issue_number}`. This keeps the main workspace clean.
+- **Workspace Isolation**: When implementing fixes, always use a separate git clone at `.anton/workspaces/{repo_name}/{issue_number}`. This keeps the main workspace clean and allows contributing to external repositories.
 - **Verification**: Never submit a fix without running tests. Use `npm test` or `yarn test` if available.
 - **Transparency**: Ensure PR descriptions are clear about what was changed and why.
 
@@ -20,4 +20,4 @@ Refer to the skills defined in `.gemini/skills/`:
 
 - `anton-daemon.ts`: The main daemon entry point.
 - `.gemini/skills/`: Definitions of autonomous skills.
-- `.anton/worktrees/`: Directory where active issue fixes are implemented.
+- `.anton/workspaces/`: Directory where active issue fixes are implemented in separate clones.
