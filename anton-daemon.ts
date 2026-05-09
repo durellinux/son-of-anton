@@ -25,21 +25,25 @@ async function runAnton() {
     const { stdout: issuesJson } = await execa('gh', ['issue', 'list', '--label', 'son-of-anton', '--state', 'open', '--json', 'number']);
     const issues = JSON.parse(issuesJson) as { number: number }[];
 
-    if (issues.length === 0) {
-      fastify.log.info('No issues found to process.');
+    // 2. Fetch Pull Requests with requested changes
+    const { stdout: prsJson } = await execa('gh', ['pr', 'list', '--label', 'son-of-anton', '--state', 'open', '--json', 'number,reviewDecision']);
+    const allPrs = JSON.parse(prsJson) as { number: number, reviewDecision: string }[];
+    const prsToFix = allPrs.filter(pr => pr.reviewDecision === 'CHANGES_REQUESTED');
+
+    if (issues.length === 0 && prsToFix.length === 0) {
+      fastify.log.info('No issues or PRs found to process.');
       return;
     }
 
-    fastify.log.info(`Found ${issues.length} issues to process.`);
+    fastify.log.info(`Found ${issues.length} issues and ${prsToFix.length} PRs to process.`);
 
-    // 2. Serial Processing
+    // 3. Process Issues
     for (const issue of issues) {
       const issueNumber = issue.number;
       fastify.log.info(`Processing issue #${issueNumber}...`);
 
-      // 3. Session Logging
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-      const sessionDir = path.join('.anton', 'sessions', String(issueNumber), timestamp);
+      const sessionDir = path.join('.anton', 'sessions', 'issue-' + String(issueNumber), timestamp);
       await mkdir(sessionDir, { recursive: true });
       
       const sessionFilePath = path.join(sessionDir, 'session.txt');
@@ -50,14 +54,12 @@ async function runAnton() {
         '--approval-mode', 'yolo'
       ]);
 
-      // Hook into the stream
       subprocess.stdout?.on('data', (chunk) => {
           const data = chunk.toString();
           logStream.write(data);
           process.stdout.write(data);
       });
 
-      // Hook into the stream
       subprocess.stderr?.on('data', (chunk) => {
           const data = chunk.toString();
           logStream.write(data);
@@ -69,6 +71,45 @@ async function runAnton() {
         fastify.log.info(`Issue #${issueNumber} finished successfully`);
       } catch (error) {
         fastify.log.error(`Issue #${issueNumber} failed: %s`, error);
+      } finally {
+        logStream.end();
+      }
+    }
+
+    // 4. Process PRs
+    for (const pr of prsToFix) {
+      const prNumber = pr.number;
+      fastify.log.info(`Processing PR #${prNumber}...`);
+
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const sessionDir = path.join('.anton', 'sessions', 'pr-' + String(prNumber), timestamp);
+      await mkdir(sessionDir, { recursive: true });
+      
+      const sessionFilePath = path.join(sessionDir, 'session.txt');
+      const logStream = createWriteStream(sessionFilePath);
+
+      const subprocess = execa('gemini', [
+        '-p', `follow the handle-review-comments skill flow for PR ${prNumber}`,
+        '--approval-mode', 'yolo'
+      ]);
+
+      subprocess.stdout?.on('data', (chunk) => {
+          const data = chunk.toString();
+          logStream.write(data);
+          process.stdout.write(data);
+      });
+
+      subprocess.stderr?.on('data', (chunk) => {
+          const data = chunk.toString();
+          logStream.write(data);
+          process.stderr.write(data);
+      });
+
+      try {
+        await subprocess;
+        fastify.log.info(`PR #${prNumber} finished successfully`);
+      } catch (error) {
+        fastify.log.error(`PR #${prNumber} failed: %s`, error);
       } finally {
         logStream.end();
       }
