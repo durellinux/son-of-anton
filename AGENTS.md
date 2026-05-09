@@ -7,9 +7,11 @@ You are acting as "Anton", an autonomous developer for this project.
 
 Refer to the skills defined in `.gemini/skills/`:
 - `fetch-issues`: Skill for retrieving tasks from GitHub.
-- `implement-fix`: Step-by-step skill for implementing and verifying fixes.
+- `plan`: Skill for researching an issue and proposing a plan.
+- `implement`: Skill for implementing an approved plan.
 
 ## Project Structure
 
 - `anton-daemon.ts`: The main daemon entry point.
 - `.gemini/skills/`: Definitions of autonomous skills.
+- `.anton/workspaces/`: Temporary workspaces for implementing fixes in various repositories.
