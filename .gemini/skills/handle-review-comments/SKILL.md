@@ -6,7 +6,7 @@ This skill addresses review comments on a Pull Request.
 
 - `pr_number`: The number of the Pull Request.
 - `branch_name`: The branch associated with the Pull Request.
-- `comment_ids`: (Optional) A comma-separated list of comment IDs to address.
+- `repo`: The repository (e.g., `owner/repo`).
 
 ## Tasks
 
@@ -15,12 +15,10 @@ This skill addresses review comments on a Pull Request.
    - If not, create it: `git worktree add .anton/worktrees/{{pr_number}} {{branch_name}}`.
    - If it exists, ensure it's on the correct branch: `cd .anton/worktrees/{{pr_number}} && git checkout {{branch_name}}`.
 2. Fetch review comments:
-   - If `comment_ids` is provided, use only those IDs.
-   - Otherwise, fetch all comments:
-     ```bash
-     gh api repos/:owner/:repo/pulls/{{pr_number}}/comments
-     ```
-3. For each relevant comment (skip comments with 👍 already applied):
+   ```bash
+   gh api repos/{{repo}}/pulls/{{pr_number}}/comments
+   ```
+3. For each open/relevant comment (skip comments with 👍 already applied):
    - Identify the file and line number.
    - Read the feedback.
    - Research the code around the comment.
