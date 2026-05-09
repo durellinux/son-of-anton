@@ -4,3 +4,4 @@ node_modules/
 dist/
 .anton/sessions/
 .anton/worktrees/
+.anton/workspaces/
