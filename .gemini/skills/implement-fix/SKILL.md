@@ -1,6 +1,6 @@
 # Implement Fix Skill
 
-This skill implements a fix for a specific GitHub issue.
+This skill implements a fix for a specific GitHub issue with a human-in-the-loop planning phase.
 
 ## Parameters
 
@@ -8,18 +8,38 @@ This skill implements a fix for a specific GitHub issue.
 
 ## Tasks
 
-1. View the issue details:
+1. View the issue details and check for `#yolo` in the description:
    ```bash
-   gh issue view {{issue_number}}
+   gh issue view {{issue_number}} --json body --jq '.body'
    ```
-2. Notify starting work:
+2. Check if `#yolo` is present. If yes, proceed to step 5 (Setup work environment).
+3. If not in YOLO mode, check for existing plans and reactions:
+   - Fetch comments and reactions (replace `:owner/:repo` with the current repository):
+     ```bash
+     gh api repos/:owner/:repo/issues/{{issue_number}}/comments --jq '.[] | {id, body, reactions}'
+     ```
+   - Find the latest comment containing `#son-of-anton-plan`.
+   - If no plan exists:
+     - Research the codebase to understand the issue.
+     - Plan the necessary changes.
+     - Post the plan as an issue comment ending with `#son-of-anton-plan`.
+     - STOP and wait for a human reaction.
+   - If the latest plan exists:
+     - If it has a 👎 reaction (`.reactions."-1" > 0`):
+       - Research the codebase and read all issue comments for feedback.
+       - Generate a new plan addressing the feedback.
+       - Post the new plan as an issue comment ending with `#son-of-anton-plan`.
+       - STOP and wait for a human reaction.
+     - If it has a 👍 reaction (`.reactions."+1" > 0`):
+       - Proceed to step 5.
+     - Otherwise:
+       - STOP and wait for a 👍 or 👎 reaction.
+4. Notify starting implementation (if not already notified for this phase):
    ```bash
-   gh issue comment {{issue_number}} --body "I'm starting to work on this issue.
+   gh issue comment {{issue_number}} --body "Plan approved. I'm starting the implementation.
 
 Made by: #son-of-anton"
    ```
-3. Research the codebase to understand the issue.
-4. Plan the necessary changes.
 5. Setup the work environment:
    - Check if branch `anton/{{issue_number}}` exists.
    - Check if worktree `.anton/worktrees/{{issue_number}}` exists.
@@ -29,7 +49,7 @@ Made by: #son-of-anton"
 6. If the branch already existed, check the current state of the code in the worktree and use it as a starting point.
 7. Implement the fix in the worktree.
 8. Apply edits using file-system tools.
-9. Run tests to verify the fix:
+9. Run tests to verify the fix (if available):
    ```bash
    npm test
    ```
