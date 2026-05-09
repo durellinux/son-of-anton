@@ -3,6 +3,7 @@ import { execa } from 'execa';
 import { mkdir } from 'node:fs/promises';
 import { createWriteStream } from 'node:fs';
 import path from 'node:path';
+import { determineIssueState, IssueState, Issue } from './issue-state';
 
 const fastify = Fastify({
   logger: {
@@ -23,19 +24,42 @@ async function runAnton() {
   try {
     // 1. Fetch issues in Daemon
     const { stdout: issuesJson } = await execa('gh', ['issue', 'list', '--label', 'son-of-anton', '--state', 'open', '--json', 'number']);
-    const issues = JSON.parse(issuesJson) as { number: number }[];
+    const basicIssues = JSON.parse(issuesJson) as { number: number }[];
 
-    if (issues.length === 0) {
+    if (basicIssues.length === 0) {
       fastify.log.info('No issues found to process.');
       return;
     }
 
-    fastify.log.info(`Found ${issues.length} issues to process.`);
+    fastify.log.info(`Found ${basicIssues.length} issues to process.`);
 
     // 2. Serial Processing
-    for (const issue of issues) {
-      const issueNumber = issue.number;
+    for (const basicIssue of basicIssues) {
+      const issueNumber = basicIssue.number;
       fastify.log.info(`Processing issue #${issueNumber}...`);
+
+      // Fetch full issue details including comments and reactions
+      const { stdout: issueDetailsJson } = await execa('gh', ['issue', 'view', String(issueNumber), '--json', 'body,comments']);
+      const issueDetails = JSON.parse(issueDetailsJson) as Issue;
+
+      const state = determineIssueState(issueDetails);
+      fastify.log.info(`Issue #${issueNumber} state: ${state}`);
+
+      let prompt = '';
+      switch (state) {
+        case IssueState.YOLO:
+          prompt = `Research, plan and implement the fix for issue ${issueNumber}. Follow the plan and implement skills workflow.`;
+          break;
+        case IssueState.NEEDS_PLANNING:
+          prompt = `follow the plan skill flow for issue ${issueNumber}`;
+          break;
+        case IssueState.NEEDS_IMPLEMENTATION:
+          prompt = `follow the implement skill flow for issue ${issueNumber}`;
+          break;
+        case IssueState.WAITING:
+          fastify.log.info(`Issue #${issueNumber} is waiting for approval. Skipping.`);
+          continue;
+      }
 
       // 3. Session Logging
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
@@ -46,7 +70,7 @@ async function runAnton() {
       const logStream = createWriteStream(sessionFilePath);
 
       const subprocess = execa('gemini', [
-        '-p', `follow the implement-fix skill flow for issue ${issueNumber}`,
+        '-p', prompt,
         '--approval-mode', 'yolo'
       ]);
 
