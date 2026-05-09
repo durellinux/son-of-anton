@@ -3,7 +3,7 @@ import { execa } from 'execa';
 import { mkdir } from 'node:fs/promises';
 import { createWriteStream } from 'node:fs';
 import path from 'node:path';
-import { determineIssueState, IssueState, Issue } from './issue-state';
+import { determineIssueState, determinePRState, IssueState, Issue, PullRequest } from './issue-state';
 
 const fastify = Fastify({
   logger: {
@@ -19,21 +19,62 @@ const fastify = Fastify({
 
 const POLL_INTERVAL = 5 * 60 * 1000; // 5 minutes
 
+async function executeGemini(id: number, prompt: string) {
+  // Session Logging
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+  const sessionDir = path.join('.anton', 'sessions', String(id));
+  await mkdir(sessionDir, { recursive: true });
+  
+  const sessionFilePath = path.join(sessionDir, `${timestamp}.txt`);
+  const logStream = createWriteStream(sessionFilePath);
+
+  const subprocess = execa('gemini', [
+    '-p', prompt,
+    '--approval-mode', 'yolo'
+  ]);
+
+  // Hook into the stream
+  subprocess.stdout?.on('data', (chunk) => {
+      const data = chunk.toString();
+      logStream.write(data);
+      process.stdout.write(data);
+  });
+
+  // Hook into the stream
+  subprocess.stderr?.on('data', (chunk) => {
+      const data = chunk.toString();
+      logStream.write(data);
+      process.stderr.write(data);
+  });
+
+  try {
+    await subprocess;
+    fastify.log.info(`Task #${id} finished successfully`);
+  } catch (error) {
+    fastify.log.error(`Task #${id} failed: %s`, error);
+  } finally {
+    logStream.end();
+  }
+}
+
 async function runAnton() {
   fastify.log.info('Starting Anton iteration...');
   try {
-    // 1. Fetch issues in Daemon
+    // 1. Fetch issues and PRs in Daemon
     const { stdout: issuesJson } = await execa('gh', ['issue', 'list', '--label', 'son-of-anton', '--state', 'open', '--json', 'number']);
     const basicIssues = JSON.parse(issuesJson) as { number: number }[];
 
-    if (basicIssues.length === 0) {
-      fastify.log.info('No issues found to process.');
+    const { stdout: prsJson } = await execa('gh', ['pr', 'list', '--label', 'son-of-anton', '--state', 'open', '--json', 'number,reviewDecision,headRefName']);
+    const basicPRs = JSON.parse(prsJson) as PullRequest[];
+
+    if (basicIssues.length === 0 && basicPRs.length === 0) {
+      fastify.log.info('No issues or PRs found to process.');
       return;
     }
 
-    fastify.log.info(`Found ${basicIssues.length} issues to process.`);
+    fastify.log.info(`Found ${basicIssues.length} issues and ${basicPRs.length} PRs to process.`);
 
-    // 2. Serial Processing
+    // 2. Process Issues
     for (const basicIssue of basicIssues) {
       const issueNumber = basicIssue.number;
       fastify.log.info(`Processing issue #${issueNumber}...`);
@@ -61,40 +102,21 @@ async function runAnton() {
           continue;
       }
 
-      // 3. Session Logging
-      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-      const sessionDir = path.join('.anton', 'sessions', String(issueNumber));
-      await mkdir(sessionDir, { recursive: true });
-      
-      const sessionFilePath = path.join(sessionDir, `${timestamp}.txt`);
-      const logStream = createWriteStream(sessionFilePath);
+      await executeGemini(issueNumber, prompt);
+    }
 
-      const subprocess = execa('gemini', [
-        '-p', prompt,
-        '--approval-mode', 'yolo'
-      ]);
+    // 3. Process PRs
+    for (const pr of basicPRs) {
+      fastify.log.info(`Processing PR #${pr.number}...`);
 
-      // Hook into the stream
-      subprocess.stdout?.on('data', (chunk) => {
-          const data = chunk.toString();
-          logStream.write(data);
-          process.stdout.write(data);
-      });
+      const state = determinePRState(pr);
+      fastify.log.info(`PR #${pr.number} state: ${state}`);
 
-      // Hook into the stream
-      subprocess.stderr?.on('data', (chunk) => {
-          const data = chunk.toString();
-          logStream.write(data);
-          process.stderr.write(data);
-      });
-
-      try {
-        await subprocess;
-        fastify.log.info(`Issue #${issueNumber} finished successfully`);
-      } catch (error) {
-        fastify.log.error(`Issue #${issueNumber} failed: %s`, error);
-      } finally {
-        logStream.end();
+      if (state === IssueState.NEEDS_IMPLEMENTATION) {
+        const prompt = `follow the handle-review-comments skill flow for PR ${pr.number} on branch ${pr.headRefName}`;
+        await executeGemini(pr.number, prompt);
+      } else {
+        fastify.log.info(`PR #${pr.number} is waiting. Skipping.`);
       }
     }
 

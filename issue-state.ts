@@ -20,12 +20,18 @@ export interface Issue {
   comments: IssueComment[];
 }
 
+export interface PullRequest {
+  number: number;
+  reviewDecision: string;
+  headRefName: string;
+}
+
 export function determineIssueState(issue: Issue): IssueState {
   if (issue.body.includes('#yolo')) {
     return IssueState.YOLO;
   }
 
-  const planComments = issue.comments.filter(c => c.body.includes('#son-of-anton-plan'));
+  const planComments = issue.comments.filter(c => c.body.endsWith('#son-of-anton-plan'));
   if (planComments.length === 0) {
     return IssueState.NEEDS_PLANNING;
   }
@@ -41,6 +47,14 @@ export function determineIssueState(issue: Issue): IssueState {
 
   if (thumbsDown > 0) {
     return IssueState.NEEDS_PLANNING;
+  }
+
+  return IssueState.WAITING;
+}
+
+export function determinePRState(pr: PullRequest): IssueState {
+  if (pr.reviewDecision === 'CHANGES_REQUESTED') {
+    return IssueState.NEEDS_IMPLEMENTATION;
   }
 
   return IssueState.WAITING;
