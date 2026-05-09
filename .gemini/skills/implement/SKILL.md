@@ -15,16 +15,17 @@ This skill implements an approved plan for a specific GitHub issue.
 Made by: #son-of-anton"
    ```
 2. Repository Detection:
-   - Identify the target repository from the issue description or comments.
-   - Look for URLs (e.g., https://github.com/owner/repo) or shorthand (e.g., owner/repo).
-   - If no repository is explicitly mentioned, default to the current repository.
+   - Identify the target repository from the issue URL (e.g., `https://github.com/{owner}/{repo}/issues/{issue_number}`).
+   - If no repository is explicitly identified from the URL or description, abort the process.
 3. Setup the work environment:
    - Define the workspace path: `.anton/workspaces/{repo-name}/{{issue_number}}`.
    - Check if the workspace directory exists.
    - If it doesn't exist:
      - Clone the repository: `git clone https://github.com/{owner}/{repo} .anton/workspaces/{repo-name}/{{issue_number}}`.
-     - Create a new branch: `git checkout -b anton/{{issue_number}}` (inside the workspace).
+     - `cd .anton/workspaces/{repo-name}/{{issue_number}}`.
+     - Create a new branch: `git checkout -b anton/{{issue_number}}`.
    - If it exists:
+     - `cd .anton/workspaces/{repo-name}/{{issue_number}}`.
      - Reuse the existing clone.
      - Ensure you are on the `anton/{{issue_number}}` branch.
 4. If the branch already existed, check the current state of the code in the workspace and use it as a starting point.

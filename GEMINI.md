@@ -14,4 +14,3 @@ Refer to the skills defined in `.gemini/skills/`:
 
 - `anton-daemon.ts`: The main daemon entry point.
 - `.gemini/skills/`: Definitions of autonomous skills.
-- `.anton/workspaces/`: Temporary workspaces for implementing fixes in various repositories.
