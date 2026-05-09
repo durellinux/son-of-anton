@@ -34,7 +34,7 @@ This skill implements a fix for a specific GitHub issue.
 10. If tests fail, analyze the output and self-correct until they pass.
 11. Commit changes and open a Pull Request:
     ```bash
-    gh pr create --title "Fix issue #{{issue_number}}" --body "Automated fix by Anton."
+    gh pr create --title "Fix issue #{{issue_number}}" --body "Automated fix by Anton. Fixes #{{issue_number}}"
     ```
 12. Remove the trigger label to prevent duplicate processing:
     ```bash
