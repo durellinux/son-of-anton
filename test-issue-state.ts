@@ -118,13 +118,13 @@ const prTests = [
     expected: IssueState.WAITING
   },
   {
-    name: 'PR Waiting (review required)',
+    name: 'PR Needs implementation (review required)',
     pr: {
       number: 3,
       reviewDecision: 'REVIEW_REQUIRED',
       headRefName: 'feature'
     },
-    expected: IssueState.WAITING
+    expected: IssueState.NEEDS_IMPLEMENTATION
   }
 ];
 

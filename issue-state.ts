@@ -53,7 +53,7 @@ export function determineIssueState(issue: Issue): IssueState {
 }
 
 export function determinePRState(pr: PullRequest): IssueState {
-  if (pr.reviewDecision === 'CHANGES_REQUESTED') {
+  if (pr.reviewDecision !== 'APPROVED') {
     return IssueState.NEEDS_IMPLEMENTATION;
   }
 
