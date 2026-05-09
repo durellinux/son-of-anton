@@ -63,10 +63,10 @@ async function runAnton() {
 
       // 3. Session Logging
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-      const sessionDir = path.join('.anton', 'sessions', String(issueNumber), timestamp);
+      const sessionDir = path.join('.anton', 'sessions', String(issueNumber));
       await mkdir(sessionDir, { recursive: true });
       
-      const sessionFilePath = path.join(sessionDir, 'session.txt');
+      const sessionFilePath = path.join(sessionDir, `${timestamp}.txt`);
       const logStream = createWriteStream(sessionFilePath);
 
       const subprocess = execa('gemini', [
