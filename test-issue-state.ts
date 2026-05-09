@@ -125,6 +125,15 @@ const prTests = [
       headRefName: 'feature'
     },
     expected: IssueState.NEEDS_IMPLEMENTATION
+  },
+  {
+    name: 'PR Needs implementation (no review decision)',
+    pr: {
+      number: 4,
+      reviewDecision: null as any,
+      headRefName: 'feature'
+    },
+    expected: IssueState.NEEDS_IMPLEMENTATION
   }
 ];
 
