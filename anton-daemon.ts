@@ -64,7 +64,7 @@ async function runAnton() {
     const { stdout: issuesJson } = await execa('gh', ['issue', 'list', '--label', 'son-of-anton', '--state', 'open', '--json', 'number']);
     const basicIssues = JSON.parse(issuesJson) as { number: number }[];
 
-    const { stdout: prsJson } = await execa('gh', ['pr', 'list', '--label', 'son-of-anton', '--state', 'open', '--json', 'number,reviewDecision,headRefName']);
+    const { stdout: prsJson } = await execa('gh', ['pr', 'list', '--label', 'son-of-anton', '--state', 'open', '--json', 'number,reviewDecision,headRefName,url']);
     const basicPRs = JSON.parse(prsJson) as PullRequest[];
 
     if (basicIssues.length === 0 && basicPRs.length === 0) {
@@ -75,6 +75,7 @@ async function runAnton() {
     fastify.log.info(`Found ${basicIssues.length} issues and ${basicPRs.length} PRs to process.`);
 
     // 2. Process Issues
+    // ... (rest of issues processing remains same)
     for (const basicIssue of basicIssues) {
       const issueNumber = basicIssue.number;
       fastify.log.info(`Processing issue #${issueNumber}...`);
@@ -113,13 +114,19 @@ async function runAnton() {
       fastify.log.info(`PR #${pr.number} state: ${state}`);
 
       if (state === IssueState.NEEDS_IMPLEMENTATION) {
+        // Extract owner and repo from URL: https://github.com/owner/repo/pull/number
+        const urlParts = pr.url.split('/');
+        const owner = urlParts[3];
+        const repo = urlParts[4];
+        const fullRepo = `${owner}/${repo}`;
+
         // Fetch PR comments to be deterministic
-        const { stdout: commentsJson } = await execa('gh', ['api', `repos/durellinux/son-of-anton/pulls/${pr.number}/comments`]);
+        const { stdout: commentsJson } = await execa('gh', ['api', `repos/${fullRepo}/pulls/${pr.number}/comments`]);
         const comments = JSON.parse(commentsJson) as PRComment[];
         const unaddressedCommentIds = getUnaddressedPRComments(comments);
 
         if (unaddressedCommentIds.length > 0) {
-            const prompt = `follow the handle-review-comments skill flow for PR ${pr.number} on branch ${pr.headRefName} with comment IDs ${unaddressedCommentIds.join(', ')}`;
+            const prompt = `follow the handle-review-comments skill flow for PR ${pr.number} on branch ${pr.headRefName} in repo ${fullRepo} with comment IDs ${unaddressedCommentIds.join(', ')}`;
             await executeGemini(pr.number, prompt);
         } else {
             fastify.log.info(`PR #${pr.number} has no unaddressed comments. Skipping.`);
