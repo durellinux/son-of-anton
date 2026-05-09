@@ -24,6 +24,7 @@ export interface PullRequest {
   number: number;
   reviewDecision: string;
   headRefName: string;
+  url: string;
 }
 
 export interface PRComment {
