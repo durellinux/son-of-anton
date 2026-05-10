@@ -128,8 +128,8 @@ async function runAnton() {
         if (unaddressedCommentIds.length > 0) {
             // Extract issue number from branch name (e.g., anton/30)
             const issueMatch = pr.headRefName.match(/anton\/(\d+)/);
-            const issueNumber = issueMatch ? issueMatch[1] : '';
-            const issueParam = issueNumber ? `for issue ${issueNumber} ` : '';
+            const issueNumber = issueMatch ? issueMatch[1] : `pr-${pr.number}`;
+            const issueParam = `for issue ${issueNumber} `;
             const prompt = `follow the handle-review-comments skill flow ${issueParam}for PR ${pr.number} on branch ${pr.headRefName} in repo ${fullRepo} with comment IDs ${unaddressedCommentIds.join(', ')}`;
             await executeGemini(pr.number, prompt);
         } else {
