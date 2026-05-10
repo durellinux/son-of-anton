@@ -152,6 +152,14 @@ async function startPolling() {
 
 const start = async () => {
   try {
+    fastify.get('/health', async () => {
+      return { status: 'ok' };
+    });
+
+    fastify.get('/ready', async () => {
+      return { status: 'ok' };
+    });
+
     await fastify.listen({ port: 3000, host: '0.0.0.0' });
     fastify.log.info('Son of Anton Daemon is running on port 3000');
     await startPolling();
