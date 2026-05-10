@@ -5,6 +5,7 @@ This skill addresses review comments on a Pull Request.
 ## Parameters
 
 - `pr_number`: The number of the Pull Request.
+- `issue_number`: The number of the issue related to the Pull Request.
 - `branch_name`: The branch associated with the Pull Request.
 - `repo`: The repository (e.g., `owner/repo`).
 
@@ -13,14 +14,14 @@ This skill addresses review comments on a Pull Request.
 1. Setup the work environment:
    - Identify the target repository from the `repo` parameter (e.g., `owner/repo`).
    - Extract the repo name (e.g., `repo`).
-   - Define the workspace path: `.anton/workspaces/{repo-name}/{{pr_number}}`.
+   - Define the workspace path: `.anton/workspaces/{repo-name}/{{issue_number}}`.
    - Check if the workspace directory exists.
    - If it doesn't exist:
-     - Clone the repository: `git clone https://github.com/{{repo}} .anton/workspaces/{repo-name}/{{pr_number}}`.
-     - `cd .anton/workspaces/{repo-name}/{{pr_number}}`.
+     - Clone the repository: `git clone https://github.com/{{repo}} .anton/workspaces/{repo-name}/{{issue_number}}`.
+     - `cd .anton/workspaces/{repo-name}/{{issue_number}}`.
      - Checkout the PR branch: `git checkout {{branch_name}}`.
    - If it exists:
-     - `cd .anton/workspaces/{repo-name}/{{pr_number}}`.
+     - `cd .anton/workspaces/{repo-name}/{{issue_number}}`.
      - Reuse the existing clone.
      - Ensure you are on the `{{branch_name}}` branch.
 2. Fetch review comments:
