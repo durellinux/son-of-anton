@@ -11,9 +11,18 @@ This skill addresses review comments on a Pull Request.
 ## Tasks
 
 1. Setup the work environment:
-   - Check if worktree `.anton/worktrees/{{pr_number}}` exists.
-   - If not, create it: `git worktree add .anton/worktrees/{{pr_number}} {{branch_name}}`.
-   - If it exists, ensure it's on the correct branch: `cd .anton/worktrees/{{pr_number}} && git checkout {{branch_name}}`.
+   - Identify the target repository from the `repo` parameter (e.g., `owner/repo`).
+   - Extract the repo name (e.g., `repo`).
+   - Define the workspace path: `.anton/workspaces/{repo-name}/{{pr_number}}`.
+   - Check if the workspace directory exists.
+   - If it doesn't exist:
+     - Clone the repository: `git clone https://github.com/{{repo}} .anton/workspaces/{repo-name}/{{pr_number}}`.
+     - `cd .anton/workspaces/{repo-name}/{{pr_number}}`.
+     - Checkout the PR branch: `git checkout {{branch_name}}`.
+   - If it exists:
+     - `cd .anton/workspaces/{repo-name}/{{pr_number}}`.
+     - Reuse the existing clone.
+     - Ensure you are on the `{{branch_name}}` branch.
 2. Fetch review comments:
    ```bash
    gh api repos/{{repo}}/pulls/{{pr_number}}/comments
