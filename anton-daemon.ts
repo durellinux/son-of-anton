@@ -126,7 +126,11 @@ async function runAnton() {
         const unaddressedCommentIds = getUnaddressedPRComments(comments);
 
         if (unaddressedCommentIds.length > 0) {
-            const prompt = `follow the handle-review-comments skill flow for PR ${pr.number} on branch ${pr.headRefName} in repo ${fullRepo} with comment IDs ${unaddressedCommentIds.join(', ')}`;
+            // Extract issue number from branch name (e.g., anton/30)
+            const issueMatch = pr.headRefName.match(/anton\/(\d+)/);
+            const issueNumber = issueMatch ? issueMatch[1] : '';
+            const issueParam = issueNumber ? `for issue ${issueNumber} ` : '';
+            const prompt = `follow the handle-review-comments skill flow ${issueParam}for PR ${pr.number} on branch ${pr.headRefName} in repo ${fullRepo} with comment IDs ${unaddressedCommentIds.join(', ')}`;
             await executeGemini(pr.number, prompt);
         } else {
             fastify.log.info(`PR #${pr.number} has no unaddressed comments. Skipping.`);
