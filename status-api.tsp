@@ -60,17 +60,25 @@ model Session {
   status: "success" | "failure";
 }
 
+model Paged<T> {
+  @doc("Items in the current page")
+  items: T[];
+
+  @doc("Cursor for the next page of results")
+  nextCursor?: string;
+}
+
 @route("/issues")
 interface Issues {
   @doc("List all issues worked by Son of Anton")
-  @get list(): Issue[];
+  @get list(@query cursor?: string, @query limit?: int32): Paged<Issue>;
 
   @doc("Get details of a specific issue")
   @get get(@path number: int32): Issue | { @statusCode _: 404 };
 
   @doc("List all sessions associated with an issue")
   @route("/{number}/sessions")
-  @get listSessions(@path number: int32): Session[] | { @statusCode _: 404 };
+  @get listSessions(@path number: int32, @query cursor?: string, @query limit?: int32): Paged<Session> | { @statusCode _: 404 };
 
   @doc("Get the full log content of a specific session")
   @route("/{number}/sessions/{id}")
