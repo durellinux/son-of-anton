@@ -17,7 +17,7 @@ const fastify = Fastify({
   }
 });
 
-const POLL_INTERVAL = 5 * 60 * 1000; // 5 minutes
+const POLL_INTERVAL = 1 * 60 * 1000; // 1 minute
 
 async function executeGemini(id: number, prompt: string) {
   // Session Logging
