@@ -14,6 +14,17 @@ We will use the following technologies for the Son of Anton UI:
 - **Integration**: Serve the UI via the existing Fastify daemon using `@fastify/static`.
 - **Data Fetching**: Use TanStack Query (React Query) for efficient server state management.
 
+## Alternatives Considered 
+
+### Frontend Frameworks 
+- **Vue.js / Svelte**: Modern and efficient alternatives to React. However, React (TypeScript) is the preferred stack for this project, offering a mature ecosystem and consistent patterns with other Gemini-driven projects. 
+- **Next.js / Remix**: Full-stack frameworks that provide excellent performance. These were considered overkill since the UI will be a simple dashboard served by the existing Fastify daemon. 
+
+### Styling 
+- **Tailwind CSS**: A utility-first CSS framework. While fast for development, Vanilla CSS / CSS Modules are preferred here to maintain maximum flexibility and align with the project's styling mandate to avoid heavy CSS frameworks unless explicitly requested. 
+- **Styled Components**: CSS-in-JS provides good developer experience but adds runtime overhead and complexity that Vanilla CSS avoids. 
+
+
 ## Rationale
 - **React with Vite**: Provides a modern, fast, and type-safe development experience. Vite is the current industry standard for fast development cycles.
 - **Vanilla CSS / CSS Modules**: Aligns with Gemini's styling preferences and ensures maximum flexibility without the overhead of heavy CSS frameworks.
