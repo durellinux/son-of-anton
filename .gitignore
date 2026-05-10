@@ -5,3 +5,4 @@ dist/
 .anton/sessions/
 .anton/worktrees/
 .anton/workspaces/
+tsp-output/
