@@ -1,4 +1,6 @@
-import { Issue, Session, Paged } from '../models/models';
+import { Issue } from '../models/issue';
+import { Session } from '../models/session';
+import { Paged } from '../models/pagination';
 
 export interface IssueRepository {
   listIssues(cursor?: string, limit?: number): Promise<Paged<Issue>>;

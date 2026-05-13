@@ -6,9 +6,11 @@ import path from 'node:path';
 import { determineIssueState, determinePRState, IssueState, Issue as GH_Issue, PullRequest, getUnaddressedPRComments, PRComment, PullRequestBase } from './issue-state';
 import { FileSystemIssueRepository } from './src/repositories/FileSystemIssueRepository';
 import { registerRoutes } from './src/resources/routes';
-import { IssueStatus, Issue } from './src/models/models';
+import { IssueStatus, Issue } from './src/models/issue';
+import { IssueService } from './src/services/IssueService';
 
 const repository = new FileSystemIssueRepository();
+const issueService = new IssueService(repository);
 
 const fastify = Fastify({
   logger: {
@@ -192,7 +194,7 @@ const start = async () => {
       return { status: 'ok' };
     });
 
-    fastify.register(registerRoutes, { repository });
+    fastify.register(registerRoutes, { issueService });
 
     await fastify.listen({ port: 3000, host: '0.0.0.0' });
     fastify.log.info('Son of Anton Daemon is running on port 3000');

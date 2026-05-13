@@ -16,15 +16,3 @@ export interface Issue {
   branchName?: string;
   branchUrl?: string;
 }
-
-export interface Session {
-  id: string;
-  type: "planning" | "implementing" | "addressing-review";
-  timestamp: string; // ISO 8601
-  status: "success" | "failure";
-}
-
-export interface Paged<T> {
-  items: T[];
-  nextCursor?: string;
-}
