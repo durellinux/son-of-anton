@@ -1,7 +1,10 @@
 import Fastify from 'fastify';
 import { registerRoutes } from './routes';
 import { IssueRepository } from '../repositories/repositories';
-import { Issue, Session, Paged, IssueStatus } from '../models/models';
+import { Issue, IssueStatus } from '../models/issue';
+import { Session } from '../models/session';
+import { Paged } from '../models/pagination';
+import { IssueService } from '../services/IssueService';
 
 class MockRepository implements IssueRepository {
   async listIssues(cursor?: string, limit?: number): Promise<Paged<Issue>> {
@@ -25,7 +28,8 @@ class MockRepository implements IssueRepository {
 async function test() {
   const fastify = Fastify();
   const repository = new MockRepository();
-  fastify.register(registerRoutes, { repository });
+  const issueService = new IssueService(repository);
+  fastify.register(registerRoutes, { issueService });
 
   console.log('Testing GET /issues...');
   let response = await fastify.inject({ method: 'GET', url: '/issues' });

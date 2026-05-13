@@ -6,7 +6,7 @@
   "scripts": {
     "start": "ts-node anton-daemon.ts",
     "dev": "ts-node anton-daemon.ts",
-    "test": "npx ts-node issue-state.test.ts && npx ts-node src/infrastructure/FileSystemIssueRepository.test.ts && npx ts-node src/api/routes.test.ts",
+    "test": "npx ts-node issue-state.test.ts && npx ts-node src/repositories/FileSystemIssueRepository.test.ts && npx ts-node src/resources/routes.test.ts",
     "tsp:compile": "tsp compile status-api.tsp"
   },
   "dependencies": {
