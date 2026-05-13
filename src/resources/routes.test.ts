@@ -7,15 +7,15 @@ import { Paged } from '../models/pagination';
 import { IssueService } from '../services/IssueService';
 
 class MockRepository implements IssueRepository {
-  async listIssues(cursor?: string, limit?: number): Promise<Paged<Issue>> {
-    return { items: [{ number: 1, title: 'Test', url: '', status: IssueStatus.Planning }] };
+  async listIssues(cursor?: string, limit?: number): Promise<Issue[]> {
+    return [{ number: 1, title: 'Test', url: '', status: IssueStatus.Planning }];
   }
   async getIssue(number: number): Promise<Issue | undefined> {
     if (number === 1) return { number: 1, title: 'Test', url: '', status: IssueStatus.Planning };
     return undefined;
   }
-  async listSessions(issueNumber: number, cursor?: string, limit?: number): Promise<Paged<Session> | undefined> {
-    if (issueNumber === 1) return { items: [{ id: 's1', type: 'planning', timestamp: '', status: 'success' }] };
+  async listSessions(issueNumber: number, cursor?: string, limit?: number): Promise<Session[] | undefined> {
+    if (issueNumber === 1) return [{ id: 's1', type: 'planning', timestamp: '', status: 'success' }];
     return undefined;
   }
   async getSessionContent(issueNumber: number, sessionId: string): Promise<string | undefined> {

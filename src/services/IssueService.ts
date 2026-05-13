@@ -6,16 +6,31 @@ import { IssueRepository } from '../repositories/repositories';
 export class IssueService {
   constructor(private repository: IssueRepository) {}
 
-  async getIssues(cursor?: string, limit?: number): Promise<Paged<Issue>> {
-    return this.repository.listIssues(cursor, limit);
+  async getIssues(cursor?: string, limit: number = 10): Promise<Paged<Issue>> {
+    const items = await this.repository.listIssues(cursor, limit + 1);
+    const hasNextPage = items.length > limit;
+    const pagedItems = hasNextPage ? items.slice(0, limit) : items;
+    const nextCursor = hasNextPage ? items[limit].number.toString() : undefined;
+    return {
+      items: pagedItems,
+      nextCursor
+    };
   }
 
   async getIssue(number: number): Promise<Issue | undefined> {
     return this.repository.getIssue(number);
   }
 
-  async getSessions(issueNumber: number, cursor?: string, limit?: number): Promise<Paged<Session> | undefined> {
-    return this.repository.listSessions(issueNumber, cursor, limit);
+  async getSessions(issueNumber: number, cursor?: string, limit: number = 10): Promise<Paged<Session> | undefined> {
+    const items = await this.repository.listSessions(issueNumber, cursor, limit + 1);
+    if (!items) return undefined;
+    const hasNextPage = items.length > limit;
+    const pagedItems = hasNextPage ? items.slice(0, limit) : items;
+    const nextCursor = hasNextPage ? items[limit].id : undefined;
+    return {
+      items: pagedItems,
+      nextCursor
+    };
   }
 
   async getSessionContent(issueNumber: number, sessionId: string): Promise<string | undefined> {
