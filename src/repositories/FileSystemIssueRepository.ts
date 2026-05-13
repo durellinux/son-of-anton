@@ -1,7 +1,7 @@
 import { readdir, readFile, stat, writeFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
-import { Issue, Session, Paged, IssueStatus } from '../domain/models';
-import { IssueRepository } from '../domain/repositories';
+import { Issue, Session, Paged, IssueStatus } from '../models/models';
+import { IssueRepository } from './repositories';
 
 export class FileSystemIssueRepository implements IssueRepository {
   private baseDir: string;

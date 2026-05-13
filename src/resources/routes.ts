@@ -1,5 +1,5 @@
 import { FastifyInstance, FastifyPluginOptions } from 'fastify';
-import { IssueRepository } from '../domain/repositories';
+import { IssueRepository } from '../repositories/repositories';
 
 export function registerRoutes(fastify: FastifyInstance, options: { repository: IssueRepository }, done: (err?: Error) => void) {
   const { repository } = options;

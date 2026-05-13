@@ -1,5 +1,5 @@
 import { FileSystemIssueRepository } from './FileSystemIssueRepository';
-import { IssueStatus } from '../domain/models';
+import { IssueStatus } from '../models/models';
 import { rm, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 

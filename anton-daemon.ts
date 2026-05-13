@@ -4,9 +4,9 @@ import { mkdir } from 'node:fs/promises';
 import { createWriteStream } from 'node:fs';
 import path from 'node:path';
 import { determineIssueState, determinePRState, IssueState, Issue as GH_Issue, PullRequest, getUnaddressedPRComments, PRComment, PullRequestBase } from './issue-state';
-import { FileSystemIssueRepository } from './src/infrastructure/FileSystemIssueRepository';
-import { registerRoutes } from './src/api/routes';
-import { IssueStatus, Issue } from './src/domain/models';
+import { FileSystemIssueRepository } from './src/repositories/FileSystemIssueRepository';
+import { registerRoutes } from './src/resources/routes';
+import { IssueStatus, Issue } from './src/models/models';
 
 const repository = new FileSystemIssueRepository();
 

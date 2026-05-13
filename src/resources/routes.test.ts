@@ -1,7 +1,7 @@
 import Fastify from 'fastify';
 import { registerRoutes } from './routes';
-import { IssueRepository } from '../domain/repositories';
-import { Issue, Session, Paged, IssueStatus } from '../domain/models';
+import { IssueRepository } from '../repositories/repositories';
+import { Issue, Session, Paged, IssueStatus } from '../models/models';
 
 class MockRepository implements IssueRepository {
   async listIssues(cursor?: string, limit?: number): Promise<Paged<Issue>> {
