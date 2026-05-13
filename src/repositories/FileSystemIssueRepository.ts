@@ -2,7 +2,6 @@ import { readdir, readFile, stat, writeFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import { Issue } from '../models/issue';
 import { Session } from '../models/session';
-import { Paged } from '../models/pagination';
 import { IssueRepository } from './repositories';
 
 export class FileSystemIssueRepository implements IssueRepository {
