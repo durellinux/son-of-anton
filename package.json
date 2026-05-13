@@ -6,7 +6,7 @@
   "scripts": {
     "start": "ts-node anton-daemon.ts",
     "dev": "ts-node anton-daemon.ts",
-    "test": "echo \"Warning: no test configured\" && exit 0",
+    "test": "npx ts-node issue-state.test.ts && npx ts-node src/infrastructure/FileSystemIssueRepository.test.ts && npx ts-node src/api/routes.test.ts",
     "tsp:compile": "tsp compile status-api.tsp"
   },
   "dependencies": {
