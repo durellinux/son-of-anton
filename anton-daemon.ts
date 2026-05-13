@@ -3,10 +3,12 @@ import { execa } from 'execa';
 import { mkdir } from 'node:fs/promises';
 import { createWriteStream } from 'node:fs';
 import path from 'node:path';
-import {
-    determineIssueState, determinePRState, IssueState, Issue, PullRequest, getUnaddressedPRComments, PRComment,
-    PullRequestBase
-} from './issue-state';
+import { determineIssueState, determinePRState, IssueState, Issue as GH_Issue, PullRequest, getUnaddressedPRComments, PRComment, PullRequestBase } from './issue-state';
+import { FileSystemIssueRepository } from './src/infrastructure/FileSystemIssueRepository';
+import { registerRoutes } from './src/api/routes';
+import { IssueStatus, Issue } from './src/domain/models';
+
+const repository = new FileSystemIssueRepository();
 
 const fastify = Fastify({
   logger: {
@@ -21,6 +23,16 @@ const fastify = Fastify({
 });
 
 const POLL_INTERVAL = 1 * 60 * 1000; // 1 minute
+
+function mapStateToStatus(state: IssueState): IssueStatus {
+    switch (state) {
+        case IssueState.YOLO: return IssueStatus.YOLO;
+        case IssueState.NEEDS_PLANNING: return IssueStatus.Planning;
+        case IssueState.NEEDS_IMPLEMENTATION: return IssueStatus.Implementing;
+        case IssueState.WAITING: return IssueStatus.WaitingPlanReview;
+        default: return IssueStatus.Planning;
+    }
+}
 
 async function executeGemini(id: number, prompt: string) {
   // Session Logging
@@ -65,8 +77,8 @@ async function runAnton() {
   fastify.log.info('Starting Anton iteration...');
   try {
     // 1. Fetch issues and PRs in Daemon
-    const { stdout: issuesJson } = await execa('gh', ['search', 'issues', '--label', 'son-of-anton', '--state', 'open', '--json', 'number,repository', '--owner', '@me']);
-    const basicIssues = JSON.parse(issuesJson) as { number: number, repository: { nameWithOwner: string } }[];
+    const { stdout: issuesJson } = await execa('gh', ['search', 'issues', '--label', 'son-of-anton', '--state', 'open', '--json', 'number,title,repository,url', '--owner', '@me']);
+    const basicIssues = JSON.parse(issuesJson) as { number: number, title: string, url: string,, repository: { nameWithOwner: string } }[];
 
     const { stdout: prsJson } = await execa('gh', ['search', 'prs', '--label', 'son-of-anton', '--state', 'open', '--json', 'number,url']);
     const basicPRs = JSON.parse(prsJson) as PullRequestBase[];
@@ -79,7 +91,6 @@ async function runAnton() {
     fastify.log.info(`Found ${basicIssues.length} issues and ${basicPRs.length} PRs to process.`);
 
     // 2. Process Issues
-    // ... (rest of issues processing remains same)
     for (const basicIssue of basicIssues) {
       const issueNumber = basicIssue.number;
       const issueRepo = basicIssue.repository.nameWithOwner;
@@ -87,10 +98,19 @@ async function runAnton() {
 
       // Fetch full issue details including comments and reactions
       const { stdout: issueDetailsJson } = await execa('gh', ['issue', 'view', String(issueNumber), '-R', issueRepo, '--json', 'body,comments']);
-      const issueDetails = JSON.parse(issueDetailsJson) as Issue;
+      const issueDetails = JSON.parse(issueDetailsJson) as GH_Issue;
 
       const state = determineIssueState(issueDetails);
       fastify.log.info(`Issue #${issueNumber} state: ${state}`);
+
+      // Save to repository
+      const issue: Issue = {
+          number: issueNumber,
+          title: basicIssue.title,
+          url: basicIssue.url,
+          status: mapStateToStatus(state),
+      };
+      await repository.saveIssue(issue);
 
       let prompt = '';
       switch (state) {
@@ -171,6 +191,8 @@ const start = async () => {
     fastify.get('/ready', async () => {
       return { status: 'ok' };
     });
+
+    fastify.register(registerRoutes, { repository });
 
     await fastify.listen({ port: 3000, host: '0.0.0.0' });
     fastify.log.info('Son of Anton Daemon is running on port 3000');
