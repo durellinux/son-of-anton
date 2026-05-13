@@ -10,7 +10,8 @@ Son of Anton needs a UI to allow users to visualize the status of issues being a
 We will use the following technologies for the Son of Anton UI:
 
 - **Frontend Framework**: React with Vite (TypeScript).
-- **Styling**: Vanilla CSS / CSS Modules.
+- **Styling**: Vanilla CSS / CSS Modules with Sass/SCSS support.
+- **Component Library**: Mantine UI.
 - **Integration**: Serve the UI via the existing Fastify daemon using `@fastify/static`.
 - **Data Fetching**: Use TanStack Query (React Query) for efficient server state management.
 
@@ -21,15 +22,22 @@ We will use the following technologies for the Son of Anton UI:
 - **Next.js / Remix**: Full-stack frameworks that provide excellent performance. These were considered overkill since the UI will be a simple dashboard served by the existing Fastify daemon. 
 
 ### Styling 
-- **Tailwind CSS**: A utility-first CSS framework. While fast for development, Vanilla CSS / CSS Modules are preferred here to maintain maximum flexibility and align with the project's styling mandate to avoid heavy CSS frameworks unless explicitly requested. 
-- **Styled Components**: CSS-in-JS provides good developer experience but adds runtime overhead and complexity that Vanilla CSS avoids. 
+- **Vanilla CSS / CSS Modules**: The baseline for styling. Sass/SCSS is added to provide better organization, variables, and nesting while maintaining the flexibility of native CSS.
+- **Tailwind CSS**: A utility-first CSS framework. While fast for development, it was not chosen to align with the project's styling mandate to avoid heavy utility-first frameworks unless explicitly requested, and to favor the requested Sass/SCSS workflow. 
+- **Styled Components**: CSS-in-JS provides good developer experience but adds runtime overhead and complexity.
+
+### Component Libraries
+- **Mantine**: Selected for its comprehensive suite of components, excellent hooks, and ease of use with modern React. It allows for fast-tracking UI development without sacrificing flexibility.
+- **MUI (Material UI)**: A very mature and industry-standard library. However, it can be quite opinionated and heavy if the full Material Design aesthetic is not desired.
+- **Radix UI**: A great choice for headless components with high accessibility, but requires significant effort to style compared to "out of the shelf" solutions like Mantine.
 
 
 ## Rationale
 - **React with Vite**: Provides a modern, fast, and type-safe development experience. Vite is the current industry standard for fast development cycles.
-- **Vanilla CSS / CSS Modules**: Aligns with Gemini's styling preferences and ensures maximum flexibility without the overhead of heavy CSS frameworks.
+- **Sass/SCSS**: Provides advanced styling capabilities like nesting and variables, which improves CSS maintainability and organization.
+- **Mantine UI**: Enables rapid development of the UI by providing high-quality, pre-built components and patterns, meeting the requirement to fast-track the dashboard development.
 - **@fastify/static**: Since we already have a Fastify daemon, serving the UI from the same process simplifies deployment and avoids CORS issues during development.
-- **TanStack Query**: Handles caching, synchronization, and updating server state in React applications, making the UI more reliable and easier to develop.
+- **TanStack Query**: Handles caching, synchronization, and updating server state. Choosing it also provides a valuable learning opportunity for developers transitioning from other frameworks like Vue.
 
 ## Consequences
 - Developers will need to be familiar with React and TypeScript.
