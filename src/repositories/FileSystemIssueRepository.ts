@@ -18,7 +18,7 @@ export class FileSystemIssueRepository implements IssueRepository {
     return issuesDir;
   }
 
-  async listIssues(cursor?: string, limit: number = 10): Promise<Paged<Issue>> {
+  async listIssues(cursor?: string, limit: number = 10): Promise<Issue[]> {
     const issuesDir = await this.ensureIssuesDir();
     let issueFiles: string[];
     try {
@@ -34,19 +34,12 @@ export class FileSystemIssueRepository implements IssueRepository {
       .sort((a, b) => b - a);
 
     const startIndex = cursor ? allIssueNumbers.indexOf(parseInt(cursor, 10)) : 0;
+    if (startIndex === -1 && cursor) return [];
+
     const paginatedNumbers = allIssueNumbers.slice(startIndex, startIndex + limit);
 
     const items = await Promise.all(paginatedNumbers.map(n => this.getIssue(n)));
-    const filteredItems = items.filter((i): i is Issue => i !== undefined);
-
-    const nextCursor = startIndex + limit < allIssueNumbers.length 
-      ? allIssueNumbers[startIndex + limit].toString() 
-      : undefined;
-
-    return {
-      items: filteredItems,
-      nextCursor
-    };
+    return items.filter((i): i is Issue => i !== undefined);
   }
 
   async getIssue(number: number): Promise<Issue | undefined> {
@@ -68,7 +61,7 @@ export class FileSystemIssueRepository implements IssueRepository {
     await writeFile(filePath, JSON.stringify(issue, null, 2));
   }
 
-  async listSessions(issueNumber: number, cursor?: string, limit: number = 10): Promise<Paged<Session> | undefined> {
+  async listSessions(issueNumber: number, cursor?: string, limit: number = 10): Promise<Session[] | undefined> {
     const sessionDir = path.join(this.baseDir, 'sessions', String(issueNumber));
     try {
       const files = await readdir(sessionDir);
@@ -77,6 +70,8 @@ export class FileSystemIssueRepository implements IssueRepository {
         .sort((a, b) => b.localeCompare(a)); // Newest first
 
       const startIndex = cursor ? sessionFiles.indexOf(cursor) : 0;
+      if (startIndex === -1 && cursor) return [];
+
       const paginatedFiles = sessionFiles.slice(startIndex, startIndex + limit);
 
       const items: Session[] = await Promise.all(paginatedFiles.map(async f => {
@@ -91,14 +86,7 @@ export class FileSystemIssueRepository implements IssueRepository {
         };
       }));
 
-      const nextCursor = startIndex + limit < sessionFiles.length 
-        ? sessionFiles[startIndex + limit] 
-        : undefined;
-
-      return {
-        items,
-        nextCursor
-      };
+      return items;
     } catch (e) {
       if ((e as any).code === 'ENOENT') {
         return undefined;

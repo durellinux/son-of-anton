@@ -27,7 +27,7 @@ async function test() {
 
   console.log('Testing listIssues...');
   const list = await repo.listIssues();
-  if (list.items.length !== 1 || list.items[0].number !== 37) {
+  if (list.length !== 1 || list[0].number !== 37) {
     throw new Error('listIssues failed');
   }
   console.log('listIssues passed.');
@@ -40,7 +40,7 @@ async function test() {
   await fs.writeFile(path.join(sessionDir, 'session1.txt'), sessionContent);
 
   const sessions = await repo.listSessions(37);
-  if (!sessions || sessions.items.length !== 1 || sessions.items[0].id !== 'session1') {
+  if (!sessions || sessions.length !== 1 || sessions[0].id !== 'session1') {
     throw new Error('listSessions failed');
   }
 
