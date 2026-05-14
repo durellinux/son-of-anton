@@ -4,19 +4,19 @@
   "description": "Autonomous issue fixer daemon",
   "main": "anton-daemon.ts",
   "scripts": {
-    "start": "ts-node anton-daemon.ts",
-    "dev": "ts-node anton-daemon.ts",
-    "test": "yarn ts-node issue-state.test.ts && yarn ts-node src/repositories/FileSystemIssueRepository.test.ts && yarn ts-node src/resources/routes.test.ts",
+    "start": "tsx anton-daemon.ts",
+    "dev": "tsx anton-daemon.ts",
+    "test": "yarn tsx issue-state.test.ts && yarn tsx src/repositories/FileSystemIssueRepository.test.ts && yarn tsx src/resources/routes.test.ts",
     "tsp:compile": "tsp compile status-api.tsp",
     "tsp:generate": "openapi-ts",
     "generate": "yarn tsp:compile && yarn tsp:generate"
-    },
-    "dependencies": {
+  },
+  "dependencies": {
     "execa": "^8.0.1",
     "fastify": "^4.26.2"
-    },
-    "devDependencies": {
-    "@hey-api/openapi-ts": "^0.52.0",
+  },
+  "devDependencies": {
+    "@hey-api/openapi-ts": "^0.97.1",
     "@types/node": "^20.11.24",
     "@typespec/compiler": "^1.11.0",
     "@typespec/http": "^1.11.0",
@@ -25,6 +25,7 @@
     "@typespec/rest": "^0.81.0",
     "pino-pretty": "^10.3.1",
     "ts-node": "^10.9.2",
+    "tsx": "^4.21.1",
     "typescript": "^5.3.3"
-    }
+  }
 }
