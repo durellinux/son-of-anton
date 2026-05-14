@@ -8,23 +8,23 @@
     "dev": "ts-node anton-daemon.ts",
     "test": "yarn ts-node issue-state.test.ts && yarn ts-node src/repositories/FileSystemIssueRepository.test.ts && yarn ts-node src/resources/routes.test.ts",
     "tsp:compile": "tsp compile status-api.tsp",
-    "tsp:generate": "openapi-typescript tsp-output/@typespec/openapi3/openapi.yaml -o src/api/types.ts",
+    "tsp:generate": "openapi-ts",
     "generate": "yarn tsp:compile && yarn tsp:generate"
-  },
-  "dependencies": {
+    },
+    "dependencies": {
     "execa": "^8.0.1",
     "fastify": "^4.26.2"
-  },
-  "devDependencies": {
+    },
+    "devDependencies": {
+    "@hey-api/openapi-ts": "^0.52.0",
     "@types/node": "^20.11.24",
     "@typespec/compiler": "^1.11.0",
     "@typespec/http": "^1.11.0",
     "@typespec/openapi": "^1.11.0",
     "@typespec/openapi3": "^1.11.0",
     "@typespec/rest": "^0.81.0",
-    "openapi-typescript": "^7.13.0",
     "pino-pretty": "^10.3.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3"
-  }
+    }
 }
