@@ -80,7 +80,7 @@ async function runAnton() {
   try {
     // 1. Fetch issues and PRs in Daemon
     const { stdout: issuesJson } = await execa('gh', ['search', 'issues', '--label', 'son-of-anton', '--state', 'open', '--json', 'number,title,repository,url', '--owner', '@me']);
-    const basicIssues = JSON.parse(issuesJson) as { number: number, title: string, url: string,, repository: { nameWithOwner: string } }[];
+    const basicIssues = JSON.parse(issuesJson) as { number: number, title: string, url: string, repository: { nameWithOwner: string } }[];
 
     const { stdout: prsJson } = await execa('gh', ['search', 'prs', '--label', 'son-of-anton', '--state', 'open', '--json', 'number,url']);
     const basicPRs = JSON.parse(prsJson) as PullRequestBase[];
