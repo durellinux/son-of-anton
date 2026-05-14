@@ -6,7 +6,7 @@ import path from 'node:path';
 import { determineIssueState, determinePRState, IssueState, Issue as GH_Issue, PullRequest, getUnaddressedPRComments, PRComment, PullRequestBase } from './issue-state';
 import { FileSystemIssueRepository } from './src/repositories/FileSystemIssueRepository';
 import { registerRoutes } from './src/resources/routes';
-import { IssueStatus, Issue } from './src/models/issue';
+import { IssueStatus, Issue } from './src/api';
 import { IssueService } from './src/services/IssueService';
 
 const repository = new FileSystemIssueRepository();

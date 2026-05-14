@@ -1,9 +1,7 @@
 import Fastify from 'fastify';
 import { registerRoutes } from './routes';
 import { IssueRepository } from '../repositories/repositories';
-import { Issue, IssueStatus } from '../models/issue';
-import { Session } from '../models/session';
-import { Paged } from '../models/pagination';
+import { Issue, IssueStatus, Session, Paged } from '../api';
 import { IssueService } from '../services/IssueService';
 
 class MockRepository implements IssueRepository {

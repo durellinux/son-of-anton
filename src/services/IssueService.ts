@@ -1,6 +1,4 @@
-import { Issue } from '../models/issue';
-import { Session } from '../models/session';
-import { Paged } from '../models/pagination';
+import { Issue, Session, Paged } from '../api';
 import { IssueRepository } from '../repositories/repositories';
 
 export class IssueService {

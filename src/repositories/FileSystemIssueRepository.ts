@@ -1,7 +1,6 @@
 import { readdir, readFile, stat, writeFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
-import { Issue } from '../models/issue';
-import { Session } from '../models/session';
+import { Issue, Session } from '../api';
 import { IssueRepository } from './repositories';
 
 export class FileSystemIssueRepository implements IssueRepository {
