@@ -30,6 +30,7 @@ async function executeGemini(id: number, prompt: string) {
 
   const subprocess = execa('gemini', [
     '-p', prompt,
+    '--sandbox', 'true',
     '--approval-mode', 'yolo'
   ]);
 
@@ -61,8 +62,8 @@ async function runAnton() {
   fastify.log.info('Starting Anton iteration...');
   try {
     // 1. Fetch issues and PRs in Daemon
-    const { stdout: issuesJson } = await execa('gh', ['issue', 'list', '--label', 'son-of-anton', '--state', 'open', '--json', 'number']);
-    const basicIssues = JSON.parse(issuesJson) as { number: number }[];
+    const { stdout: issuesJson } = await execa('gh', ['search', 'issues', '--label', 'son-of-anton', '--state', 'open', '--json', 'number,repository', '--owner', '@me']);
+    const basicIssues = JSON.parse(issuesJson) as { number: number, repository: { nameWithOwner: string } }[];
 
     const { stdout: prsJson } = await execa('gh', ['pr', 'list', '--label', 'son-of-anton', '--state', 'open', '--json', 'number,reviewDecision,headRefName,url']);
     const basicPRs = JSON.parse(prsJson) as PullRequest[];
@@ -78,10 +79,11 @@ async function runAnton() {
     // ... (rest of issues processing remains same)
     for (const basicIssue of basicIssues) {
       const issueNumber = basicIssue.number;
+      const issueRepo = basicIssue.repository.nameWithOwner;
       fastify.log.info(`Processing issue #${issueNumber}...`);
 
       // Fetch full issue details including comments and reactions
-      const { stdout: issueDetailsJson } = await execa('gh', ['issue', 'view', String(issueNumber), '--json', 'body,comments']);
+      const { stdout: issueDetailsJson } = await execa('gh', ['issue', 'view', String(issueNumber), '-R', issueRepo, '--json', 'body,comments']);
       const issueDetails = JSON.parse(issueDetailsJson) as Issue;
 
       const state = determineIssueState(issueDetails);
