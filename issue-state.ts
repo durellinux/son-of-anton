@@ -20,11 +20,14 @@ export interface Issue {
   comments: IssueComment[];
 }
 
-export interface PullRequest {
-  number: number;
+export interface PullRequestBase {
+    number: number;
+    url: string;
+}
+
+export interface PullRequest extends PullRequestBase {
   reviewDecision: string;
   headRefName: string;
-  url: string;
 }
 
 export interface PRComment {
