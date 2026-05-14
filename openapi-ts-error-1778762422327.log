@@ -1,0 +1,8 @@
+🚫 client needs to be set to generate services - which HTTP client do you want to use?
+Error: 🚫 client needs to be set to generate services - which HTTP client do you want to use?
+    at /Users/gianluca/Projects/personal/son-of-anton/.anton/workspaces/son-of-anton/37/node_modules/@hey-api/openapi-ts/dist/node/index.cjs:1:39081
+    at nn (/Users/gianluca/Projects/personal/son-of-anton/.anton/workspaces/son-of-anton/37/node_modules/@hey-api/openapi-ts/dist/node/index.cjs:1:39288)
+    at gn (/Users/gianluca/Projects/personal/son-of-anton/.anton/workspaces/son-of-anton/37/node_modules/@hey-api/openapi-ts/dist/node/index.cjs:1:50418)
+    at async /Users/gianluca/Projects/personal/son-of-anton/.anton/workspaces/son-of-anton/37/node_modules/@hey-api/openapi-ts/dist/node/index.cjs:1:187874
+    at async exports.createClient (/Users/gianluca/Projects/personal/son-of-anton/.anton/workspaces/son-of-anton/37/node_modules/@hey-api/openapi-ts/dist/node/index.cjs:1:188266)
+    at async start (/Users/gianluca/Projects/personal/son-of-anton/.anton/workspaces/son-of-anton/37/node_modules/@hey-api/openapi-ts/bin/index.cjs:80:5)

@@ -29,10 +29,10 @@ const POLL_INTERVAL = 1 * 60 * 1000; // 1 minute
 function mapStateToStatus(state: IssueState): IssueStatus {
     switch (state) {
         case IssueState.YOLO: return IssueStatus.YOLO;
-        case IssueState.NEEDS_PLANNING: return IssueStatus.Planning;
-        case IssueState.NEEDS_IMPLEMENTATION: return IssueStatus.Implementing;
-        case IssueState.WAITING: return IssueStatus.WaitingPlanReview;
-        default: return IssueStatus.Planning;
+        case IssueState.NEEDS_PLANNING: return IssueStatus.PLANNING;
+        case IssueState.NEEDS_IMPLEMENTATION: return IssueStatus.IMPLEMENTING;
+        case IssueState.WAITING: return IssueStatus.WAITING_PLAN_REVIEW;
+        default: return IssueStatus.PLANNING;
     }
 }
 
