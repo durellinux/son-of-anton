@@ -3,7 +3,10 @@ import { execa } from 'execa';
 import { mkdir } from 'node:fs/promises';
 import { createWriteStream } from 'node:fs';
 import path from 'node:path';
-import { determineIssueState, determinePRState, IssueState, Issue, PullRequest, getUnaddressedPRComments, PRComment } from './issue-state';
+import {
+    determineIssueState, determinePRState, IssueState, Issue, PullRequest, getUnaddressedPRComments, PRComment,
+    PullRequestBase
+} from './issue-state';
 
 const fastify = Fastify({
   logger: {
@@ -65,8 +68,8 @@ async function runAnton() {
     const { stdout: issuesJson } = await execa('gh', ['search', 'issues', '--label', 'son-of-anton', '--state', 'open', '--json', 'number,repository', '--owner', '@me']);
     const basicIssues = JSON.parse(issuesJson) as { number: number, repository: { nameWithOwner: string } }[];
 
-    const { stdout: prsJson } = await execa('gh', ['pr', 'list', '--label', 'son-of-anton', '--state', 'open', '--json', 'number,reviewDecision,headRefName,url']);
-    const basicPRs = JSON.parse(prsJson) as PullRequest[];
+    const { stdout: prsJson } = await execa('gh', ['search', 'prs', '--label', 'son-of-anton', '--state', 'open', '--json', 'number,url']);
+    const basicPRs = JSON.parse(prsJson) as PullRequestBase[];
 
     if (basicIssues.length === 0 && basicPRs.length === 0) {
       fastify.log.info('No issues or PRs found to process.');
@@ -111,34 +114,37 @@ async function runAnton() {
     // 3. Process PRs
     for (const pr of basicPRs) {
       fastify.log.info(`Processing PR #${pr.number}...`);
+      const urlParts = pr.url.split('/');
+      const owner = urlParts[3];
+      const repo = urlParts[4];
 
-      const state = determinePRState(pr);
-      fastify.log.info(`PR #${pr.number} state: ${state}`);
+      const { stdout: prDetailsJson } = await execa('gh', ['pr', 'list', '-R', `${owner}/${repo}`, '--json', 'number,headRefName,url,reviewDecision', '--jq', `.[] | select(.number==${pr.number})`]);
+      const prDetails = JSON.parse(prDetailsJson) as PullRequest;
+
+      const state = determinePRState(prDetails);
+      fastify.log.info(`PR #${prDetails.number} state: ${state}`);
 
       if (state === IssueState.NEEDS_IMPLEMENTATION) {
         // Extract owner and repo from URL: https://github.com/owner/repo/pull/number
-        const urlParts = pr.url.split('/');
-        const owner = urlParts[3];
-        const repo = urlParts[4];
         const fullRepo = `${owner}/${repo}`;
 
         // Fetch PR comments to be deterministic
-        const { stdout: commentsJson } = await execa('gh', ['api', `repos/${fullRepo}/pulls/${pr.number}/comments`]);
+        const { stdout: commentsJson } = await execa('gh', ['api', `repos/${fullRepo}/pulls/${prDetails.number}/comments`]);
         const comments = JSON.parse(commentsJson) as PRComment[];
         const unaddressedCommentIds = getUnaddressedPRComments(comments);
 
         if (unaddressedCommentIds.length > 0) {
             // Extract issue number from branch name (e.g., anton/30)
-            const issueMatch = pr.headRefName.match(/anton\/(\d+)/);
-            const issueNumber = issueMatch ? issueMatch[1] : `pr-${pr.number}`;
+            const issueMatch = prDetails.headRefName.match(/anton\/(\d+)/);
+            const issueNumber = issueMatch ? issueMatch[1] : `pr-${prDetails.number}`;
             const issueParam = `for issue ${issueNumber} `;
-            const prompt = `follow the handle-review-comments skill flow ${issueParam}for PR ${pr.number} on branch ${pr.headRefName} in repo ${fullRepo} with comment IDs ${unaddressedCommentIds.join(', ')}`;
-            await executeGemini(pr.number, prompt);
+            const prompt = `follow the handle-review-comments skill flow ${issueParam}for PR ${prDetails.number} on branch ${prDetails.headRefName} in repo ${fullRepo} with comment IDs ${unaddressedCommentIds.join(', ')}`;
+            await executeGemini(prDetails.number, prompt);
         } else {
-            fastify.log.info(`PR #${pr.number} has no unaddressed comments. Skipping.`);
+            fastify.log.info(`PR #${prDetails.number} has no unaddressed comments. Skipping.`);
         }
       } else {
-        fastify.log.info(`PR #${pr.number} is waiting. Skipping.`);
+        fastify.log.info(`PR #${prDetails.number} is waiting. Skipping.`);
       }
     }
 
