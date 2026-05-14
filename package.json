@@ -6,10 +6,10 @@
   "scripts": {
     "start": "ts-node anton-daemon.ts",
     "dev": "ts-node anton-daemon.ts",
-    "test": "npx ts-node issue-state.test.ts && npx ts-node src/repositories/FileSystemIssueRepository.test.ts && npx ts-node src/resources/routes.test.ts",
+    "test": "yarn ts-node issue-state.test.ts && yarn ts-node src/repositories/FileSystemIssueRepository.test.ts && yarn ts-node src/resources/routes.test.ts",
     "tsp:compile": "tsp compile status-api.tsp",
     "tsp:generate": "openapi-typescript tsp-output/@typespec/openapi3/openapi.yaml -o src/api/types.ts",
-    "generate": "npm run tsp:compile && npm run tsp:generate"
+    "generate": "yarn tsp:compile && yarn tsp:generate"
   },
   "dependencies": {
     "execa": "^8.0.1",
