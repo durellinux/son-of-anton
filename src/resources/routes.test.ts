@@ -1,15 +1,15 @@
 import Fastify from 'fastify';
 import { registerRoutes } from './routes';
 import { IssueRepository } from '../repositories/repositories';
-import { Issue, IssueStatus, Session, Paged } from '../api';
-import { IssueService } from '../services/IssueService';
+import { Issue, Session, IssueStatus } from '../api';
+import { IssueService, Paged } from '../services/IssueService';
 
 class MockRepository implements IssueRepository {
   async listIssues(cursor?: string, limit?: number): Promise<Issue[]> {
-    return [{ number: 1, title: 'Test', url: '', status: IssueStatus.Planning }];
+    return [{ number: 1, title: 'Test', url: '', status: IssueStatus.PLANNING }];
   }
   async getIssue(number: number): Promise<Issue | undefined> {
-    if (number === 1) return { number: 1, title: 'Test', url: '', status: IssueStatus.Planning };
+    if (number === 1) return { number: 1, title: 'Test', url: '', status: IssueStatus.PLANNING };
     return undefined;
   }
   async listSessions(issueNumber: number, cursor?: string, limit?: number): Promise<Session[] | undefined> {

@@ -1,5 +1,10 @@
-import { Issue, Session, Paged } from '../api';
+import { Issue, Session } from '../api';
 import { IssueRepository } from '../repositories/repositories';
+
+export type Paged<T> = {
+  items: T[];
+  nextCursor?: string;
+};
 
 export class IssueService {
   constructor(private repository: IssueRepository) {}
