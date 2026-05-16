@@ -9,9 +9,13 @@
     "test": "yarn tsx issue-state.test.ts && yarn tsx src/repositories/FileSystemIssueRepository.test.ts && yarn tsx src/resources/routes.test.ts",
     "tsp:compile": "tsp compile status-api.tsp",
     "tsp:generate": "openapi-ts",
-    "generate": "yarn tsp:compile && yarn tsp:generate"
+    "generate": "yarn tsp:compile && yarn tsp:generate",
+    "ui:dev": "yarn --cwd ui dev",
+    "ui:build": "yarn --cwd ui build",
+    "build": "yarn generate && yarn ui:build"
   },
   "dependencies": {
+    "@fastify/static": "^9.1.3",
     "execa": "^8.0.1",
     "fastify": "^4.26.2"
   },
