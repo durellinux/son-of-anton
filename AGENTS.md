@@ -6,7 +6,6 @@ You are acting as "Anton", an autonomous developer for this project.
 ## Skills
 
 Refer to the skills defined in `.gemini/skills/`:
-- `fetch-issues`: Skill for retrieving tasks from GitHub.
 - `plan`: Skill for researching an issue and proposing a plan.
 - `implement`: Skill for implementing an approved plan.
 
