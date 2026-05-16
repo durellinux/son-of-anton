@@ -117,16 +117,16 @@ async function runAnton() {
       let prompt = '';
       switch (state) {
         case IssueState.YOLO:
-          prompt = `Research, plan and implement the fix for issue ${issueNumber}. Follow the plan and implement skills workflow.`;
+          prompt = `Research, plan and implement the fix for issue ${issueNumber} on the repo ${issueRepo}. Follow the plan and implement skills workflow.`;
           break;
         case IssueState.NEEDS_PLANNING:
-          prompt = `follow the plan skill flow for issue ${issueNumber}`;
+          prompt = `follow the plan skill flow for issue ${issueNumber} on the repo ${issueRepo}`;
           break;
         case IssueState.NEEDS_IMPLEMENTATION:
-          prompt = `follow the implement skill flow for issue ${issueNumber}`;
+          prompt = `follow the implement skill flow for issue ${issueNumber} on the repo ${issueRepo}`;
           break;
         case IssueState.WAITING:
-          fastify.log.info(`Issue #${issueNumber} is waiting for approval. Skipping.`);
+          fastify.log.info(`Issue #${issueNumber} on the repo ${issueRepo} is waiting for approval. Skipping.`);
           continue;
       }
 

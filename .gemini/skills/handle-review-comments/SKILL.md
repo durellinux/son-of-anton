@@ -14,14 +14,14 @@ This skill addresses review comments on a Pull Request.
 1. Setup the work environment:
    - Identify the target repository from the `repo` parameter (e.g., `owner/repo`).
    - Extract the repo name (e.g., `repo`).
-   - Define the workspace path: `.anton/workspaces/{repo-name}/{{issue_number}}`.
+   - Define the workspace path: `.anton/workspaces/{issue_number}/{repo}`.
    - Check if the workspace directory exists.
    - If it doesn't exist:
-     - Clone the repository: `git clone https://github.com/{{repo}} .anton/workspaces/{repo-name}/{{issue_number}}`.
-     - `cd .anton/workspaces/{repo-name}/{{issue_number}}`.
+     - Clone the repository: `git clone https://github.com/{{repo}} .anton/workspaces/{issue_number}/{repo}`.
+     - `cd .anton/workspaces/{issue_number}/{repo}`.
      - Checkout the PR branch: `git checkout {{branch_name}}`.
    - If it exists:
-     - `cd .anton/workspaces/{repo-name}/{{issue_number}}`.
+     - `cd .anton/workspaces/{issue_number}/{repo}`.
      - Reuse the existing clone.
      - Ensure you are on the `{{branch_name}}` branch.
 2. Fetch review comments:
