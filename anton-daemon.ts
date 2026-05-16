@@ -1,4 +1,5 @@
 import Fastify from 'fastify';
+import fastifyStatic from '@fastify/static';
 import { execa } from 'execa';
 import { mkdir } from 'node:fs/promises';
 import { createWriteStream } from 'node:fs';
@@ -192,6 +193,15 @@ const start = async () => {
 
     fastify.get('/ready', async () => {
       return { status: 'ok' };
+    });
+
+    fastify.register(fastifyStatic, {
+      root: path.join(__dirname, 'ui', 'dist'),
+      prefix: '/',
+    });
+
+    fastify.setNotFoundHandler((request, reply) => {
+      reply.sendFile('index.html');
     });
 
     fastify.register(registerRoutes, { issueService });
