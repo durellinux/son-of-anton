@@ -15,7 +15,7 @@
     "build": "yarn generate && yarn ui:build"
   },
   "dependencies": {
-    "@fastify/static": "^9.1.3",
+    "@fastify/static": "^7.0.4",
     "execa": "^8.0.1",
     "fastify": "^4.26.2"
   },
