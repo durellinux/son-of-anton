@@ -5,7 +5,7 @@
   "main": "anton-daemon.ts",
   "scripts": {
     "start": "tsx anton-daemon.ts",
-    "dev": "tsx anton-daemon.ts",
+    "dev": "yarn ui:build && tsx anton-daemon.ts",
     "test": "yarn tsx issue-state.test.ts && yarn tsx src/repositories/FileSystemIssueRepository.test.ts && yarn tsx src/resources/routes.test.ts",
     "tsp:compile": "tsp compile status-api.tsp",
     "tsp:generate": "openapi-ts",
