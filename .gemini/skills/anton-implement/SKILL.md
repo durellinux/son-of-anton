@@ -1,6 +1,7 @@
-# Implement Skill
-
-This skill implements an approved plan for a specific GitHub issue.
+---
+name: anton-implement
+description: This skill implements an approved plan for a specific GitHub issue. Use when you need to implement a plan for a specific issue.
+---
 
 ## Parameters
 

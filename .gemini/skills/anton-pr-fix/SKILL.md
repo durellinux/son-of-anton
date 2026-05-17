@@ -1,6 +1,7 @@
-# Handle Review Comments Skill
-
-This skill addresses review comments on a Pull Request.
+---
+name: anton-pr-fix
+description: This skill addresses review comments on a Pull Request. Use when you need to fix a PR comments.
+---
 
 ## Parameters
 
