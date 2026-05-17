@@ -118,13 +118,13 @@ async function runAnton() {
       let prompt = '';
       switch (state) {
         case IssueState.YOLO:
-          prompt = `Research, plan and implement the fix for issue ${issueNumber} on the repo ${issueRepo}. Follow the plan and implement skills workflow.`;
+          prompt = `Research, plan and implement the fix for issue ${issueNumber} on the repo ${issueRepo}. Follow the anton-plan and anton-implement skills workflow.`;
           break;
         case IssueState.NEEDS_PLANNING:
-          prompt = `follow the plan skill flow for issue ${issueNumber} on the repo ${issueRepo}`;
+          prompt = `follow the anton-plan skill flow for issue ${issueNumber} on the repo ${issueRepo}`;
           break;
         case IssueState.NEEDS_IMPLEMENTATION:
-          prompt = `follow the implement skill flow for issue ${issueNumber} on the repo ${issueRepo}`;
+          prompt = `follow the anton-implement skill flow for issue ${issueNumber} on the repo ${issueRepo}`;
           break;
         case IssueState.WAITING:
           fastify.log.info(`Issue #${issueNumber} on the repo ${issueRepo} is waiting for approval. Skipping.`);
@@ -161,7 +161,7 @@ async function runAnton() {
             const issueMatch = prDetails.headRefName.match(/anton\/(\d+)/);
             const issueNumber = issueMatch ? issueMatch[1] : `pr-${prDetails.number}`;
             const issueParam = `for issue ${issueNumber} `;
-            const prompt = `follow the handle-review-comments skill flow ${issueParam}for PR ${prDetails.number} on branch ${prDetails.headRefName} in repo ${fullRepo} with comment IDs ${unaddressedCommentIds.join(', ')}`;
+            const prompt = `use the anton-pr-fix skill flow ${issueParam} for PR ${prDetails.number} on branch ${prDetails.headRefName} in repo ${fullRepo} with comment IDs ${unaddressedCommentIds.join(', ')}`;
             await executeGemini(prDetails.number, prompt);
         } else {
             fastify.log.info(`PR #${prDetails.number} has no unaddressed comments. Skipping.`);

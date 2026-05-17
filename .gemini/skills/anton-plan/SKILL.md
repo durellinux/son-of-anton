@@ -1,6 +1,7 @@
-# Plan Skill
-
-This skill researches an issue and proposes a plan for its fix.
+---
+name: anton-plan
+description: Researches an issue and proposes a plan for its fix. Use when you have to plan a fix for a github issue.
+---
 
 ## Parameters
 
