@@ -54,10 +54,10 @@ async function runAnton() {
       const issueRepo = basicIssue.repository.nameWithOwner;
       fastify.log.info(`Pinging workflow for issue #${issueNumber}...`);
 
-      const workflowHandle = await restateClient.workflowHandle(IssueWorkflow, String(issueNumber));
+      const workflowClient = restateClient.workflowClient(IssueWorkflow, String(issueNumber));
       
       // Submit the workflow if not already running
-      await workflowHandle.submit({
+      await workflowClient.workflowSubmit({
         number: issueNumber,
         title: basicIssue.title,
         url: basicIssue.url,
@@ -65,21 +65,21 @@ async function runAnton() {
       });
 
       // Signal the workflow that something might have changed (e.g. new comments)
-      await workflowHandle.signal(IssueWorkflow.signalEvent);
+      await workflowClient.signalEvent();
     }
 
     // 3. Process PRs
     for (const pr of basicPRs) {
       fastify.log.info(`Pinging workflow for PR #${pr.number}...`);
 
-      const workflowHandle = await restateClient.workflowHandle(PRWorkflow, String(pr.number));
+      const workflowClient = restateClient.workflowClient(PRWorkflow, String(pr.number));
       
-      await workflowHandle.submit({
+      await workflowClient.workflowSubmit({
         number: pr.number,
         url: pr.url
       });
 
-      await workflowHandle.signal(PRWorkflow.signalEvent);
+      await workflowClient.signalEvent();
     }
 
     fastify.log.info('Anton iteration finished');
