@@ -1,4 +1,4 @@
-import { readdir, readFile, stat, writeFile, mkdir } from 'node:fs/promises';
+import { readdir, readFile, stat, writeFile, mkdir, rm } from 'node:fs/promises';
 import path from 'node:path';
 import { Issue, Session, PlanningSession } from '../api';
 import { IssueRepository } from './repositories';
@@ -123,5 +123,14 @@ export class FileSystemIssueRepository implements IssueRepository {
     await mkdir(planningDir, { recursive: true });
     const filePath = path.join(planningDir, `${session.number}.json`);
     await writeFile(filePath, JSON.stringify(session, null, 2));
+  }
+
+  async deletePlanningSession(issueNumber: number): Promise<void> {
+    const filePath = path.join(this.baseDir, 'planning', `${issueNumber}.json`);
+    try {
+      await rm(filePath, { force: true });
+    } catch (e) {
+      throw new Error(`Failed to delete planning session for issue ${issueNumber}: ${e instanceof Error ? e.message : String(e)}`, { cause: e });
+    }
   }
 }

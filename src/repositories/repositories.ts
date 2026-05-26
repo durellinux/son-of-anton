@@ -8,4 +8,5 @@ export interface IssueRepository {
   saveIssue(issue: Issue): Promise<void>;
   getPlanningSession(issueNumber: number): Promise<PlanningSession | undefined>;
   savePlanningSession(session: PlanningSession): Promise<void>;
+  deletePlanningSession(issueNumber: number): Promise<void>;
 }
