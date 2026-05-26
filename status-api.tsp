@@ -43,6 +43,9 @@ model Issue {
 
   @doc("URL to the git branch on GitHub")
   branchUrl?: string;
+
+  @doc("URL to the workflow in Restate")
+  workflowUrl?: string;
 }
 
 model Session {
