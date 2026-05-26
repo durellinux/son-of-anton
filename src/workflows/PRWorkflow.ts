@@ -65,6 +65,7 @@ export const PRWorkflow = restate.workflow({
       const repo = urlParts[4];
       const fullRepo = `${owner}/${repo}`;
 
+      let signalCount = 0;
       while (true) {
         const { state, prDetails, unaddressedCommentIds } = await ctx.run("fetch-pr-state", () => fetchPrState(prNumber, fullRepo));
 
@@ -80,12 +81,22 @@ export const PRWorkflow = restate.workflow({
         }
 
         // Wait for an external event (e.g. comment or approval)
-        await ctx.promise<void>("event");
+        const currentSignalCount = (await ctx.get<number>("signalCount")) ?? 0;
+        if (signalCount >= currentSignalCount) {
+          await ctx.promise<void>(`event-${signalCount + 1}`);
+        }
+
+        // Sleep to avoid tight loops if many signals arrive or if state doesn't transition
+        await ctx.sleep(30000);
+        signalCount = (await ctx.get<number>("signalCount")) ?? 0;
       }
     },
 
     signalEvent: async (ctx: restate.WorkflowSharedContext) => {
-      await ctx.promise<void>("event").resolve();
+      const count = (await ctx.get<number>("signalCount")) ?? 0;
+      const nextCount = count + 1;
+      ctx.set("signalCount", nextCount);
+      ctx.promise<void>(`event-${nextCount}`).resolve();
     }
   }
 });
