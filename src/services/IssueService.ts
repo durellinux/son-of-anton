@@ -1,4 +1,4 @@
-import { Issue, Session, PlanningSession } from '../api';
+import { Issue, Session, PlanningSession, PlanningSessionStatus } from '../api';
 import { IssueRepository } from '../repositories/repositories';
 
 export type Paged<T> = {
@@ -52,14 +52,14 @@ export class IssueService {
   async approvePlan(issueNumber: number): Promise<void> {
     const session = await this.repository.getPlanningSession(issueNumber);
     if (!session) throw new Error(`Planning session not found for issue ${issueNumber}`);
-    session.status = 'approved';
+    session.status = PlanningSessionStatus.APPROVED;
     await this.repository.savePlanningSession(session);
   }
 
   async provideFeedback(issueNumber: number, feedback: string): Promise<void> {
     const session = await this.repository.getPlanningSession(issueNumber);
     if (!session) throw new Error(`Planning session not found for issue ${issueNumber}`);
-    session.status = 'needs_revision';
+    session.status = PlanningSessionStatus.NEEDS_REVISION;
     const lastStep = session.history[session.history.length - 1];
     if (lastStep) {
       lastStep.feedback = feedback;

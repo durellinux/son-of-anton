@@ -1,7 +1,7 @@
 import Fastify from 'fastify';
 import { registerRoutes } from './routes';
 import { IssueRepository } from '../repositories/repositories';
-import { Issue, Session, IssueStatus } from '../api';
+import { Issue, Session, IssueStatus, PlanningSession } from '../api';
 import { IssueService, Paged } from '../services/IssueService';
 
 class MockRepository implements IssueRepository {
@@ -21,6 +21,9 @@ class MockRepository implements IssueRepository {
     return undefined;
   }
   async saveIssue(issue: Issue): Promise<void> {}
+  async getPlanningSession(number: number): Promise<PlanningSession | undefined> { return undefined; }
+  async savePlanningSession(session: PlanningSession): Promise<void> {}
+  async deletePlanningSession(number: number): Promise<void> {}
 }
 
 async function test() {

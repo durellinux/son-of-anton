@@ -53,74 +53,79 @@ async function executeGemini(id: number, prompt: string) {
   }
 }
 
-export const IssueWorkflow = restate.workflow.workflow("IssueWorkflow", {
-  run: async (ctx: restate.workflow.WorkflowContext, params: { number: number, title: string, url: string, repository: string }) => {
-    const { number: issueNumber, repository: issueRepo } = params;
+async function fetchIssueState(issueNumber: number, issueRepo: string) {
+    const localPlanningSession = await repository.getPlanningSession(issueNumber);
+    const { stdout: issueDetailsJson } = await execa('gh', ['issue', 'view', String(issueNumber), '-R', issueRepo, '--json', 'body,comments']);
+    const issueDetails = JSON.parse(issueDetailsJson) as GH_Issue;
 
-    while (true) {
-      const { state } = await ctx.run("fetch-issue-state", async () => {
-        const localPlanningSession = await repository.getPlanningSession(issueNumber);
-        const { stdout: issueDetailsJson } = await execa('gh', ['issue', 'view', String(issueNumber), '-R', issueRepo, '--json', 'body,comments']);
-        const issueDetails = JSON.parse(issueDetailsJson) as GH_Issue;
-
-        const state = determineIssueState(issueDetails, localPlanningSession as any);
+    const state = determineIssueState(issueDetails, localPlanningSession as any);
+    
+    // If planning session is approved, post to GitHub and clear local session
+    if (localPlanningSession && localPlanningSession.status === 'approved') {
+      const lastStep = localPlanningSession.history[localPlanningSession.history.length - 1];
+      if (lastStep) {
+        const commentBody = `${lastStep.plan}\n\n#son-of-anton-plan`;
+        const { stdout: commentJson } = await execa('gh', ['api', `repos/${issueRepo}/issues/${issueNumber}/comments`, '-f', `body=${commentBody}`]);
+        const comment = JSON.parse(commentJson);
+        await execa('gh', ['api', `repos/${issueRepo}/issues/comments/${comment.id}/reactions`, '-f', 'content=+1']);
         
-        // If planning session is approved, post to GitHub and clear local session
-        if (localPlanningSession && localPlanningSession.status === 'approved') {
-          const lastStep = localPlanningSession.history[localPlanningSession.history.length - 1];
-          if (lastStep) {
-            const commentBody = `${lastStep.plan}\n\n#son-of-anton-plan`;
-            const { stdout: commentJson } = await execa('gh', ['api', `repos/${issueRepo}/issues/${issueNumber}/comments`, '-f', `body=${commentBody}`]);
-            const comment = JSON.parse(commentJson);
-            await execa('gh', ['api', `repos/${issueRepo}/issues/comments/${comment.id}/reactions`, '-f', 'content=+1']);
-            
-            // Delete the local planning session as it is now on GitHub
-            await repository.deletePlanningSession(issueNumber);
-          }
-        }
-
-        return { state };
-      });
-
-      await ctx.run("update-repository", async () => {
-        const issue: Issue = {
-            number: issueNumber,
-            title: params.title,
-            url: params.url,
-            status: mapStateToStatus(state),
-            workflowUrl: `http://localhost:8080/visualize/IssueWorkflow/${ctx.key}`
-        };
-        await repository.saveIssue(issue);
-      });
-
-      if (state === IssueState.WAITING) {
-        // Wait for an external event (e.g. comment or approval)
-        await ctx.promise<void>("event").promise();
-        continue;
-      }
-
-      let prompt = '';
-      switch (state) {
-        case IssueState.YOLO:
-          prompt = `Research, plan and implement the fix for issue ${issueNumber} on the repo ${issueRepo}. Follow the anton-plan and anton-implement skills workflow.`;
-          break;
-        case IssueState.NEEDS_PLANNING:
-          prompt = `follow the anton-plan skill flow for issue ${issueNumber} on the repo ${issueRepo}`;
-          break;
-        case IssueState.NEEDS_IMPLEMENTATION:
-          prompt = `follow the anton-implement skill flow for issue ${issueNumber} on the repo ${issueRepo}`;
-          break;
-      }
-
-      if (prompt) {
-        await ctx.run("execute-gemini", async () => {
-           await executeGemini(issueNumber, prompt);
-        });
+        // Delete the local planning session as it is now on GitHub
+        await repository.deletePlanningSession(issueNumber);
       }
     }
-  },
 
-  signalEvent: async (ctx: restate.workflow.SharedWorkflowContext) => {
-    ctx.promise<void>("event").resolve();
+    return { state };
+}
+
+async function updateRepository(issueNumber: number, title: string, url: string, state: IssueState, ctxKey: string) {
+    const issue: Issue = {
+        number: issueNumber,
+        title: title,
+        url: url,
+        status: mapStateToStatus(state),
+        workflowUrl: `http://localhost:8080/visualize/IssueWorkflow/${ctxKey}`
+    };
+    await repository.saveIssue(issue);
+}
+
+export const IssueWorkflow = restate.workflow({
+  name: "IssueWorkflow",
+  handlers: {
+    run: async (ctx: restate.WorkflowContext, params: { number: number, title: string, url: string, repository: string }) => {
+      const { number: issueNumber, repository: issueRepo } = params;
+
+      while (true) {
+        const { state } = await ctx.run("fetch-issue-state", () => fetchIssueState(issueNumber, issueRepo));
+
+        await ctx.run("update-repository", () => updateRepository(issueNumber, params.title, params.url, state, ctx.key));
+
+        if (state === IssueState.WAITING) {
+          // Wait for an external event (e.g. comment or approval)
+          await ctx.promise<void>("event");
+          continue;
+        }
+
+        let prompt = '';
+        switch (state) {
+          case IssueState.YOLO:
+            prompt = `Research, plan and implement the fix for issue ${issueNumber} on the repo ${issueRepo}. Follow the anton-plan and anton-implement skills workflow.`;
+            break;
+          case IssueState.NEEDS_PLANNING:
+            prompt = `follow the anton-plan skill flow for issue ${issueNumber} on the repo ${issueRepo}`;
+            break;
+          case IssueState.NEEDS_IMPLEMENTATION:
+            prompt = `follow the anton-implement skill flow for issue ${issueNumber} on the repo ${issueRepo}`;
+            break;
+        }
+
+        if (prompt) {
+          await ctx.run("execute-gemini", () => executeGemini(issueNumber, prompt));
+        }
+      }
+    },
+
+    signalEvent: async (ctx: restate.WorkflowSharedContext) => {
+      await ctx.promise<void>("event").resolve();
+    }
   }
 });
