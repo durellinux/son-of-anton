@@ -37,6 +37,10 @@ export type Issue = {
      * URL to the git branch on GitHub
      */
     branchUrl?: string;
+    /**
+     * URL to the workflow in Restate
+     */
+    workflowUrl?: string;
 };
 
 export enum IssueStatus {

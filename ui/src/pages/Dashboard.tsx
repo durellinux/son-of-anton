@@ -42,6 +42,11 @@ export function Dashboard() {
                 <Anchor component={Link} to={`/issues/${issue.number}`}>
                   View Details
                 </Anchor>
+                {issue.workflowUrl && (
+                  <Anchor href={issue.workflowUrl} target="_blank" ml="md">
+                    Workflow
+                  </Anchor>
+                )}
               </Table.Td>
             </Table.Tr>
           ))}

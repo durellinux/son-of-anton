@@ -487,6 +487,13 @@
   resolved "https://registry.yarnpkg.com/@pkgjs/parseargs/-/parseargs-0.11.0.tgz"
   integrity sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==
 
+"@restatedev/restate-sdk-clients@^1.14.4":
+  version "1.14.4"
+  resolved "https://registry.yarnpkg.com/@restatedev/restate-sdk-clients/-/restate-sdk-clients-1.14.4.tgz#723febacb08ad6727f6ec4c8c2a70e692ba94f30"
+  integrity sha512-MMDnfYAO6coxaKRHO388xDsLF6UysKlwjRI9Xi+U7IH/wJI/nFUCN7JdrzJr+hS3xmUITT+T6u5HKYa9yAyRQA==
+  dependencies:
+    "@restatedev/restate-sdk-core" "1.14.4"
+
 "@restatedev/restate-sdk-core@1.14.4":
   version "1.14.4"
   resolved "https://registry.yarnpkg.com/@restatedev/restate-sdk-core/-/restate-sdk-core-1.14.4.tgz#046d4f4a32cdacf483423a97921a8f3778afe6bc"

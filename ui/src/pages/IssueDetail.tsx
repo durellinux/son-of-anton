@@ -85,6 +85,9 @@ export function IssueDetail() {
           <Text size="lg" c="dimmed">Branch: {issue.data.branchName || 'N/A'}</Text>
           {issue.data.url && (
             <Anchor href={issue.data.url} target="_blank">View on GitHub</Anchor>
+          {issue.data.workflowUrl && (
+            <Anchor href={issue.data.workflowUrl} target="_blank" ml="md">View Workflow</Anchor>
+          )}
           )}
         </Stack>
       </Card>

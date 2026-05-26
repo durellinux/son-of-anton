@@ -16,9 +16,10 @@
   },
   "dependencies": {
     "@fastify/static": "^7.0.4",
+    "@restatedev/restate-sdk": "latest",
+    "@restatedev/restate-sdk-clients": "^1.14.4",
     "execa": "^8.0.1",
-    "fastify": "^4.26.2",
-    "@restatedev/restate-sdk": "latest"
+    "fastify": "^4.26.2"
   },
   "devDependencies": {
     "@hey-api/openapi-ts": "^0.97.1",

@@ -5,9 +5,11 @@ services:
     build: .
     ports:
       - "3000:3000"
+      - "9080:9080"
     environment:
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - GH_TOKEN=${GH_TOKEN}
+      - RESTATE_URL=http://restate:8080
     volumes:
       - ./.anton:/app/.anton
     restart: always
@@ -18,3 +20,21 @@ services:
       - "8080:8080"
       - "9070:9070"
       - "9071:9071"
+    volumes:
+      - restate_data:/target
+
+  restate-register:
+    image: ghcr.io/restatedev/restate:latest
+    depends_on:
+      - anton
+      - restate
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        until restate --server http://restate:9070 deployment register http://anton:9080; do
+          echo "Waiting for restate and anton to be ready..."
+          sleep 5
+        done
+
+volumes:
+  restate_data:
