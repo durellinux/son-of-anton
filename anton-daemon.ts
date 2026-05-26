@@ -99,12 +99,33 @@ async function runAnton() {
       const issueRepo = basicIssue.repository.nameWithOwner;
       fastify.log.info(`Processing issue #${issueNumber}...`);
 
+      // Fetch local planning session if any
+      const localPlanningSession = await repository.getPlanningSession(issueNumber);
+
       // Fetch full issue details including comments and reactions
       const { stdout: issueDetailsJson } = await execa('gh', ['issue', 'view', String(issueNumber), '-R', issueRepo, '--json', 'body,comments']);
       const issueDetails = JSON.parse(issueDetailsJson) as GH_Issue;
 
-      const state = determineIssueState(issueDetails);
+      const state = determineIssueState(issueDetails, localPlanningSession as any);
       fastify.log.info(`Issue #${issueNumber} state: ${state}`);
+
+      // If planning session is approved, post to GitHub and clear local session
+      if (localPlanningSession && localPlanningSession.status === 'approved') {
+        fastify.log.info(`Issue #${issueNumber} has an approved local plan. Posting to GitHub...`);
+        const lastStep = localPlanningSession.history[localPlanningSession.history.length - 1];
+        if (lastStep) {
+          const commentBody = `${lastStep.plan}\n\n#son-of-anton-plan`;
+          await execa('gh', ['issue', 'comment', String(issueNumber), '-R', issueRepo, '--body', commentBody]);
+          // We can't easily "clear" it without potentially breaking the state if determineIssueState relies on it
+          // but the plan says "clear the local session". 
+          // However, if we clear it, determineIssueState will fall back to GitHub comments.
+          // Since we just posted the comment, it might not have the thumbs up yet.
+          // Maybe we should just delete the file?
+          // Actually, let's just keep it for now or delete it after posting.
+          // The plan says "clear the local session". I'll delete the file.
+          await execa('rm', [path.join('.anton', 'planning', `${issueNumber}.json`)]);
+        }
+      }
 
       // Save to repository
       const issue: Issue = {

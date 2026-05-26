@@ -47,6 +47,42 @@ export enum IssueStatus {
     YOLO = 'YOLO'
 }
 
+export type PlanningSession = {
+    /**
+     * Issue number
+     */
+    number: number;
+    /**
+     * Current status of the planning session
+     */
+    status: PlanningSessionStatus;
+    /**
+     * History of proposed plans and feedback
+     */
+    history: Array<PlanningStep>;
+};
+
+export enum PlanningSessionStatus {
+    WAITING_APPROVAL = 'waiting_approval',
+    APPROVED = 'approved',
+    NEEDS_REVISION = 'needs_revision'
+}
+
+export type PlanningStep = {
+    /**
+     * The plan proposed by Anton
+     */
+    plan: string;
+    /**
+     * User feedback if any
+     */
+    feedback?: string;
+    /**
+     * Timestamp of the proposal
+     */
+    timestamp: string;
+};
+
 export type Session = {
     /**
      * Session ID (usually a timestamp)
@@ -118,6 +154,83 @@ export type IssuesGetResponses = {
 };
 
 export type IssuesGetResponse = IssuesGetResponses[keyof IssuesGetResponses];
+
+export type IssuesGetPlanningSessionData = {
+    body?: never;
+    path: {
+        number: number;
+    };
+    query?: never;
+    url: '/issues/{number}/planning';
+};
+
+export type IssuesGetPlanningSessionErrors = {
+    /**
+     * The server cannot find the requested resource.
+     */
+    404: unknown;
+};
+
+export type IssuesGetPlanningSessionResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: PlanningSession;
+};
+
+export type IssuesGetPlanningSessionResponse = IssuesGetPlanningSessionResponses[keyof IssuesGetPlanningSessionResponses];
+
+export type IssuesApprovePlanData = {
+    body?: never;
+    path: {
+        number: number;
+    };
+    query?: never;
+    url: '/issues/{number}/planning/approve';
+};
+
+export type IssuesApprovePlanErrors = {
+    /**
+     * The server cannot find the requested resource.
+     */
+    404: unknown;
+};
+
+export type IssuesApprovePlanResponses = {
+    /**
+     * There is no content to send for this request, but the headers may be useful.
+     */
+    204: void;
+};
+
+export type IssuesApprovePlanResponse = IssuesApprovePlanResponses[keyof IssuesApprovePlanResponses];
+
+export type IssuesProvideFeedbackData = {
+    body: {
+        feedback: string;
+    };
+    path: {
+        number: number;
+    };
+    query?: never;
+    url: '/issues/{number}/planning/feedback';
+};
+
+export type IssuesProvideFeedbackErrors = {
+    /**
+     * The server cannot find the requested resource.
+     */
+    404: unknown;
+};
+
+export type IssuesProvideFeedbackResponses = {
+    /**
+     * There is no content to send for this request, but the headers may be useful.
+     */
+    204: void;
+};
+
+export type IssuesProvideFeedbackResponse = IssuesProvideFeedbackResponses[keyof IssuesProvideFeedbackResponses];
 
 export type IssuesListSessionsData = {
     body?: never;

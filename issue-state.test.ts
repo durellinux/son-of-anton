@@ -1,4 +1,4 @@
-import { determineIssueState, determinePRState, IssueState, Issue, PullRequest, getUnaddressedPRComments, PRComment } from './issue-state';
+import { determineIssueState, determinePRState, IssueState, Issue, PullRequest, getUnaddressedPRComments, PRComment, PlanningSessionStatus } from './issue-state';
 
 function assert(condition: boolean, message: string) {
   if (!condition) {
@@ -98,6 +98,41 @@ const issueTests = [
   }
 ];
 
+const localPlanningTests = [
+  {
+    name: 'Local planning: Waiting approval',
+    issue: { body: 'Fix bug', comments: [] },
+    localPlanning: { status: PlanningSessionStatus.WAITING_APPROVAL },
+    expected: IssueState.WAITING
+  },
+  {
+    name: 'Local planning: Approved',
+    issue: { body: 'Fix bug', comments: [] },
+    localPlanning: { status: PlanningSessionStatus.APPROVED },
+    expected: IssueState.NEEDS_IMPLEMENTATION
+  },
+  {
+    name: 'Local planning: Needs revision',
+    issue: { body: 'Fix bug', comments: [] },
+    localPlanning: { status: PlanningSessionStatus.NEEDS_REVISION },
+    expected: IssueState.NEEDS_PLANNING
+  },
+  {
+    name: 'Local planning takes precedence over GitHub',
+    issue: {
+      body: 'Fix bug',
+      comments: [
+        {
+          body: 'Plan #son-of-anton-plan',
+          reactionGroups: [{ content: 'THUMBS_DOWN', users: { totalCount: 1 } }]
+        }
+      ]
+    },
+    localPlanning: { status: PlanningSessionStatus.APPROVED },
+    expected: IssueState.NEEDS_IMPLEMENTATION
+  }
+];
+
 const prTests = [
   {
     name: 'PR Needs implementation (changes requested)',
@@ -172,6 +207,12 @@ const commentTests = [
 for (const test of issueTests) {
   console.log(`Running issue test: ${test.name}`);
   const actual = determineIssueState(test.issue as Issue);
+  assert(actual === test.expected, `Expected ${test.expected}, but got ${actual}`);
+}
+
+for (const test of localPlanningTests) {
+  console.log(`Running local planning test: ${test.name}`);
+  const actual = determineIssueState(test.issue as Issue, test.localPlanning as any);
   assert(actual === test.expected, `Expected ${test.expected}, but got ${actual}`);
 }
 

@@ -2,7 +2,7 @@
 
 import { client } from './client.gen.js';
 import type { Client, Options as Options2, TDataShape } from './client/index.js';
-import type { IssuesGetData, IssuesGetErrors, IssuesGetResponses, IssuesGetSessionContentData, IssuesGetSessionContentErrors, IssuesGetSessionContentResponses, IssuesListData, IssuesListResponses, IssuesListSessionsData, IssuesListSessionsErrors, IssuesListSessionsResponses } from './types.gen.js';
+import type { IssuesApprovePlanData, IssuesApprovePlanErrors, IssuesApprovePlanResponses, IssuesGetData, IssuesGetErrors, IssuesGetPlanningSessionData, IssuesGetPlanningSessionErrors, IssuesGetPlanningSessionResponses, IssuesGetResponses, IssuesGetSessionContentData, IssuesGetSessionContentErrors, IssuesGetSessionContentResponses, IssuesListData, IssuesListResponses, IssuesListSessionsData, IssuesListSessionsErrors, IssuesListSessionsResponses, IssuesProvideFeedbackData, IssuesProvideFeedbackErrors, IssuesProvideFeedbackResponses } from './types.gen.js';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -27,6 +27,28 @@ export const issuesList = <ThrowOnError extends boolean = false>(options?: Optio
  * Get details of a specific issue
  */
 export const issuesGet = <ThrowOnError extends boolean = false>(options: Options<IssuesGetData, ThrowOnError>) => (options.client ?? client).get<IssuesGetResponses, IssuesGetErrors, ThrowOnError>({ url: '/issues/{number}', ...options });
+
+/**
+ * Get the current planning session for an issue
+ */
+export const issuesGetPlanningSession = <ThrowOnError extends boolean = false>(options: Options<IssuesGetPlanningSessionData, ThrowOnError>) => (options.client ?? client).get<IssuesGetPlanningSessionResponses, IssuesGetPlanningSessionErrors, ThrowOnError>({ url: '/issues/{number}/planning', ...options });
+
+/**
+ * Approve the current plan for an issue
+ */
+export const issuesApprovePlan = <ThrowOnError extends boolean = false>(options: Options<IssuesApprovePlanData, ThrowOnError>) => (options.client ?? client).post<IssuesApprovePlanResponses, IssuesApprovePlanErrors, ThrowOnError>({ url: '/issues/{number}/planning/approve', ...options });
+
+/**
+ * Provide feedback on the current plan for an issue
+ */
+export const issuesProvideFeedback = <ThrowOnError extends boolean = false>(options: Options<IssuesProvideFeedbackData, ThrowOnError>) => (options.client ?? client).post<IssuesProvideFeedbackResponses, IssuesProvideFeedbackErrors, ThrowOnError>({
+    url: '/issues/{number}/planning/feedback',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * List all sessions associated with an issue
