@@ -120,9 +120,6 @@ async function runAnton() {
           
           fastify.log.info(`Posted plan comment ${comment.id}. Adding reaction...`);
           await execa('gh', ['api', `repos/${issueRepo}/issues/comments/${comment.id}/reactions`, '-f', 'content=+1']);
-          
-          fastify.log.info(`Clearing local planning session for issue #${issueNumber}`);
-          await repository.deletePlanningSession(issueNumber);
         }
       }
 
