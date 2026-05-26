@@ -6,3 +6,5 @@ dist/
 .anton/worktrees/
 .anton/workspaces/
 tsp-output/
+restate-data
+.anton
