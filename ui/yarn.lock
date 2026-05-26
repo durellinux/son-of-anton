@@ -350,6 +350,38 @@
   resolved "https://registry.yarnpkg.com/@oxc-project/types/-/types-0.130.0.tgz#a7825148711dc28805c46cfc21d94b63a4d41e88"
   integrity sha512-ibD2usx9JRu7f5pu2tMKMI4cpA4NgXJQoYRP4pQ7Pxmn1l6k/53qWtQWZayhYy3X4QZkt90Ot+mJEaeXouio6Q==
 
+"@restatedev/restate-server-darwin-arm64@1.6.2":
+  version "1.6.2"
+  resolved "https://registry.yarnpkg.com/@restatedev/restate-server-darwin-arm64/-/restate-server-darwin-arm64-1.6.2.tgz#a20bcadfaf6845458501b1c9cf300dda46e1ea3a"
+  integrity sha512-/cw2HE16bTLaNTjvPncwHpN+Sv61O8y9IYYUGeal0n23wTG4pUR33ZgpiqNv81ODsHnORFkiEil5UXmzgFCdNQ==
+
+"@restatedev/restate-server-darwin-x64@1.6.2":
+  version "1.6.2"
+  resolved "https://registry.yarnpkg.com/@restatedev/restate-server-darwin-x64/-/restate-server-darwin-x64-1.6.2.tgz#bb8187e366aade594760e123b758c143d414961c"
+  integrity sha512-voZ39O7AUyQUbDBXxjCRgNT7w/XN6DjVfwVSRchGSS7psQlsmoZzk8j9QoFJ2YsRmNwOHZadwP9ffs2mKlnA4A==
+
+"@restatedev/restate-server-linux-arm64@1.6.2":
+  version "1.6.2"
+  resolved "https://registry.yarnpkg.com/@restatedev/restate-server-linux-arm64/-/restate-server-linux-arm64-1.6.2.tgz#949c2b3cb010d5262baa07f213725303cff9e28a"
+  integrity sha512-JOEweul86tVoi+HZUJ7uviCFDwuQ0qTUcCxYqcVJz6fTEQ6LEWjAOquGXeExbsrEfqIKvSGjJNhdnodaZbWcPw==
+
+"@restatedev/restate-server-linux-x64@1.6.2":
+  version "1.6.2"
+  resolved "https://registry.yarnpkg.com/@restatedev/restate-server-linux-x64/-/restate-server-linux-x64-1.6.2.tgz#bbf553504efcd50914bceb43add47d84fbc8810f"
+  integrity sha512-hx83ecX0WqSsc9Kpqz13mPojfRqAi4OJ7yEPGtBvfw9sRrjXUXAytwDaNB7NUHeRwjMKYxCLzMxDWhphI9SJBA==
+
+"@restatedev/restate-server@^1.6.2":
+  version "1.6.2"
+  resolved "https://registry.yarnpkg.com/@restatedev/restate-server/-/restate-server-1.6.2.tgz#2bd68212886c6853487e09ca2a29f954600f60cf"
+  integrity sha512-E830abSSYT7yvw7Njnou53wEL7eWH4fGiy03Krg2lVK2AWRPf92btVFmY6LO7GFxGFrY/mqzAzIJlw0wOpNxNQ==
+  dependencies:
+    "@scarf/scarf" "^1.4.0"
+  optionalDependencies:
+    "@restatedev/restate-server-darwin-arm64" "1.6.2"
+    "@restatedev/restate-server-darwin-x64" "1.6.2"
+    "@restatedev/restate-server-linux-arm64" "1.6.2"
+    "@restatedev/restate-server-linux-x64" "1.6.2"
+
 "@rolldown/binding-android-arm64@1.0.1":
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/@rolldown/binding-android-arm64/-/binding-android-arm64-1.0.1.tgz#7b250c89f16d74affd581dbe38f702e8c2c644d3"
@@ -433,6 +465,11 @@
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/@rolldown/pluginutils/-/pluginutils-1.0.1.tgz#e3fcee093fbb5ce765e1ad088ff4de2889f6f9be"
   integrity sha512-2j9bGt5Jh8hj+vPtgzPtl72j0yRxHAyumoo6TNfAjsLB04UtpSvPbPcDcBMxz7n+9CYB0c1GxQFxYRg2jimqGw==
+
+"@scarf/scarf@^1.4.0":
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/@scarf/scarf/-/scarf-1.4.0.tgz#3bbb984085dbd6d982494538b523be1ce6562972"
+  integrity sha512-xxeapPiUXdZAE3che6f3xogoJPeZgig6omHEy1rIY5WVsB3H2BHNnZH+gHG6x91SCWyQCzWGsuL2Hh3ClO5/qQ==
 
 "@tanstack/query-core@5.100.10":
   version "5.100.10"

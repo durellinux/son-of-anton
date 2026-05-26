@@ -499,12 +499,44 @@
   resolved "https://registry.yarnpkg.com/@restatedev/restate-sdk-core/-/restate-sdk-core-1.14.4.tgz#046d4f4a32cdacf483423a97921a8f3778afe6bc"
   integrity sha512-q1ukObKmcwRSznuOt73TST6kvh8mjQaWU9dmHhbWCbx2xddUsj4LiGD2MkuTfMhl42SFNCdbp6Lvew1Wy+7IlQ==
 
-"@restatedev/restate-sdk@latest":
+"@restatedev/restate-sdk@^1.14.4":
   version "1.14.4"
   resolved "https://registry.yarnpkg.com/@restatedev/restate-sdk/-/restate-sdk-1.14.4.tgz#e9ada293ba8cd064a99bec65712075a30ddf7ba5"
   integrity sha512-H3nqBlHvNwDgfYdAqTe7+fgvkRoNrOOKVKwPB2/ucDyLZUx15yr3FU5aKWQCuM0TVvkSE3bwYWvLIXoVUpEbtw==
   dependencies:
     "@restatedev/restate-sdk-core" "1.14.4"
+
+"@restatedev/restate-server-darwin-arm64@1.6.2":
+  version "1.6.2"
+  resolved "https://registry.yarnpkg.com/@restatedev/restate-server-darwin-arm64/-/restate-server-darwin-arm64-1.6.2.tgz#a20bcadfaf6845458501b1c9cf300dda46e1ea3a"
+  integrity sha512-/cw2HE16bTLaNTjvPncwHpN+Sv61O8y9IYYUGeal0n23wTG4pUR33ZgpiqNv81ODsHnORFkiEil5UXmzgFCdNQ==
+
+"@restatedev/restate-server-darwin-x64@1.6.2":
+  version "1.6.2"
+  resolved "https://registry.yarnpkg.com/@restatedev/restate-server-darwin-x64/-/restate-server-darwin-x64-1.6.2.tgz#bb8187e366aade594760e123b758c143d414961c"
+  integrity sha512-voZ39O7AUyQUbDBXxjCRgNT7w/XN6DjVfwVSRchGSS7psQlsmoZzk8j9QoFJ2YsRmNwOHZadwP9ffs2mKlnA4A==
+
+"@restatedev/restate-server-linux-arm64@1.6.2":
+  version "1.6.2"
+  resolved "https://registry.yarnpkg.com/@restatedev/restate-server-linux-arm64/-/restate-server-linux-arm64-1.6.2.tgz#949c2b3cb010d5262baa07f213725303cff9e28a"
+  integrity sha512-JOEweul86tVoi+HZUJ7uviCFDwuQ0qTUcCxYqcVJz6fTEQ6LEWjAOquGXeExbsrEfqIKvSGjJNhdnodaZbWcPw==
+
+"@restatedev/restate-server-linux-x64@1.6.2":
+  version "1.6.2"
+  resolved "https://registry.yarnpkg.com/@restatedev/restate-server-linux-x64/-/restate-server-linux-x64-1.6.2.tgz#bbf553504efcd50914bceb43add47d84fbc8810f"
+  integrity sha512-hx83ecX0WqSsc9Kpqz13mPojfRqAi4OJ7yEPGtBvfw9sRrjXUXAytwDaNB7NUHeRwjMKYxCLzMxDWhphI9SJBA==
+
+"@restatedev/restate-server@^1.6.2":
+  version "1.6.2"
+  resolved "https://registry.yarnpkg.com/@restatedev/restate-server/-/restate-server-1.6.2.tgz#2bd68212886c6853487e09ca2a29f954600f60cf"
+  integrity sha512-E830abSSYT7yvw7Njnou53wEL7eWH4fGiy03Krg2lVK2AWRPf92btVFmY6LO7GFxGFrY/mqzAzIJlw0wOpNxNQ==
+  dependencies:
+    "@scarf/scarf" "^1.4.0"
+  optionalDependencies:
+    "@restatedev/restate-server-darwin-arm64" "1.6.2"
+    "@restatedev/restate-server-darwin-x64" "1.6.2"
+    "@restatedev/restate-server-linux-arm64" "1.6.2"
+    "@restatedev/restate-server-linux-x64" "1.6.2"
 
 "@scalar/helpers@0.2.18":
   version "0.2.18"
@@ -549,6 +581,11 @@
   integrity sha512-ngJcHGoCHmpWgYtNy08vmzFfLdQEkMpvaCQqNPPMNKq0QEXOv89e/rn+TZJZgPnRlY7fDIoIhn9lNgr+azBW+w==
   dependencies:
     "@scalar/openapi-types" "0.5.4"
+
+"@scarf/scarf@^1.4.0":
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/@scarf/scarf/-/scarf-1.4.0.tgz#3bbb984085dbd6d982494538b523be1ce6562972"
+  integrity sha512-xxeapPiUXdZAE3che6f3xogoJPeZgig6omHEy1rIY5WVsB3H2BHNnZH+gHG6x91SCWyQCzWGsuL2Hh3ClO5/qQ==
 
 "@sindresorhus/merge-streams@^4.0.0":
   version "4.0.0"
