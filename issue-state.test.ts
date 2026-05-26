@@ -95,6 +95,15 @@ const issueTests = [
       ]
     },
     expected: IssueState.WAITING
+  },
+  {
+    name: 'Closed issue',
+    issue: {
+      body: 'Fix this bug',
+      comments: [],
+      state: 'CLOSED'
+    },
+    expected: IssueState.CLOSED
   }
 ];
 
@@ -169,6 +178,26 @@ const prTests = [
       headRefName: 'feature'
     },
     expected: IssueState.NEEDS_IMPLEMENTATION
+  },
+  {
+    name: 'PR Merged',
+    pr: {
+      number: 5,
+      reviewDecision: 'APPROVED',
+      headRefName: 'feature',
+      state: 'MERGED'
+    },
+    expected: IssueState.MERGED
+  },
+  {
+    name: 'PR Closed',
+    pr: {
+      number: 6,
+      reviewDecision: 'CHANGES_REQUESTED',
+      headRefName: 'feature',
+      state: 'CLOSED'
+    },
+    expected: IssueState.CLOSED
   }
 ];
 

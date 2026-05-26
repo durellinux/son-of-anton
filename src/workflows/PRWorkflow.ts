@@ -40,7 +40,7 @@ async function executeGemini(id: number, prompt: string) {
 }
 
 async function fetchPrState(prNumber: number, fullRepo: string) {
-    const { stdout: prDetailsJson } = await execa('gh', ['pr', 'view', String(prNumber), '-R', fullRepo, '--json', 'number,headRefName,url,reviewDecision']);
+    const { stdout: prDetailsJson } = await execa('gh', ['pr', 'view', String(prNumber), '-R', fullRepo, '--json', 'number,headRefName,url,reviewDecision,state']);
     const prDetails = JSON.parse(prDetailsJson) as PullRequest;
 
     const state = determinePRState(prDetails);
@@ -68,6 +68,10 @@ export const PRWorkflow = restate.workflow({
       let signalCount = 0;
       while (true) {
         const { state, prDetails, unaddressedCommentIds } = await ctx.run("fetch-pr-state", () => fetchPrState(prNumber, fullRepo));
+
+        if (state === IssueState.MERGED || state === IssueState.CLOSED) {
+          break;
+        }
 
         if (state === IssueState.NEEDS_IMPLEMENTATION && unaddressedCommentIds.length > 0) {
           await ctx.run("execute-gemini", async () => {

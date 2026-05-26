@@ -48,7 +48,9 @@ export enum IssueStatus {
     WAITING_PLAN_REVIEW = 'Waiting Plan review',
     IMPLEMENTING = 'Implementing',
     WAITING_PR_REVIEW = 'Waiting PR review',
-    YOLO = 'YOLO'
+    YOLO = 'YOLO',
+    DONE = 'Done',
+    CLOSED = 'Closed'
 }
 
 export type PlanningSession = {
