@@ -487,6 +487,18 @@
   resolved "https://registry.yarnpkg.com/@pkgjs/parseargs/-/parseargs-0.11.0.tgz#a77ea742fab25775145434eb1d2328cf5013ac33"
   integrity sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==
 
+"@restatedev/restate-sdk-core@1.14.4":
+  version "1.14.4"
+  resolved "https://registry.yarnpkg.com/@restatedev/restate-sdk-core/-/restate-sdk-core-1.14.4.tgz#046d4f4a32cdacf483423a97921a8f3778afe6bc"
+  integrity sha512-q1ukObKmcwRSznuOt73TST6kvh8mjQaWU9dmHhbWCbx2xddUsj4LiGD2MkuTfMhl42SFNCdbp6Lvew1Wy+7IlQ==
+
+"@restatedev/restate-sdk@latest":
+  version "1.14.4"
+  resolved "https://registry.yarnpkg.com/@restatedev/restate-sdk/-/restate-sdk-1.14.4.tgz#e9ada293ba8cd064a99bec65712075a30ddf7ba5"
+  integrity sha512-H3nqBlHvNwDgfYdAqTe7+fgvkRoNrOOKVKwPB2/ucDyLZUx15yr3FU5aKWQCuM0TVvkSE3bwYWvLIXoVUpEbtw==
+  dependencies:
+    "@restatedev/restate-sdk-core" "1.14.4"
+
 "@scalar/helpers@0.2.18":
   version "0.2.18"
   resolved "https://registry.npmjs.org/@scalar/helpers/-/helpers-0.2.18.tgz"
