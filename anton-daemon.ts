@@ -115,15 +115,14 @@ async function runAnton() {
         const lastStep = localPlanningSession.history[localPlanningSession.history.length - 1];
         if (lastStep) {
           const commentBody = `${lastStep.plan}\n\n#son-of-anton-plan`;
-          await execa('gh', ['issue', 'comment', String(issueNumber), '-R', issueRepo, '--body', commentBody]);
-          // We can't easily "clear" it without potentially breaking the state if determineIssueState relies on it
-          // but the plan says "clear the local session". 
-          // However, if we clear it, determineIssueState will fall back to GitHub comments.
-          // Since we just posted the comment, it might not have the thumbs up yet.
-          // Maybe we should just delete the file?
-          // Actually, let's just keep it for now or delete it after posting.
-          // The plan says "clear the local session". I'll delete the file.
-          await execa('rm', [path.join('.anton', 'planning', `${issueNumber}.json`)]);
+          const { stdout: commentJson } = await execa('gh', ['api', `repos/${issueRepo}/issues/${issueNumber}/comments`, '-f', `body=${commentBody}`]);
+          const comment = JSON.parse(commentJson);
+          
+          fastify.log.info(`Posted plan comment ${comment.id}. Adding reaction...`);
+          await execa('gh', ['api', `repos/${issueRepo}/issues/comments/${comment.id}/reactions`, '-f', 'content=+1']);
+          
+          fastify.log.info(`Clearing local planning session for issue #${issueNumber}`);
+          await repository.deletePlanningSession(issueNumber);
         }
       }
 
