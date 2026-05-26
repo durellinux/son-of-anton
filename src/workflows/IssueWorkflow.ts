@@ -94,6 +94,7 @@ export const IssueWorkflow = restate.workflow({
     run: async (ctx: restate.WorkflowContext, params: { number: number, title: string, url: string, repository: string }) => {
       const { number: issueNumber, repository: issueRepo } = params;
 
+      let signalCount = 0;
       while (true) {
         const { state } = await ctx.run("fetch-issue-state", () => fetchIssueState(issueNumber, issueRepo));
 
@@ -101,7 +102,11 @@ export const IssueWorkflow = restate.workflow({
 
         if (state === IssueState.WAITING) {
           // Wait for an external event (e.g. comment or approval)
-          await ctx.promise<void>("event");
+          const currentSignalCount = (await ctx.get<number>("signalCount")) ?? 0;
+          if (signalCount >= currentSignalCount) {
+            await ctx.promise<void>(`event-${signalCount + 1}`);
+          }
+          signalCount = (await ctx.get<number>("signalCount")) ?? 0;
           continue;
         }
 
@@ -121,11 +126,18 @@ export const IssueWorkflow = restate.workflow({
         if (prompt) {
           await ctx.run("execute-gemini", () => executeGemini(issueNumber, prompt));
         }
+
+        // Sleep to avoid tight loops if state doesn't transition to WAITING
+        await ctx.sleep(30000);
+        signalCount = (await ctx.get<number>("signalCount")) ?? 0;
       }
     },
 
     signalEvent: async (ctx: restate.WorkflowSharedContext) => {
-      await ctx.promise<void>("event").resolve();
+      const count = (await ctx.get<number>("signalCount")) ?? 0;
+      const nextCount = count + 1;
+      ctx.set("signalCount", nextCount);
+      ctx.promise<void>(`event-${nextCount}`).resolve();
     }
   }
 });
