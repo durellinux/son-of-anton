@@ -2,6 +2,7 @@ export enum IssueState {
   YOLO = 'YOLO',
   NEEDS_PLANNING = 'NEEDS_PLANNING',
   NEEDS_IMPLEMENTATION = 'NEEDS_IMPLEMENTATION',
+  WAITING_PR_REVIEW = 'WAITING_PR_REVIEW',
   WAITING = 'WAITING',
   CLOSED = 'CLOSED',
   MERGED = 'MERGED',
@@ -22,6 +23,9 @@ export interface Issue {
   body: string;
   state: string;
   comments: IssueComment[];
+  pullRequests: {
+    state: string;
+  }[];
 }
 
 export interface PullRequestBase {
@@ -58,6 +62,10 @@ export interface PlanningSession {
 export function determineIssueState(issue: Issue, localPlanningSession?: PlanningSession): IssueState {
   if (issue.state === 'CLOSED') {
     return IssueState.CLOSED;
+  }
+
+  if (issue.pullRequests && issue.pullRequests.some(pr => pr.state === 'OPEN')) {
+    return IssueState.WAITING_PR_REVIEW;
   }
 
   if (issue.body.includes('#yolo')) {

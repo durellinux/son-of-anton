@@ -14,6 +14,7 @@ function mapStateToStatus(state: IssueState): IssueStatus {
         case IssueState.YOLO: return IssueStatus.YOLO;
         case IssueState.NEEDS_PLANNING: return IssueStatus.PLANNING;
         case IssueState.NEEDS_IMPLEMENTATION: return IssueStatus.IMPLEMENTING;
+        case IssueState.WAITING_PR_REVIEW: return IssueStatus.WAITING_PR_REVIEW;
         case IssueState.WAITING: return IssueStatus.WAITING_PLAN_REVIEW;
         case IssueState.CLOSED: return IssueStatus.CLOSED;
         case IssueState.MERGED: return IssueStatus.DONE;
@@ -57,7 +58,7 @@ async function executeGemini(id: number, prompt: string) {
 
 async function fetchIssueState(issueNumber: number, issueRepo: string) {
     const localPlanningSession = await repository.getPlanningSession(issueNumber);
-    const { stdout: issueDetailsJson } = await execa('gh', ['issue', 'view', String(issueNumber), '-R', issueRepo, '--json', 'body,comments,state']);
+    const { stdout: issueDetailsJson } = await execa('gh', ['issue', 'view', String(issueNumber), '-R', issueRepo, '--json', 'body,comments,state,pullRequests']);
     const issueDetails = JSON.parse(issueDetailsJson) as GH_Issue;
 
     const state = determineIssueState(issueDetails, localPlanningSession as any);
@@ -102,7 +103,7 @@ export const IssueWorkflow = restate.workflow({
 
         await ctx.run("update-repository", () => updateRepository(issueNumber, params.title, params.url, state, ctx.key));
 
-        if (state === IssueState.CLOSED || state === IssueState.MERGED) {
+        if (state === IssueState.CLOSED || state === IssueState.MERGED || state === IssueState.WAITING_PR_REVIEW) {
           break;
         }
 
