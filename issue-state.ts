@@ -3,10 +3,13 @@ export enum IssueState {
   NEEDS_PLANNING = 'NEEDS_PLANNING',
   NEEDS_IMPLEMENTATION = 'NEEDS_IMPLEMENTATION',
   WAITING = 'WAITING',
+  CLOSED = 'CLOSED',
+  MERGED = 'MERGED',
 }
 
 export interface IssueComment {
   body: string;
+  state: string;
   reactionGroups: {
     content: string;
     users: {
@@ -17,6 +20,7 @@ export interface IssueComment {
 
 export interface Issue {
   body: string;
+  state: string;
   comments: IssueComment[];
 }
 
@@ -27,12 +31,14 @@ export interface PullRequestBase {
 
 export interface PullRequest extends PullRequestBase {
   reviewDecision: string;
+  state: string;
   headRefName: string;
 }
 
 export interface PRComment {
   id: number;
   body: string;
+  state: string;
   reactions: {
     '+1': number;
     [key: string]: any;
@@ -50,6 +56,10 @@ export interface PlanningSession {
 }
 
 export function determineIssueState(issue: Issue, localPlanningSession?: PlanningSession): IssueState {
+  if (issue.state === 'CLOSED') {
+    return IssueState.CLOSED;
+  }
+
   if (issue.body.includes('#yolo')) {
     return IssueState.YOLO;
   }
@@ -98,6 +108,13 @@ export function determineIssueState(issue: Issue, localPlanningSession?: Plannin
 }
 
 export function determinePRState(pr: PullRequest): IssueState {
+  if (pr.state === 'MERGED') {
+    return IssueState.MERGED;
+  }
+  if (pr.state === 'CLOSED') {
+    return IssueState.CLOSED;
+  }
+
   if (pr.reviewDecision !== 'APPROVED') {
     return IssueState.NEEDS_IMPLEMENTATION;
   }

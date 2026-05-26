@@ -16,6 +16,8 @@ enum IssueStatus {
   Implementing: "Implementing",
   WaitingPRReview: "Waiting PR review",
   YOLO: "YOLO",
+  Done: "Done",
+  Closed: "Closed",
 }
 
 model Issue {
