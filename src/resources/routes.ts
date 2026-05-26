@@ -39,12 +39,43 @@ export function registerRoutes(fastify: FastifyInstance, options: { issueService
       }
       await reply.send(content as any);
     },
+    issuesGetPlanningSession: async (request, reply) => {
+      const { number } = request.params;
+      const session = await issueService.getPlanningSession(Number(number));
+      if (!session) {
+        await reply.code(404).send({ error: 'Planning session not found' } as any);
+        return;
+      }
+      await reply.send(session as any);
+    },
+    issuesApprovePlan: async (request, reply) => {
+      const { number } = request.params;
+      try {
+        await issueService.approvePlan(Number(number));
+        await reply.code(204).send();
+      } catch (e) {
+        await reply.code(404).send({ error: (e as Error).message } as any);
+      }
+    },
+    issuesProvideFeedback: async (request, reply) => {
+      const { number } = request.params;
+      const { feedback } = (request.body as any) || {};
+      try {
+        await issueService.provideFeedback(Number(number), feedback);
+        await reply.code(204).send();
+      } catch (e) {
+        await reply.code(404).send({ error: (e as Error).message } as any);
+      }
+    },
   };
 
   fastify.get('/issues', handlers.issuesList);
   fastify.get('/issues/:number', handlers.issuesGet);
   fastify.get('/issues/:number/sessions', handlers.issuesListSessions);
   fastify.get('/issues/:number/sessions/:id', handlers.issuesGetSessionContent);
+  fastify.get('/issues/:number/planning', handlers.issuesGetPlanningSession);
+  fastify.post('/issues/:number/planning/approve', handlers.issuesApprovePlan);
+  fastify.post('/issues/:number/planning/feedback', handlers.issuesProvideFeedback);
 
   done();
 }

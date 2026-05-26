@@ -39,9 +39,31 @@ export interface PRComment {
   };
 }
 
-export function determineIssueState(issue: Issue): IssueState {
+export enum PlanningSessionStatus {
+  WAITING_APPROVAL = 'waiting_approval',
+  APPROVED = 'approved',
+  NEEDS_REVISION = 'needs_revision',
+}
+
+export interface PlanningSession {
+  status: PlanningSessionStatus;
+}
+
+export function determineIssueState(issue: Issue, localPlanningSession?: PlanningSession): IssueState {
   if (issue.body.includes('#yolo')) {
     return IssueState.YOLO;
+  }
+
+  // If we have a local planning session, it takes precedence over GitHub comments
+  if (localPlanningSession) {
+    switch (localPlanningSession.status) {
+      case PlanningSessionStatus.APPROVED:
+        return IssueState.NEEDS_IMPLEMENTATION;
+      case PlanningSessionStatus.NEEDS_REVISION:
+        return IssueState.NEEDS_PLANNING;
+      case PlanningSessionStatus.WAITING_APPROVAL:
+        return IssueState.WAITING;
+    }
   }
 
   const planComments = issue.comments.filter(c => {

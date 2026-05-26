@@ -60,6 +60,34 @@ model Session {
   status: "success" | "failure";
 }
 
+enum PlanningSessionStatus {
+  waiting_approval: "waiting_approval",
+  approved: "approved",
+  needs_revision: "needs_revision",
+}
+
+model PlanningStep {
+  @doc("The plan proposed by Anton")
+  plan: string;
+
+  @doc("User feedback if any")
+  feedback?: string;
+
+  @doc("Timestamp of the proposal")
+  timestamp: utcDateTime;
+}
+
+model PlanningSession {
+  @doc("Issue number")
+  number: int32;
+
+  @doc("Current status of the planning session")
+  status: PlanningSessionStatus;
+
+  @doc("History of proposed plans and feedback")
+  history: PlanningStep[];
+}
+
 model Paged<T> {
   @doc("Items in the current page")
   items: T[];
@@ -83,4 +111,16 @@ interface Issues {
   @doc("Get the full log content of a specific session")
   @route("/{number}/sessions/{id}")
   @get getSessionContent(@path number: int32, @path id: string): string | { @statusCode _: 404 };
+
+  @doc("Get the current planning session for an issue")
+  @route("/{number}/planning")
+  @get getPlanningSession(@path number: int32): PlanningSession | { @statusCode _: 404 };
+
+  @doc("Approve the current plan for an issue")
+  @route("/{number}/planning/approve")
+  @post approvePlan(@path number: int32): void | { @statusCode _: 404 };
+
+  @doc("Provide feedback on the current plan for an issue")
+  @route("/{number}/planning/feedback")
+  @post provideFeedback(@path number: int32, @body feedback: { feedback: string }): void | { @statusCode _: 404 };
 }

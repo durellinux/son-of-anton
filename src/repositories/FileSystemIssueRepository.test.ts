@@ -1,5 +1,5 @@
 import { FileSystemIssueRepository } from './FileSystemIssueRepository';
-import { IssueStatus } from '../api';
+import { IssueStatus, PlanningSessionStatus } from '../api';
 import { rm, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 
@@ -49,6 +49,28 @@ async function test() {
     throw new Error('getSessionContent failed');
   }
   console.log('sessions passed.');
+
+  console.log('Testing planning sessions...');
+  const planningSession = {
+    number: 37,
+    status: PlanningSessionStatus.WAITING_APPROVAL,
+    history: [
+      {
+        plan: 'My plan',
+        timestamp: new Date().toISOString()
+      }
+    ]
+  };
+  await repo.savePlanningSession(planningSession);
+
+  const fetchedPlanning = await repo.getPlanningSession(37);
+  if (!fetchedPlanning || fetchedPlanning.number !== 37 || fetchedPlanning.status !== PlanningSessionStatus.WAITING_APPROVAL) {
+    throw new Error('getPlanningSession failed');
+  }
+  if (fetchedPlanning.history.length !== 1 || fetchedPlanning.history[0].plan !== 'My plan') {
+    throw new Error('getPlanningSession history failed');
+  }
+  console.log('planning sessions passed.');
 
   await rm(testDir, { recursive: true, force: true });
   console.log('All repository tests passed!');

@@ -1,6 +1,6 @@
 import { readdir, readFile, stat, writeFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
-import { Issue, Session } from '../api';
+import { Issue, Session, PlanningSession } from '../api';
 import { IssueRepository } from './repositories';
 
 export class FileSystemIssueRepository implements IssueRepository {
@@ -94,14 +94,34 @@ export class FileSystemIssueRepository implements IssueRepository {
   }
 
   async getSessionContent(issueNumber: number, sessionId: string): Promise<string | undefined> {
-    const filePath = path.join(this.baseDir, 'sessions', String(issueNumber), `${sessionId}.txt`);
+    const filePathFull = path.join(this.baseDir, 'sessions', String(issueNumber), `${sessionId}.txt`);
     try {
-      return await readFile(filePath, 'utf-8');
+      return await readFile(filePathFull, 'utf-8');
     } catch (e) {
       if ((e as any).code === 'ENOENT') {
         return undefined;
       }
       throw new Error(`Failed to read session ${sessionId} for issue ${issueNumber}: ${e instanceof Error ? e.message : String(e)}`, { cause: e });
     }
+  }
+
+  async getPlanningSession(issueNumber: number): Promise<PlanningSession | undefined> {
+    const filePath = path.join(this.baseDir, 'planning', `${issueNumber}.json`);
+    try {
+      const content = await readFile(filePath, 'utf-8');
+      return JSON.parse(content) as PlanningSession;
+    } catch (e) {
+      if ((e as any).code === 'ENOENT') {
+        return undefined;
+      }
+      throw new Error(`Failed to read planning session for issue ${issueNumber}: ${e instanceof Error ? e.message : String(e)}`, { cause: e });
+    }
+  }
+
+  async savePlanningSession(session: PlanningSession): Promise<void> {
+    const planningDir = path.join(this.baseDir, 'planning');
+    await mkdir(planningDir, { recursive: true });
+    const filePath = path.join(planningDir, `${session.number}.json`);
+    await writeFile(filePath, JSON.stringify(session, null, 2));
   }
 }
