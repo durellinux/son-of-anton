@@ -40,7 +40,7 @@ export function IssueDetail() {
     enabled: !!selectedSession,
   })
 
-  const { data: planning, isLoading: isLoadingPlanning } = useQuery({
+  const { data: planning } = useQuery({
     queryKey: ['planning', issueNumber],
     queryFn: () => issuesGetPlanningSession({ path: { number: issueNumber } }),
   })
@@ -101,7 +101,7 @@ export function IssueDetail() {
                 </Badge>
               </Group>
               
-              <ScrollArea h={400} offsetScrollbars type="always" withBorder style={{ borderRadius: '4px', padding: '10px' }}>
+              <ScrollArea h={400} offsetScrollbars type="always" style={{ borderRadius: '4px', padding: '10px' }}>
                 <div className="markdown-content">
                   <ReactMarkdown>{latestPlan?.plan || 'No plan proposed yet.'}</ReactMarkdown>
                 </div>
@@ -152,7 +152,7 @@ export function IssueDetail() {
                       {step.feedback ? (
                         <>
                           <Text fw={700}>User Feedback:</Text>
-                          <Text italic>{step.feedback}</Text>
+                          <Text fs={'italic'}>{step.feedback}</Text>
                         </>
                       ) : (
                         index === planning.data.history.length - 1 ? 'Current plan' : 'Superseded'
