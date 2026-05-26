@@ -104,6 +104,15 @@ const issueTests = [
       state: 'CLOSED'
     },
     expected: IssueState.CLOSED
+  },
+  {
+    name: 'Waiting for PR review',
+    issue: {
+      body: 'Fix this bug',
+      comments: [],
+      pullRequests: [{ state: 'OPEN' }]
+    },
+    expected: IssueState.WAITING_PR_REVIEW
   }
 ];
 
