@@ -11,3 +11,10 @@ services:
     volumes:
       - ./.anton:/app/.anton
     restart: always
+
+  restate:
+    image: ghcr.io/restatedev/restate:latest
+    ports:
+      - "8080:8080"
+      - "9070:9070"
+      - "9071:9071"
