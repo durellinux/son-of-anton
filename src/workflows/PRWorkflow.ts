@@ -1,43 +1,7 @@
 import * as restate from "@restatedev/restate-sdk";
-import { execa } from 'execa';
-import { mkdir } from 'node:fs/promises';
-import { createWriteStream } from 'node:fs';
-import path from 'node:path';
-import { determinePRState, IssueState, PullRequest, getUnaddressedPRComments, PRComment } from '../../issue-state';
-
-async function executeGemini(id: number, prompt: string) {
-  // Session Logging
-  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-  const sessionDir = path.join('.anton', 'sessions', String(id));
-  await mkdir(sessionDir, { recursive: true });
-  
-  const sessionFilePath = path.join(sessionDir, `${timestamp}.txt`);
-  const logStream = createWriteStream(sessionFilePath);
-
-  const subprocess = execa('gemini', [
-    '-p', prompt,
-    '--sandbox', 'true',
-    '--approval-mode', 'yolo'
-  ]);
-
-  // Hook into the stream
-  subprocess.stdout?.on('data', (chunk) => {
-      const data = chunk.toString();
-      logStream.write(data);
-  });
-
-  // Hook into the stream
-  subprocess.stderr?.on('data', (chunk) => {
-      const data = chunk.toString();
-      logStream.write(data);
-  });
-
-  try {
-    await subprocess;
-  } finally {
-    logStream.end();
-  }
-}
+import {execa} from 'execa';
+import {determinePRState, getUnaddressedPRComments, IssueState, PRComment, PullRequest} from '../../issue-state';
+import {executeGemini} from "./gemini";
 
 async function fetchPrState(prNumber: number, fullRepo: string) {
     const { stdout: prDetailsJson } = await execa('gh', ['pr', 'view', String(prNumber), '-R', fullRepo, '--json', 'number,headRefName,url,reviewDecision,state']);
