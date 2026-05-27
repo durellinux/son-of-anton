@@ -3,13 +3,13 @@ import {mkdir} from "node:fs/promises";
 import {createWriteStream} from "node:fs";
 import {execa} from "execa";
 
-export async function executeGemini(id: number, prompt: string) {
+export async function executeGemini(id: number, prompt: string, type: string) {
     // Session Logging
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const sessionDir = path.join('.anton', 'sessions', String(id));
     await mkdir(sessionDir, {recursive: true});
 
-    const sessionFilePath = path.join(sessionDir, `${timestamp}.txt`);
+    const sessionFilePath = path.join(sessionDir, `${type}-${timestamp}.txt`);
     const logStream = createWriteStream(sessionFilePath);
 
     const subprocess = execa('gemini', [

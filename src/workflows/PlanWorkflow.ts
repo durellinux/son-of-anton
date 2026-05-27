@@ -80,7 +80,7 @@ export const PlanWorkflow = restate.workflow({
       }
 
       if (prompt) {
-        await ctx.run("execute-gemini", () => executeGemini(issueNumber, prompt, iteration));
+        await ctx.run("execute-gemini", () => executeGemini(issueNumber, prompt, 'plan'));
       }
 
       // Update state after planning
