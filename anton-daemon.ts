@@ -4,11 +4,12 @@ import { execa } from 'execa';
 import path from 'node:path';
 import * as restate from "@restatedev/restate-sdk";
 import * as restateClients from "@restatedev/restate-sdk-clients";
-import { PullRequestBase } from './issue-state';
+import { PullRequestBase, determineIssueState, IssueState, Issue as GH_Issue, PullRequest, getUnaddressedPRComments, PRComment } from './issue-state';
 import { FileSystemIssueRepository } from './src/repositories/FileSystemIssueRepository';
 import { registerRoutes } from './src/resources/routes';
 import { IssueService } from './src/services/IssueService';
-import { IssueWorkflow } from './src/workflows/IssueWorkflow';
+import { PlanWorkflow } from './src/workflows/PlanWorkflow';
+import { ImplementationWorkflow } from './src/workflows/ImplementationWorkflow';
 import { PRWorkflow } from './src/workflows/PRWorkflow';
 
 const repository = new FileSystemIssueRepository();
@@ -38,8 +39,8 @@ async function runAnton() {
     const { stdout: issuesJson } = await execa('gh', ['search', 'issues', '--label', 'son-of-anton', '--state', 'open', '--json', 'number,title,repository,url', '--owner', '@me']);
     const basicIssues = JSON.parse(issuesJson) as { number: number, title: string, url: string, repository: { nameWithOwner: string } }[];
 
-    const { stdout: prsJson } = await execa('gh', ['search', 'prs', '--label', 'son-of-anton', '--state', 'open', '--json', 'number,url']);
-    const basicPRs = JSON.parse(prsJson) as PullRequestBase[];
+    const { stdout: prsJson } = await execa('gh', ['search', 'prs', '--label', 'son-of-anton', '--state', 'open', '--json', 'number,url,repository']);
+    const basicPRs = JSON.parse(prsJson) as (PullRequestBase & { repository: { nameWithOwner: string } })[];
 
     if (basicIssues.length === 0 && basicPRs.length === 0) {
       fastify.log.info('No issues or PRs found to process.');
@@ -52,34 +53,63 @@ async function runAnton() {
     for (const basicIssue of basicIssues) {
       const issueNumber = basicIssue.number;
       const issueRepo = basicIssue.repository.nameWithOwner;
-      fastify.log.info(`Pinging workflow for issue #${issueNumber}...`);
-
-      const workflowClient = restateClient.workflowClient(IssueWorkflow, String(issueNumber));
       
-      // Submit the workflow if not already running
-      await workflowClient.workflowSubmit({
-        number: issueNumber,
-        title: basicIssue.title,
-        url: basicIssue.url,
-        repository: issueRepo
-      });
+      const localPlanningSession = await repository.getPlanningSession(issueNumber);
+      const { stdout: issueDetailsJson } = await execa('gh', ['issue', 'view', String(issueNumber), '-R', issueRepo, '--json', 'body,comments,state,pullRequests']);
+      const issueDetails = JSON.parse(issueDetailsJson) as GH_Issue;
 
-      // Signal the workflow that something might have changed (e.g. new comments)
-      await workflowClient.signalEvent();
+      const state = determineIssueState(issueDetails, localPlanningSession as any);
+      
+      if (state === IssueState.NEEDS_PLANNING || state === IssueState.YOLO) {
+        const iteration = localPlanningSession ? localPlanningSession.history.length : 0;
+        const workflowId = state === IssueState.YOLO ? `plan-${issueNumber}-yolo` : `plan-${issueNumber}-${iteration}`;
+        fastify.log.info(`Submitting PlanWorkflow for issue #${issueNumber} (id: ${workflowId})...`);
+        
+        const workflowClient = restateClient.workflowClient(PlanWorkflow, workflowId);
+        await workflowClient.workflowSubmit({
+          number: issueNumber,
+          title: basicIssue.title,
+          url: basicIssue.url,
+          repository: issueRepo,
+          iteration
+        });
+      } else if (state === IssueState.NEEDS_IMPLEMENTATION) {
+        fastify.log.info(`Submitting ImplementationWorkflow for issue #${issueNumber}...`);
+        const workflowClient = restateClient.workflowClient(ImplementationWorkflow, `implement-${issueNumber}`);
+        await workflowClient.workflowSubmit({
+          number: issueNumber,
+          title: basicIssue.title,
+          url: basicIssue.url,
+          repository: issueRepo
+        });
+      }
     }
 
     // 3. Process PRs
     for (const pr of basicPRs) {
-      fastify.log.info(`Pinging workflow for PR #${pr.number}...`);
+      const prNumber = pr.number;
+      const fullRepo = pr.repository.nameWithOwner;
 
-      const workflowClient = restateClient.workflowClient(PRWorkflow, String(pr.number));
-      
-      await workflowClient.workflowSubmit({
-        number: pr.number,
-        url: pr.url
-      });
+      const { stdout: prDetailsJson } = await execa('gh', ['pr', 'view', String(prNumber), '-R', fullRepo, '--json', 'number,headRefName,url,reviewDecision,state']);
+      const prDetails = JSON.parse(prDetailsJson) as PullRequest;
 
-      await workflowClient.signalEvent();
+      const { stdout: commentsJson } = await execa('gh', ['api', `repos/${fullRepo}/pulls/${prNumber}/comments`]);
+      const comments = JSON.parse(commentsJson) as PRComment[];
+      const unaddressedCommentIds = getUnaddressedPRComments(comments);
+
+      if (unaddressedCommentIds.length > 0) {
+        const issueMatch = prDetails.headRefName.match(/anton\/(\d+)/);
+        const issueId = issueMatch ? issueMatch[1] : `pr-${prNumber}`;
+        const workflowId = `pr-review-${issueId}-${comments.length}`;
+        
+        fastify.log.info(`Submitting PRWorkflow for PR #${prNumber} (id: ${workflowId})...`);
+
+        const workflowClient = restateClient.workflowClient(PRWorkflow, workflowId);
+        await workflowClient.workflowSubmit({
+          number: pr.number,
+          url: pr.url
+        });
+      }
     }
 
     fastify.log.info('Anton iteration finished');
@@ -100,7 +130,8 @@ const start = async () => {
   try {
     // 1. Start Restate Service
     restate.endpoint()
-      .bind(IssueWorkflow)
+      .bind(PlanWorkflow)
+      .bind(ImplementationWorkflow)
       .bind(PRWorkflow)
       .listen(9080);
     fastify.log.info('Restate service is running on port 9080');

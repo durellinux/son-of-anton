@@ -29,42 +29,22 @@ export const PRWorkflow = restate.workflow({
       const repo = urlParts[4];
       const fullRepo = `${owner}/${repo}`;
 
-      let signalCount = 0;
-      while (true) {
-        const { state, prDetails, unaddressedCommentIds } = await ctx.run("fetch-pr-state", () => fetchPrState(prNumber, fullRepo));
+      const { state, prDetails, unaddressedCommentIds } = await ctx.run("fetch-pr-state", () => fetchPrState(prNumber, fullRepo));
 
-        if (state === IssueState.MERGED || state === IssueState.CLOSED) {
-          break;
-        }
-
-        if (state === IssueState.NEEDS_IMPLEMENTATION && unaddressedCommentIds.length > 0) {
-          await ctx.run("execute-gemini", async () => {
-            // Extract issue number from branch name (e.g., anton/30)
-            const issueMatch = prDetails.headRefName.match(/anton\/(\d+)/);
-            const issueNumber = issueMatch ? issueMatch[1] : `pr-${prNumber}`;
-            const issueParam = `for issue ${issueNumber} `;
-            const prompt = `use the anton-pr-fix skill flow ${issueParam} for PR ${prNumber} on branch ${prDetails.headRefName} in repo ${fullRepo} with comment IDs ${unaddressedCommentIds.join(', ')}`;
-            await executeGemini(prNumber, prompt);
-          });
-        }
-
-        // Wait for an external event (e.g. comment or approval)
-        const currentSignalCount = (await ctx.get<number>("signalCount")) ?? 0;
-        if (signalCount >= currentSignalCount) {
-          await ctx.promise<void>(`event-${signalCount + 1}`);
-        }
-
-        // Sleep to avoid tight loops if many signals arrive or if state doesn't transition
-        await ctx.sleep(30000);
-        signalCount = (await ctx.get<number>("signalCount")) ?? 0;
+      if (state === IssueState.MERGED || state === IssueState.CLOSED) {
+        return;
       }
-    },
 
-    signalEvent: async (ctx: restate.WorkflowSharedContext) => {
-      const count = (await ctx.get<number>("signalCount")) ?? 0;
-      const nextCount = count + 1;
-      ctx.set("signalCount", nextCount);
-      ctx.promise<void>(`event-${nextCount}`).resolve();
+      if (state === IssueState.NEEDS_IMPLEMENTATION && unaddressedCommentIds.length > 0) {
+        await ctx.run("execute-gemini", async () => {
+          // Extract issue number from branch name (e.g., anton/30)
+          const issueMatch = prDetails.headRefName.match(/anton\/(\d+)/);
+          const issueNumber = issueMatch ? issueMatch[1] : `pr-${prNumber}`;
+          const issueParam = `for issue ${issueNumber} `;
+          const prompt = `use the anton-pr-fix skill flow ${issueParam} for PR ${prNumber} on branch ${prDetails.headRefName} in repo ${fullRepo} with comment IDs ${unaddressedCommentIds.join(', ')}`;
+          await executeGemini(prNumber, prompt);
+        });
+      }
     }
   }
 });
