@@ -6,6 +6,7 @@ import path from 'node:path';
 import { determineIssueState, IssueState, Issue as GH_Issue } from '../../issue-state';
 import { FileSystemIssueRepository } from '../repositories/FileSystemIssueRepository';
 import { IssueStatus, Issue } from '../api';
+import {executeGemini} from "./gemini";
 
 const repository = new FileSystemIssueRepository();
 
@@ -20,40 +21,6 @@ function mapStateToStatus(state: IssueState): IssueStatus {
         case IssueState.MERGED: return IssueStatus.DONE;
         default: return IssueStatus.PLANNING;
     }
-}
-
-async function executeGemini(id: number, prompt: string) {
-  // Session Logging
-  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-  const sessionDir = path.join('.anton', 'sessions', String(id));
-  await mkdir(sessionDir, { recursive: true });
-  
-  const sessionFilePath = path.join(sessionDir, `${timestamp}-implement.txt`);
-  const logStream = createWriteStream(sessionFilePath);
-
-  const subprocess = execa('gemini', [
-    '-p', prompt,
-    '--sandbox', 'true',
-    '--approval-mode', 'yolo'
-  ]);
-
-  // Hook into the stream
-  subprocess.stdout?.on('data', (chunk) => {
-      const data = chunk.toString();
-      logStream.write(data);
-  });
-
-  // Hook into the stream
-  subprocess.stderr?.on('data', (chunk) => {
-      const data = chunk.toString();
-      logStream.write(data);
-  });
-
-  try {
-    await subprocess;
-  } finally {
-    logStream.end();
-  }
 }
 
 async function fetchIssueState(issueNumber: number, issueRepo: string) {
@@ -91,7 +58,7 @@ export const ImplementationWorkflow = restate.workflow({
       }
 
       const prompt = `follow the anton-implement skill flow for issue ${issueNumber} on the repo ${issueRepo}`;
-      await ctx.run("execute-gemini", () => executeGemini(issueNumber, prompt));
+      await ctx.run("execute-gemini", () => executeGemini(issueNumber, prompt, 'implement'));
       
       // Update state after implementation
       const { state: finalState } = await ctx.run("fetch-issue-state-final", () => fetchIssueState(issueNumber, issueRepo));
