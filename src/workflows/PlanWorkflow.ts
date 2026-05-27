@@ -53,65 +53,39 @@ async function updateRepository(issueNumber: number, title: string, url: string,
         title: title,
         url: url,
         status: mapStateToStatus(state),
-        workflowUrl: `http://localhost:8080/visualize/IssueWorkflow/${ctxKey}`
+        workflowUrl: `http://localhost:8080/visualize/PlanWorkflow/${ctxKey}`
     };
     await repository.saveIssue(issue);
 }
 
-export const IssueWorkflow = restate.workflow({
-  name: "IssueWorkflow",
+export const PlanWorkflow = restate.workflow({
+  name: "PlanWorkflow",
   handlers: {
-    run: async (ctx: restate.WorkflowContext, params: { number: number, title: string, url: string, repository: string }) => {
-      const { number: issueNumber, repository: issueRepo } = params;
+    run: async (ctx: restate.WorkflowContext, params: { number: number, title: string, url: string, repository: string, iteration: number }) => {
+      const { number: issueNumber, repository: issueRepo, iteration } = params;
 
-      let signalCount = 0;
-      while (true) {
-        const { state } = await ctx.run("fetch-issue-state", () => fetchIssueState(issueNumber, issueRepo));
+      const { state } = await ctx.run("fetch-issue-state", () => fetchIssueState(issueNumber, issueRepo));
 
-        await ctx.run("update-repository", () => updateRepository(issueNumber, params.title, params.url, state, ctx.key));
+      await ctx.run("update-repository", () => updateRepository(issueNumber, params.title, params.url, state, ctx.key));
 
-        if (state === IssueState.CLOSED || state === IssueState.MERGED || state === IssueState.WAITING_PR_REVIEW) {
-          break;
-        }
-
-        if (state === IssueState.WAITING) {
-          // Wait for an external event (e.g. comment or approval)
-          const currentSignalCount = (await ctx.get<number>("signalCount")) ?? 0;
-          if (signalCount >= currentSignalCount) {
-            await ctx.promise<void>(`event-${signalCount + 1}`);
-          }
-          signalCount = (await ctx.get<number>("signalCount")) ?? 0;
-          continue;
-        }
-
-        let prompt = '';
-        switch (state) {
-          case IssueState.YOLO:
-            prompt = `Research, plan and implement the fix for issue ${issueNumber} on the repo ${issueRepo}. Follow the anton-plan and anton-implement skills workflow.`;
-            break;
-          case IssueState.NEEDS_PLANNING:
-            prompt = `follow the anton-plan skill flow for issue ${issueNumber} on the repo ${issueRepo}`;
-            break;
-          case IssueState.NEEDS_IMPLEMENTATION:
-            prompt = `follow the anton-implement skill flow for issue ${issueNumber} on the repo ${issueRepo}`;
-            break;
-        }
-
-        if (prompt) {
-          await ctx.run("execute-gemini", () => executeGemini(issueNumber, prompt));
-        }
-
-        // Sleep to avoid tight loops if state doesn't transition to WAITING
-        await ctx.sleep(30000);
-        signalCount = (await ctx.get<number>("signalCount")) ?? 0;
+      if (state === IssueState.CLOSED || state === IssueState.MERGED || state === IssueState.WAITING_PR_REVIEW) {
+        return;
       }
-    },
 
-    signalEvent: async (ctx: restate.WorkflowSharedContext) => {
-      const count = (await ctx.get<number>("signalCount")) ?? 0;
-      const nextCount = count + 1;
-      ctx.set("signalCount", nextCount);
-      ctx.promise<void>(`event-${nextCount}`).resolve();
+      let prompt = '';
+      if (state === IssueState.YOLO) {
+        prompt = `Research, plan and implement the fix for issue ${issueNumber} on the repo ${issueRepo}. Follow the anton-plan and anton-implement skills workflow.`;
+      } else if (state === IssueState.NEEDS_PLANNING) {
+        prompt = `follow the anton-plan skill flow for issue ${issueNumber} on the repo ${issueRepo}`;
+      }
+
+      if (prompt) {
+        await ctx.run("execute-gemini", () => executeGemini(issueNumber, prompt, iteration));
+      }
+
+      // Update state after planning
+      const { state: finalState } = await ctx.run("fetch-issue-state-final", () => fetchIssueState(issueNumber, issueRepo));
+      await ctx.run("update-repository-final", () => updateRepository(issueNumber, params.title, params.url, finalState, ctx.key));
     }
   }
 });
