@@ -55,7 +55,7 @@ async function runAnton() {
       const issueRepo = basicIssue.repository.nameWithOwner;
       
       const localPlanningSession = await repository.getPlanningSession(issueNumber);
-      const { stdout: issueDetailsJson } = await execa('gh', ['issue', 'view', String(issueNumber), '-R', issueRepo, '--json', 'body,comments,state,pullRequests']);
+      const { stdout: issueDetailsJson } = await execa('gh', ['issue', 'view', String(issueNumber), '-R', issueRepo, '--json', 'body,comments,state']);
       const issueDetails = JSON.parse(issueDetailsJson) as GH_Issue;
 
       const state = determineIssueState(issueDetails, localPlanningSession as any);
