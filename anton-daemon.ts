@@ -11,6 +11,7 @@ import { IssueService } from './src/services/IssueService';
 import { PlanWorkflow } from './src/workflows/PlanWorkflow';
 import { ImplementationWorkflow } from './src/workflows/ImplementationWorkflow';
 import { PRWorkflow } from './src/workflows/PRWorkflow';
+import {PlanWorkflowV2} from "./src/workflows/PlanWorkflowV2";
 
 const repository = new FileSystemIssueRepository();
 const issueService = new IssueService(repository);
@@ -60,18 +61,16 @@ async function runAnton() {
 
       const state = determineIssueState(issueDetails, localPlanningSession as any);
       
-      if (state === IssueState.NEEDS_PLANNING || state === IssueState.YOLO) {
-        const iteration = localPlanningSession ? localPlanningSession.history.length : 0;
-        const workflowId = state === IssueState.YOLO ? `plan-${issueNumber}-yolo` : `plan-${issueNumber}-${iteration}`;
+      if ((state === IssueState.NEEDS_PLANNING || state === IssueState.YOLO) && !localPlanningSession) {
+        const workflowId = state === IssueState.YOLO ? `plan-${issueNumber}-yolo` : `plan-${issueNumber}`;
         fastify.log.info(`Submitting PlanWorkflow for issue #${issueNumber} (id: ${workflowId})...`);
-        
-        const workflowClient = restateClient.workflowClient(PlanWorkflow, workflowId);
+
+        const workflowClient = restateClient.workflowClient(PlanWorkflowV2, workflowId);
         await workflowClient.workflowSubmit({
           number: issueNumber,
           title: basicIssue.title,
           url: basicIssue.url,
-          repository: issueRepo,
-          iteration
+          repository: issueRepo
         });
       } else if (state === IssueState.NEEDS_IMPLEMENTATION) {
         fastify.log.info(`Submitting ImplementationWorkflow for issue #${issueNumber}...`);
@@ -129,8 +128,9 @@ async function startPolling() {
 const start = async () => {
   try {
     // 1. Start Restate Service
-    restate.endpoint()
+    await restate.endpoint()
       .bind(PlanWorkflow)
+      .bind(PlanWorkflowV2)
       .bind(ImplementationWorkflow)
       .bind(PRWorkflow)
       .listen(9080);
