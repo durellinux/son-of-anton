@@ -6,6 +6,7 @@ export enum IssueState {
   WAITING = 'WAITING',
   CLOSED = 'CLOSED',
   MERGED = 'MERGED',
+  FAILED = 'FAILED',
 }
 
 export interface IssueComment {
@@ -76,43 +77,15 @@ export function determineIssueState(issue: Issue, localPlanningSession?: Plannin
   if (localPlanningSession) {
     switch (localPlanningSession.status) {
       case PlanningSessionStatus.APPROVED:
-        return IssueState.NEEDS_IMPLEMENTATION;
+          return IssueState.NEEDS_IMPLEMENTATION;
       case PlanningSessionStatus.NEEDS_REVISION:
         return IssueState.NEEDS_PLANNING;
       case PlanningSessionStatus.WAITING_APPROVAL:
         return IssueState.WAITING;
     }
+  } else {
+      return IssueState.NEEDS_PLANNING;
   }
-
-  const planComments = issue.comments.filter(c => {
-      const body = c.body.trim();
-      const lines = body.split('\n');
-      const lastLine = lines[lines.length - 1].trim();
-      const secondLastLine = lines.length > 1 ? lines[lines.length - 2].trim() : '';
-      
-      const isPlan = (lastLine.includes('#son-of-anton-plan') && !lastLine.startsWith('>')) || 
-                     (secondLastLine.includes('#son-of-anton-plan') && !secondLastLine.startsWith('>'));
-      return isPlan;
-  });
-
-  if (planComments.length === 0) {
-    return IssueState.NEEDS_PLANNING;
-  }
-
-  const lastPlanComment = planComments[planComments.length - 1];
-  
-  const thumbsUp = lastPlanComment.reactionGroups.find(r => r.content === 'THUMBS_UP')?.users.totalCount || 0;
-  const thumbsDown = lastPlanComment.reactionGroups.find(r => r.content === 'THUMBS_DOWN')?.users.totalCount || 0;
-
-  if (thumbsUp > 0) {
-    return IssueState.NEEDS_IMPLEMENTATION;
-  }
-
-  if (thumbsDown > 0) {
-    return IssueState.NEEDS_PLANNING;
-  }
-
-  return IssueState.WAITING;
 }
 
 export function determinePRState(pr: PullRequest): IssueState {

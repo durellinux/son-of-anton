@@ -32,21 +32,6 @@ export async function fetchIssueState(issueNumber: number, issueRepo: string) {
     const issueDetails = JSON.parse(issueDetailsJson) as GH_Issue;
 
     const state = determineIssueState(issueDetails, localPlanningSession as any);
-
-    // If planning session is approved, post to GitHub and clear local session
-    if (localPlanningSession && localPlanningSession.status === 'approved') {
-        const lastStep = localPlanningSession.history[localPlanningSession.history.length - 1];
-        if (lastStep) {
-            const commentBody = `${lastStep.plan}\n\n#son-of-anton-plan`;
-            const {stdout: commentJson} = await execa('gh', ['api', `repos/${issueRepo}/issues/${issueNumber}/comments`, '-f', `body=${commentBody}`]);
-            const comment = JSON.parse(commentJson);
-            await execa('gh', ['api', `repos/${issueRepo}/issues/comments/${comment.id}/reactions`, '-f', 'content=+1']);
-
-            // Delete the local planning session as it is now on GitHub
-            await repository.deletePlanningSession(issueNumber);
-        }
-    }
-
     return {state};
 }
 

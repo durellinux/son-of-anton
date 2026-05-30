@@ -25,6 +25,5 @@ export async function implementationBlock(
     await ctx.run(`${prefix}-execute-gemini`, () => executeGemini(issueNumber, prompt, 'implement'));
 
     // Update state after implementation
-    const { state: finalState } = await ctx.run(`${prefix}-fetch-issue-state-final`, () => fetchIssueState(issueNumber, issueRepo));
-    await ctx.run(`${prefix}-update-repository-final`, () => updateRepository(issueNumber, title, issueUrl, finalState, workflowUrl));
+    await ctx.run(`${prefix}-update-repository-final`, () => updateRepository(issueNumber, title, issueUrl, IssueState.WAITING_PR_REVIEW, workflowUrl));
 }

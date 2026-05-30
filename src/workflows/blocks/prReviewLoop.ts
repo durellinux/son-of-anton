@@ -24,7 +24,7 @@ export async function prReviewLoop(
         const { state, prDetails, unaddressedCommentIds } = await ctx.run(`${prefix}-fetch-pr-state-${iteration}`, () => fetchPrState(prNumber, fullRepo));
 
         if (state === IssueState.MERGED || state === IssueState.CLOSED) {
-            return;
+            return state;
         }
 
         if (state === IssueState.NEEDS_IMPLEMENTATION && unaddressedCommentIds.length > 0) {
@@ -41,4 +41,5 @@ export async function prReviewLoop(
         await ctx.sleep(5 * 60 * 1000);
     }
 
+    return IssueState.FAILED;
 }

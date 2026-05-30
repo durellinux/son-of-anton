@@ -2,7 +2,7 @@
 import * as restate from "@restatedev/restate-sdk";
 import {fetchIssueState, updateRepository} from "../actions/issuesActions";
 import {IssueState} from "../../../issue-state";
-import {buildPlanningPrompt, commitPlan, deletePlanningSession, thumbsUpPlan} from "../actions/planActions";
+import {buildPlanningPrompt, commitPlan} from "../actions/planActions";
 import {executeGemini} from "../gemini";
 
 const MAX_PLAN_ITERATIONS = 1000;
@@ -27,6 +27,11 @@ export async function planningLoop(
 
         const { state } = await ctx.run(`${prefix}-fetch-initial-issue-state-${iteration}`, () => fetchIssueState(issueNumber, issueRepo));
 
+        if (state === IssueState.NEEDS_IMPLEMENTATION) {
+            await ctx.run(`${prefix}-commit-plan-${iteration}`, () => commitPlan(issueNumber, issueRepo));
+            return;
+        }
+
         if (state !== IssueState.WAITING && state !== IssueState.NEEDS_PLANNING && state !== IssueState.YOLO) {
             return;
         }
@@ -38,15 +43,7 @@ export async function planningLoop(
             await ctx.run(`${prefix}-execute-gemini-${iteration}`, () => executeGemini(issueNumber, prompt, 'plan'));
 
             // Update state after planning
-            const { state: finalState } = await ctx.run(`${prefix}-fetch-final-issue-state-${iteration}`, () => fetchIssueState(issueNumber, issueRepo));
-            await ctx.run(`${prefix}-update-repository-final-${iteration}`, () => updateRepository(issueNumber, title, issueUrl, finalState, workflowUrl));
-
-            if (finalState === IssueState.NEEDS_IMPLEMENTATION) {
-                const githubComment = await ctx.run(`${prefix}-commit-plan-${iteration}`, () => commitPlan(issueNumber, issueRepo))
-                await ctx.run(`${prefix}-thumbs-up-plan-${iteration}`, () => thumbsUpPlan(issueRepo, githubComment));
-                await ctx.run(`${prefix}-remove-local-planning-${iteration}`, () => deletePlanningSession(issueNumber));
-                return;
-            }
+            await ctx.run(`${prefix}-update-repository-final-${iteration}`, () => updateRepository(issueNumber, title, issueUrl, IssueState.WAITING, workflowUrl));
         }
 
         await ctx.sleep(5 * 60 * 1000);
