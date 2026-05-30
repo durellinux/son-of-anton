@@ -63,7 +63,7 @@ export function IssueDetail() {
   })
 
   if (isLoadingIssue) return <Center h={400}><Loader /></Center>
-  if (!issue?.data) return <Center h={400}><Title order={4}>Issue not found</Title></Center>
+  if (!issue?.data) return <Center h={400}><Title order={4} ta="center">Issue not found</Title></Center>
 
   const latestPlan = planning?.data?.history[planning.data.history.length - 1]
 
@@ -76,12 +76,12 @@ export function IssueDetail() {
 
       <Card withBorder padding="xl" radius="md">
         <Stack gap="md">
-          <Group justify="space-between">
-            <Title order={1}>{issue.data.title}</Title>
+          <Stack align="center" gap="xs">
+            <Title order={1} ta="center">{issue.data.title}</Title>
             <Badge size="lg" color={getStatusColor(issue.data.status)}>
               {issue.data.status}
             </Badge>
-          </Group>
+          </Stack>
           <Text size="lg" c="dimmed">Branch: {issue.data.branchName || 'N/A'}</Text>
           {issue.data.url && (
             <Anchor href={issue.data.url} target="_blank">View on GitHub</Anchor>
@@ -91,15 +91,15 @@ export function IssueDetail() {
 
       {planning?.data && (
         <>
-          <Title order={2}>Planning Session</Title>
+          <Title order={2} ta="center">Planning Session</Title>
           <Card withBorder padding="xl" radius="md">
             <Stack gap="md">
-              <Group justify="space-between">
-                <Title order={3}>Latest Proposal</Title>
+              <Stack align="center" gap="xs">
+                <Title order={3} ta="center">Latest Proposal</Title>
                 <Badge size="lg" color={getPlanningStatusColor(planning.data.status)}>
                   {planning.data.status.replace('_', ' ')}
                 </Badge>
-              </Group>
+              </Stack>
               
               <ScrollArea h={400} offsetScrollbars type="always" style={{ borderRadius: '4px', padding: '10px' }}>
                 <div className="markdown-content">
@@ -141,7 +141,7 @@ export function IssueDetail() {
 
           {planning.data.history.length > 1 && (
             <Stack gap="xs">
-              <Title order={3}>Planning History</Title>
+              <Title order={3} ta="center">Planning History</Title>
               <Timeline active={planning.data.history.length - 1} bulletSize={24} lineWidth={2}>
                 {planning.data.history.map((step, index) => (
                   <Timeline.Item 
@@ -167,7 +167,7 @@ export function IssueDetail() {
         </>
       )}
 
-      <Title order={2}>Daemon Sessions</Title>
+      <Title order={2} ta="center">Daemon Sessions</Title>
       
       {isLoadingSessions ? <Loader /> : (
         <Timeline active={sessions?.data?.items.length || 0} bulletSize={24} lineWidth={2}>
