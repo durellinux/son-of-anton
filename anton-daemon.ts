@@ -36,22 +36,18 @@ async function runAnton() {
     // 1. Fetch issues and PRs in Daemon
     const { stdout: issuesJson } = await execa('gh', ['search', 'issues', '--label', 'son-of-anton', '--state', 'open', '--json', 'number,title,repository,url', '--owner', '@me']);
     const basicIssues = JSON.parse(issuesJson) as { number: number, title: string, url: string, repository: { nameWithOwner: string } }[];
-
-    const { stdout: prsJson } = await execa('gh', ['search', 'prs', '--label', 'son-of-anton', '--state', 'open', '--json', 'number,url,repository']);
-    const basicPRs = JSON.parse(prsJson) as (PullRequestBase & { repository: { nameWithOwner: string } })[];
-
-    if (basicIssues.length === 0 && basicPRs.length === 0) {
+    if (basicIssues.length === 0) {
       fastify.log.info('No issues or PRs found to process.');
       return;
     }
 
-    fastify.log.info(`Found ${basicIssues.length} issues and ${basicPRs.length} PRs to process.`);
+    fastify.log.info(`Found ${basicIssues.length} issues to process.`);
 
     // 2. Process Issues
     for (const basicIssue of basicIssues) {
       const issueNumber = basicIssue.number;
       const issueRepo = basicIssue.repository.nameWithOwner;
-      const storedIssue = repository.getIssue(issueNumber);
+      const storedIssue = await repository.getIssue(issueNumber);
 
       if (!storedIssue) {
           fastify.log.info(`New issue detected: ${issueNumber} - ${basicIssue.title}`);

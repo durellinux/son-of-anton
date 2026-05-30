@@ -27,10 +27,9 @@ export async function planningLoop(
 
         const { state } = await ctx.run(`${prefix}-fetch-initial-issue-state-${iteration}`, () => fetchIssueState(issueNumber, issueRepo));
 
-        if (state === IssueState.CLOSED || state === IssueState.MERGED || state === IssueState.WAITING_PR_REVIEW) {
+        if (state !== IssueState.WAITING && state !== IssueState.NEEDS_PLANNING && state !== IssueState.YOLO) {
             return;
         }
-
 
         if (state !== IssueState.WAITING) {
             await ctx.run(`${prefix}-update-repository-initial-${iteration}`, () => updateRepository(issueNumber, title, issueUrl, state, workflowUrl));
