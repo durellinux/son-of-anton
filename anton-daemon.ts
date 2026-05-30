@@ -8,10 +8,7 @@ import { PullRequestBase, determineIssueState, IssueState, Issue as GH_Issue, Pu
 import { FileSystemIssueRepository } from './src/repositories/FileSystemIssueRepository';
 import { registerRoutes } from './src/resources/routes';
 import { IssueService } from './src/services/IssueService';
-import { PlanWorkflow } from './src/workflows/PlanWorkflow';
-import { ImplementationWorkflow } from './src/workflows/ImplementationWorkflow';
-import { PRWorkflow } from './src/workflows/PRWorkflow';
-import {PlanWorkflowV2} from "./src/workflows/PlanWorkflowV2";
+import {IssueWorkflowV1} from "./src/workflows/IssueWorkflowV1";
 
 const repository = new FileSystemIssueRepository();
 const issueService = new IssueService(repository);
@@ -54,60 +51,18 @@ async function runAnton() {
     for (const basicIssue of basicIssues) {
       const issueNumber = basicIssue.number;
       const issueRepo = basicIssue.repository.nameWithOwner;
-      
-      const localPlanningSession = await repository.getPlanningSession(issueNumber);
-      const { stdout: issueDetailsJson } = await execa('gh', ['issue', 'view', String(issueNumber), '-R', issueRepo, '--json', 'body,comments,state']);
-      const issueDetails = JSON.parse(issueDetailsJson) as GH_Issue;
+      const storedIssue = repository.getIssue(issueNumber);
 
-      const state = determineIssueState(issueDetails, localPlanningSession as any);
-      
-      if ((state === IssueState.NEEDS_PLANNING || state === IssueState.YOLO) && !localPlanningSession) {
-        const workflowId = state === IssueState.YOLO ? `plan-${issueNumber}-yolo` : `plan-${issueNumber}`;
-        fastify.log.info(`Submitting PlanWorkflow for issue #${issueNumber} (id: ${workflowId})...`);
-
-        const workflowClient = restateClient.workflowClient(PlanWorkflowV2, workflowId);
-        await workflowClient.workflowSubmit({
-          number: issueNumber,
-          title: basicIssue.title,
-          url: basicIssue.url,
-          repository: issueRepo
-        });
-      } else if (state === IssueState.NEEDS_IMPLEMENTATION) {
-        fastify.log.info(`Submitting ImplementationWorkflow for issue #${issueNumber}...`);
-        const workflowClient = restateClient.workflowClient(ImplementationWorkflow, `implement-${issueNumber}`);
-        await workflowClient.workflowSubmit({
-          number: issueNumber,
-          title: basicIssue.title,
-          url: basicIssue.url,
-          repository: issueRepo
-        });
-      }
-    }
-
-    // 3. Process PRs
-    for (const pr of basicPRs) {
-      const prNumber = pr.number;
-      const fullRepo = pr.repository.nameWithOwner;
-
-      const { stdout: prDetailsJson } = await execa('gh', ['pr', 'view', String(prNumber), '-R', fullRepo, '--json', 'number,headRefName,url,reviewDecision,state']);
-      const prDetails = JSON.parse(prDetailsJson) as PullRequest;
-
-      const { stdout: commentsJson } = await execa('gh', ['api', `repos/${fullRepo}/pulls/${prNumber}/comments`]);
-      const comments = JSON.parse(commentsJson) as PRComment[];
-      const unaddressedCommentIds = getUnaddressedPRComments(comments);
-
-      if (unaddressedCommentIds.length > 0) {
-        const issueMatch = prDetails.headRefName.match(/anton\/(\d+)/);
-        const issueId = issueMatch ? issueMatch[1] : `pr-${prNumber}`;
-        const workflowId = `pr-review-${issueId}-${comments.length}`;
-        
-        fastify.log.info(`Submitting PRWorkflow for PR #${prNumber} (id: ${workflowId})...`);
-
-        const workflowClient = restateClient.workflowClient(PRWorkflow, workflowId);
-        await workflowClient.workflowSubmit({
-          number: pr.number,
-          url: pr.url
-        });
+      if (!storedIssue) {
+          fastify.log.info(`New issue detected: ${issueNumber} - ${basicIssue.title}`);
+          fastify.log.info(`Submitting IssueWorkflow for issue #${issueNumber}...`);
+          const workflowClient = restateClient.workflowClient(IssueWorkflowV1, `issue-${issueNumber}`);
+          await workflowClient.workflowSubmit({
+            number: issueNumber,
+            title: basicIssue.title,
+            url: basicIssue.url,
+            repository: issueRepo
+          });
       }
     }
 
@@ -129,11 +84,9 @@ const start = async () => {
   try {
     // 1. Start Restate Service
     await restate.endpoint()
-      .bind(PlanWorkflow)
-      .bind(PlanWorkflowV2)
-      .bind(ImplementationWorkflow)
-      .bind(PRWorkflow)
+      .bind(IssueWorkflowV1)
       .listen(9080);
+
     fastify.log.info('Restate service is running on port 9080');
 
     // 2. Start Fastify
