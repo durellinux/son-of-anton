@@ -24,7 +24,8 @@ export const IssueWorkflowV1 = restate.workflow({
 
             const {prNumber, prUrl} = await ctx.run('find-pr', () => findPullRequest(issueNumber, issueRepo));
 
-            await prReviewLoop(ctx, prNumber, prUrl);
+            const finalState = await prReviewLoop(ctx, prNumber, prUrl);
+            await ctx.run('update-issue-state', () => updateRepository(issueNumber, params.title, params.url, finalState, workflowUrl));
         }
     }
 });
