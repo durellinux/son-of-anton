@@ -2,132 +2,60 @@
 
 import { client } from './client.gen.js';
 import type { Client, Options as Options2, TDataShape } from './client/index.js';
-import type {
-  IssuesApprovePlanData,
-  IssuesApprovePlanErrors,
-  IssuesApprovePlanResponses,
-  IssuesGetData,
-  IssuesGetErrors,
-  IssuesGetPlanningSessionData,
-  IssuesGetPlanningSessionErrors,
-  IssuesGetPlanningSessionResponses,
-  IssuesGetResponses,
-  IssuesGetSessionContentData,
-  IssuesGetSessionContentErrors,
-  IssuesGetSessionContentResponses,
-  IssuesListData,
-  IssuesListResponses,
-  IssuesListSessionsData,
-  IssuesListSessionsErrors,
-  IssuesListSessionsResponses,
-  IssuesProvideFeedbackData,
-  IssuesProvideFeedbackErrors,
-  IssuesProvideFeedbackResponses,
-} from './types.gen.js';
+import type { IssuesApprovePlanData, IssuesApprovePlanErrors, IssuesApprovePlanResponses, IssuesGetData, IssuesGetErrors, IssuesGetPlanningSessionData, IssuesGetPlanningSessionErrors, IssuesGetPlanningSessionResponses, IssuesGetResponses, IssuesGetSessionContentData, IssuesGetSessionContentErrors, IssuesGetSessionContentResponses, IssuesListData, IssuesListResponses, IssuesListSessionsData, IssuesListSessionsErrors, IssuesListSessionsResponses, IssuesProvideFeedbackData, IssuesProvideFeedbackErrors, IssuesProvideFeedbackResponses } from './types.gen.js';
 
-export type Options<
-  TData extends TDataShape = TDataShape,
-  ThrowOnError extends boolean = boolean,
-  TResponse = unknown,
-> = Options2<TData, ThrowOnError, TResponse> & {
-  /**
-   * You can provide a client instance returned by `createClient()` instead of
-   * individual options. This might be also useful if you want to implement a
-   * custom client.
-   */
-  client?: Client;
-  /**
-   * You can pass arbitrary values through the `meta` object. This can be
-   * used to access values that aren't defined as part of the SDK function.
-   */
-  meta?: Record<string, unknown>;
+export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
+    /**
+     * You can provide a client instance returned by `createClient()` instead of
+     * individual options. This might be also useful if you want to implement a
+     * custom client.
+     */
+    client?: Client;
+    /**
+     * You can pass arbitrary values through the `meta` object. This can be
+     * used to access values that aren't defined as part of the SDK function.
+     */
+    meta?: Record<string, unknown>;
 };
 
 /**
  * List all issues worked by Son of Anton
  */
-export const issuesList = <ThrowOnError extends boolean = false>(
-  options?: Options<IssuesListData, ThrowOnError>,
-) =>
-  (options?.client ?? client).get<IssuesListResponses, unknown, ThrowOnError>({
-    url: '/issues',
-    ...options,
-  });
+export const issuesList = <ThrowOnError extends boolean = false>(options?: Options<IssuesListData, ThrowOnError>) => (options?.client ?? client).get<IssuesListResponses, unknown, ThrowOnError>({ url: '/issues', ...options });
 
 /**
  * Get details of a specific issue
  */
-export const issuesGet = <ThrowOnError extends boolean = false>(
-  options: Options<IssuesGetData, ThrowOnError>,
-) =>
-  (options.client ?? client).get<IssuesGetResponses, IssuesGetErrors, ThrowOnError>({
-    url: '/issues/{number}',
-    ...options,
-  });
+export const issuesGet = <ThrowOnError extends boolean = false>(options: Options<IssuesGetData, ThrowOnError>) => (options.client ?? client).get<IssuesGetResponses, IssuesGetErrors, ThrowOnError>({ url: '/issues/{number}', ...options });
 
 /**
  * Get the current planning session for an issue
  */
-export const issuesGetPlanningSession = <ThrowOnError extends boolean = false>(
-  options: Options<IssuesGetPlanningSessionData, ThrowOnError>,
-) =>
-  (options.client ?? client).get<
-    IssuesGetPlanningSessionResponses,
-    IssuesGetPlanningSessionErrors,
-    ThrowOnError
-  >({ url: '/issues/{number}/planning', ...options });
+export const issuesGetPlanningSession = <ThrowOnError extends boolean = false>(options: Options<IssuesGetPlanningSessionData, ThrowOnError>) => (options.client ?? client).get<IssuesGetPlanningSessionResponses, IssuesGetPlanningSessionErrors, ThrowOnError>({ url: '/issues/{number}/planning', ...options });
 
 /**
  * Approve the current plan for an issue
  */
-export const issuesApprovePlan = <ThrowOnError extends boolean = false>(
-  options: Options<IssuesApprovePlanData, ThrowOnError>,
-) =>
-  (options.client ?? client).post<
-    IssuesApprovePlanResponses,
-    IssuesApprovePlanErrors,
-    ThrowOnError
-  >({ url: '/issues/{number}/planning/approve', ...options });
+export const issuesApprovePlan = <ThrowOnError extends boolean = false>(options: Options<IssuesApprovePlanData, ThrowOnError>) => (options.client ?? client).post<IssuesApprovePlanResponses, IssuesApprovePlanErrors, ThrowOnError>({ url: '/issues/{number}/planning/approve', ...options });
 
 /**
  * Provide feedback on the current plan for an issue
  */
-export const issuesProvideFeedback = <ThrowOnError extends boolean = false>(
-  options: Options<IssuesProvideFeedbackData, ThrowOnError>,
-) =>
-  (options.client ?? client).post<
-    IssuesProvideFeedbackResponses,
-    IssuesProvideFeedbackErrors,
-    ThrowOnError
-  >({
+export const issuesProvideFeedback = <ThrowOnError extends boolean = false>(options: Options<IssuesProvideFeedbackData, ThrowOnError>) => (options.client ?? client).post<IssuesProvideFeedbackResponses, IssuesProvideFeedbackErrors, ThrowOnError>({
     url: '/issues/{number}/planning/feedback',
     ...options,
     headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-  });
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * List all sessions associated with an issue
  */
-export const issuesListSessions = <ThrowOnError extends boolean = false>(
-  options: Options<IssuesListSessionsData, ThrowOnError>,
-) =>
-  (options.client ?? client).get<
-    IssuesListSessionsResponses,
-    IssuesListSessionsErrors,
-    ThrowOnError
-  >({ url: '/issues/{number}/sessions', ...options });
+export const issuesListSessions = <ThrowOnError extends boolean = false>(options: Options<IssuesListSessionsData, ThrowOnError>) => (options.client ?? client).get<IssuesListSessionsResponses, IssuesListSessionsErrors, ThrowOnError>({ url: '/issues/{number}/sessions', ...options });
 
 /**
  * Get the full log content of a specific session
  */
-export const issuesGetSessionContent = <ThrowOnError extends boolean = false>(
-  options: Options<IssuesGetSessionContentData, ThrowOnError>,
-) =>
-  (options.client ?? client).get<
-    IssuesGetSessionContentResponses,
-    IssuesGetSessionContentErrors,
-    ThrowOnError
-  >({ url: '/issues/{number}/sessions/{id}', ...options });
+export const issuesGetSessionContent = <ThrowOnError extends boolean = false>(options: Options<IssuesGetSessionContentData, ThrowOnError>) => (options.client ?? client).get<IssuesGetSessionContentResponses, IssuesGetSessionContentErrors, ThrowOnError>({ url: '/issues/{number}/sessions/{id}', ...options });

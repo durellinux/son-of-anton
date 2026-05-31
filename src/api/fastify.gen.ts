@@ -2,58 +2,37 @@
 
 import type { RouteHandler } from 'fastify';
 
-import type {
-  IssuesApprovePlanData,
-  IssuesApprovePlanErrors,
-  IssuesApprovePlanResponses,
-  IssuesGetData,
-  IssuesGetErrors,
-  IssuesGetPlanningSessionData,
-  IssuesGetPlanningSessionErrors,
-  IssuesGetPlanningSessionResponses,
-  IssuesGetResponses,
-  IssuesGetSessionContentData,
-  IssuesGetSessionContentErrors,
-  IssuesGetSessionContentResponses,
-  IssuesListData,
-  IssuesListResponses,
-  IssuesListSessionsData,
-  IssuesListSessionsErrors,
-  IssuesListSessionsResponses,
-  IssuesProvideFeedbackData,
-  IssuesProvideFeedbackErrors,
-  IssuesProvideFeedbackResponses,
-} from './types.gen.js';
+import type { IssuesApprovePlanData, IssuesApprovePlanErrors, IssuesApprovePlanResponses, IssuesGetData, IssuesGetErrors, IssuesGetPlanningSessionData, IssuesGetPlanningSessionErrors, IssuesGetPlanningSessionResponses, IssuesGetResponses, IssuesGetSessionContentData, IssuesGetSessionContentErrors, IssuesGetSessionContentResponses, IssuesListData, IssuesListResponses, IssuesListSessionsData, IssuesListSessionsErrors, IssuesListSessionsResponses, IssuesProvideFeedbackData, IssuesProvideFeedbackErrors, IssuesProvideFeedbackResponses } from './types.gen.js';
 
 export type RouteHandlers = {
-  issuesList: RouteHandler<{
-    Querystring?: IssuesListData['query'];
-    Reply: IssuesListResponses;
-  }>;
-  issuesGet: RouteHandler<{
-    Params: IssuesGetData['path'];
-    Reply: IssuesGetErrors & IssuesGetResponses;
-  }>;
-  issuesGetPlanningSession: RouteHandler<{
-    Params: IssuesGetPlanningSessionData['path'];
-    Reply: IssuesGetPlanningSessionErrors & IssuesGetPlanningSessionResponses;
-  }>;
-  issuesApprovePlan: RouteHandler<{
-    Params: IssuesApprovePlanData['path'];
-    Reply: IssuesApprovePlanErrors & IssuesApprovePlanResponses;
-  }>;
-  issuesProvideFeedback: RouteHandler<{
-    Body: IssuesProvideFeedbackData['body'];
-    Params: IssuesProvideFeedbackData['path'];
-    Reply: IssuesProvideFeedbackErrors & IssuesProvideFeedbackResponses;
-  }>;
-  issuesListSessions: RouteHandler<{
-    Params: IssuesListSessionsData['path'];
-    Querystring?: IssuesListSessionsData['query'];
-    Reply: IssuesListSessionsErrors & IssuesListSessionsResponses;
-  }>;
-  issuesGetSessionContent: RouteHandler<{
-    Params: IssuesGetSessionContentData['path'];
-    Reply: IssuesGetSessionContentErrors & IssuesGetSessionContentResponses;
-  }>;
+    issuesList: RouteHandler<{
+        Querystring?: IssuesListData['query'];
+        Reply: IssuesListResponses;
+    }>;
+    issuesGet: RouteHandler<{
+        Params: IssuesGetData['path'];
+        Reply: IssuesGetErrors & IssuesGetResponses;
+    }>;
+    issuesGetPlanningSession: RouteHandler<{
+        Params: IssuesGetPlanningSessionData['path'];
+        Reply: IssuesGetPlanningSessionErrors & IssuesGetPlanningSessionResponses;
+    }>;
+    issuesApprovePlan: RouteHandler<{
+        Params: IssuesApprovePlanData['path'];
+        Reply: IssuesApprovePlanErrors & IssuesApprovePlanResponses;
+    }>;
+    issuesProvideFeedback: RouteHandler<{
+        Body: IssuesProvideFeedbackData['body'];
+        Params: IssuesProvideFeedbackData['path'];
+        Reply: IssuesProvideFeedbackErrors & IssuesProvideFeedbackResponses;
+    }>;
+    issuesListSessions: RouteHandler<{
+        Params: IssuesListSessionsData['path'];
+        Querystring?: IssuesListSessionsData['query'];
+        Reply: IssuesListSessionsErrors & IssuesListSessionsResponses;
+    }>;
+    issuesGetSessionContent: RouteHandler<{
+        Params: IssuesGetSessionContentData['path'];
+        Reply: IssuesGetSessionContentErrors & IssuesGetSessionContentResponses;
+    }>;
 };
