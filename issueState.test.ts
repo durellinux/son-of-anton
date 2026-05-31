@@ -259,7 +259,7 @@ for (const test of issueTests) {
 
 for (const test of localPlanningTests) {
   console.log(`Running local planning test: ${test.name}`);
-  const actual = determineIssueState(test.issue as Issue, test.localPlanning as any);
+  const actual = determineIssueState(test.issue as unknown as Issue, test.localPlanning as any);
   assert(actual === test.expected, `Expected ${test.expected}, but got ${actual}`);
 }
 

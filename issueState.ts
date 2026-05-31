@@ -24,8 +24,6 @@ export interface Issue {
   body: string;
   state: string;
   branch?: string;
-  comments: IssueComment[];
-  pullRequests?: { state: string }[];
 }
 
 export interface GHRawIssue {
@@ -74,10 +72,7 @@ export function determineIssueState(
     return IssueState.CLOSED;
   }
 
-  if (
-    issue.branch ||
-    (issue.pullRequests && issue.pullRequests.some((pr) => pr.state === 'OPEN'))
-  ) {
+  if (issue.branch) {
     return IssueState.WAITING_PR_REVIEW;
   }
 
@@ -95,25 +90,6 @@ export function determineIssueState(
       case PlanningSessionStatus.WAITING_APPROVAL:
         return IssueState.WAITING;
     }
-  }
-
-  const planComment = [...issue.comments]
-    .reverse()
-    .find((c) => c.body.includes('#son-of-anton-plan') && !c.body.startsWith('>'));
-
-  if (planComment) {
-    const thumbsUp =
-      planComment.reactionGroups.find((rg) => rg.content === 'THUMBS_UP')?.users.totalCount || 0;
-    const thumbsDown =
-      planComment.reactionGroups.find((rg) => rg.content === 'THUMBS_DOWN')?.users.totalCount || 0;
-
-    if (thumbsUp > 0 && thumbsDown === 0) {
-      return IssueState.NEEDS_IMPLEMENTATION;
-    }
-    if (thumbsDown > 0) {
-      return IssueState.NEEDS_PLANNING;
-    }
-    return IssueState.WAITING;
   }
 
   return IssueState.NEEDS_PLANNING;
