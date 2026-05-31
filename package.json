@@ -20,7 +20,8 @@
     "eslint:fix": "eslint . --fix",
     "prettier": "prettier --check .",
     "prettier:fix": "prettier --write .",
-    "run-checks": "yarn lint && yarn typecheck"
+    "run-checks": "yarn lint && yarn typecheck",
+    "start:all": "tsx scripts/startup.ts"
   },
   "dependencies": {
     "@fastify/static": "^7.0.4",
