@@ -80,7 +80,7 @@ export function determineIssueState(
     return IssueState.YOLO;
   }
 
-  // If we have a local planning session, it takes precedence over GitHub comments
+  // Check local planning session status
   if (localPlanningSession) {
     switch (localPlanningSession.status) {
       case PlanningSessionStatus.APPROVED:
