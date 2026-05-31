@@ -2,7 +2,7 @@ import Fastify from 'fastify';
 import { registerRoutes } from './routes';
 import { IssueRepository } from '../repositories/repositories';
 import { Issue, Session, IssueStatus, PlanningSession } from '../api';
-import { IssueService, Paged } from '../services/IssueService';
+import { IssueService, Paged } from '../services/issueService';
 
 class MockRepository implements IssueRepository {
   async listIssues(cursor?: string, limit?: number): Promise<Issue[]> {

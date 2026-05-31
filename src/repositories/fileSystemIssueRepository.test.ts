@@ -15,7 +15,7 @@ async function test() {
     number: 37,
     title: 'Test Issue',
     url: 'http://test.com',
-    status: IssueStatus.YOLO,
+    status: IssueStatus.YOLO
   };
   await repo.saveIssue(issue);
 
@@ -56,18 +56,14 @@ async function test() {
     history: [
       {
         plan: 'My plan',
-        timestamp: new Date().toISOString(),
-      },
-    ],
+        timestamp: new Date().toISOString()
+      }
+    ]
   };
   await repo.savePlanningSession(planningSession);
 
   const fetchedPlanning = await repo.getPlanningSession(37);
-  if (
-    !fetchedPlanning ||
-    fetchedPlanning.number !== 37 ||
-    fetchedPlanning.status !== PlanningSessionStatus.WAITING_APPROVAL
-  ) {
+  if (!fetchedPlanning || fetchedPlanning.number !== 37 || fetchedPlanning.status !== PlanningSessionStatus.WAITING_APPROVAL) {
     throw new Error('getPlanningSession failed');
   }
   if (fetchedPlanning.history.length !== 1 || fetchedPlanning.history[0].plan !== 'My plan') {
@@ -79,7 +75,7 @@ async function test() {
   console.log('All repository tests passed!');
 }
 
-test().catch((err) => {
+test().catch(err => {
   console.error(err);
   process.exit(1);
 });
