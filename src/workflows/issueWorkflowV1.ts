@@ -6,14 +6,14 @@ import { implementationBlock } from './blocks/implementationBlock';
 import { prReviewLoop } from './blocks/prReviewLoop';
 
 export const issueWorkflowV1 = restate.workflow({
-  name: 'issueWorkflowV1',
+  name: 'IssueWorkflowV1',
   handlers: {
     run: async (
       ctx: restate.WorkflowContext,
       params: { number: number; title: string; url: string; repository: string },
     ) => {
       const { number: issueNumber, repository: issueRepo } = params;
-      const workflowUrl = `http://localhost:8080/visualize/issueWorkflowV1/${ctx.key}`;
+      const workflowUrl = `http://localhost:8080/visualize/IssueWorkflowV1/${ctx.key}`;
 
       const { state } = await ctx.run('fetch-initial-state', () =>
         fetchIssueState(issueNumber, issueRepo),
