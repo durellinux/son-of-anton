@@ -39,8 +39,8 @@ When a workflow is triggered (e.g., via a GitHub webhook), it fetches the curren
 In this phase, Son of Anton analyzes the issue and proposes a plan.
 - **NEEDS_PLANNING**: The default state for new issues. Son of Anton uses the `anton-plan` skill to generate a step-by-step implementation plan.
 - **WAITING**: Once a plan is proposed, the workflow waits for user feedback.
-- **Approval**: A user approves the plan by adding a 👍 reaction to the plan comment.
-- **Rejection**: A user can request revisions by adding a 👎 reaction or providing feedback.
+- **Approval**: A user approves the plan by approving the plan through the Son of Anton UI.
+- **Rejection**: A user can request revisions by requesting revisions through the Son of Anton UI.
 
 ### 3. Implementation Block
 Once a plan is approved, the state transitions to `NEEDS_IMPLEMENTATION`.
@@ -59,8 +59,8 @@ The workflow monitors the PR for reviews.
 | Current State | Event | Next State | Description |
 | --- | --- | --- | --- |
 | `NEEDS_PLANNING` | Gemini proposes plan | `WAITING` | Plan is posted as a comment on the issue. |
-| `WAITING` | User approves (👍) | `NEEDS_IMPLEMENTATION` | Workflow proceeds to implementation. |
-| `WAITING` | User rejects (👎) | `NEEDS_PLANNING` | Workflow returns to planning to address feedback. |
+| `WAITING` | User approves | `NEEDS_IMPLEMENTATION` | Workflow proceeds to implementation. |
+| `WAITING` | User rejects | `NEEDS_PLANNING` | Workflow returns to planning to address feedback. |
 | `NEEDS_IMPLEMENTATION` | Implementation starts | `NEEDS_IMPLEMENTATION` | Son of Anton is working on the code. |
 | `NEEDS_IMPLEMENTATION` | PR created | `WAITING_PR_REVIEW` | Implementation finished, waiting for human review. |
 | `WAITING_PR_REVIEW` | Reviewer requests changes | `NEEDS_IMPLEMENTATION` | Son of Anton will use `anton-pr-fix` to address comments. |

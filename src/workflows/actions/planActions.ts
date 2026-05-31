@@ -31,16 +31,6 @@ export async function commitPlan(issueNumber: number, issueRepo: string) {
   return commentJson;
 }
 
-export async function thumbsUpPlan(issueRepo: string, githubComment: any) {
-  const comment = JSON.parse(githubComment);
-  await execa('gh', [
-    'api',
-    `repos/${issueRepo}/issues/comments/${comment.id}/reactions`,
-    '-f',
-    'content=+1',
-  ]);
-}
-
 export function buildPlanningPrompt(
   issueNumber: number,
   issueRepo: string,
