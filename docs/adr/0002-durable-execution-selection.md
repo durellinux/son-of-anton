@@ -14,9 +14,9 @@ We will use Restate as the durable execution framework for Son of Anton.
 
 ## Alternatives Considered
 
-* **Temporal**: Industry standard but too heavyweight (requires multi-service cluster and external DB).
-* **DBOS**: Library-based but requires Postgres.
-* **Effect**: Great for concurrency but lacks built-in durability across restarts.
+- **Temporal**: Industry standard but too heavyweight (requires multi-service cluster and external DB).
+- **DBOS**: Library-based but requires Postgres.
+- **Effect**: Great for concurrency but lacks built-in durability across restarts.
 
 ## Rationale
 
