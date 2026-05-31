@@ -1,0 +1,9 @@
+node_modules/
+dist/
+tsp-output/
+src/api/
+.anton/
+ui/
+**/*.md
+**/*.gen.ts
+src/api/index.ts

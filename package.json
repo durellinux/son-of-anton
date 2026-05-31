@@ -13,9 +13,12 @@
     "ui:dev": "yarn --cwd ui dev",
     "ui:build": "yarn --cwd ui build",
     "build": "yarn generate && yarn ui:build",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
-    "format": "prettier --write ."
+    "lint": "yarn eslint && yarn prettier",
+    "lint:fix": "yarn eslint:fix && yarn prettier:fix",
+    "eslint": "eslint .",
+    "eslint:fix": "eslint . --fix",
+    "prettier": "prettier --check .",
+    "prettier:fix": "prettier --write ."
   },
   "dependencies": {
     "@fastify/static": "^7.0.4",
