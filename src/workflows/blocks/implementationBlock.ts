@@ -1,7 +1,7 @@
 import * as restate from '@restatedev/restate-sdk';
 import { fetchIssueState, updateRepository } from '../actions/issuesActions';
 import { IssueState } from '../../../issueState';
-import { executeGemini } from '../gemini';
+import { geminiLoop } from './geminiLoop';
 
 export async function implementationBlock(
   ctx: restate.WorkflowContext,
@@ -25,7 +25,7 @@ export async function implementationBlock(
   }
 
   const prompt = `follow the anton-implement skill flow for issue ${issueNumber} on the repo ${issueRepo}`;
-  await executeGemini(ctx, `${prefix}-execute-gemini`, issueNumber, prompt, 'implement');
+  await geminiLoop(ctx, `${prefix}-execute-gemini`, issueNumber, prompt, 'implement');
 
   // Update state after implementation
   await ctx.run(`${prefix}-update-repository-final`, () =>
