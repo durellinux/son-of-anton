@@ -13,3 +13,13 @@ Refer to the skills defined in `.gemini/skills/`:
 
 - `anton-daemon.ts`: The main daemon entry point.
 - `.gemini/skills/`: Definitions of autonomous skills.
+
+## Style Guide
+Unless required by specific constraints (i.e. interacting with shell, external configs/APIs, other very known standards), follow these conventions:
+- js and ts files: use camelCase names
+- tsx: use PascalCase
+- constants: use all capitals separated by underscores
+- variable and functions: use camelCase
+- test files: named after the file they test and placed in the same directory with the suffix `.test.ts`
+
+Use TypeScript whenever possible.
