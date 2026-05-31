@@ -48,9 +48,7 @@ export async function planningLoop(
       );
 
       const prompt = buildPlanningPrompt(issueNumber, issueRepo, state);
-      await ctx.run(`${prefix}-execute-gemini-${iteration}`, () =>
-        executeGemini(issueNumber, prompt, 'plan'),
-      );
+      await executeGemini(ctx, `${prefix}-execute-gemini-${iteration}`, issueNumber, prompt, 'plan');
 
       // Update state after planning
       await ctx.run(`${prefix}-update-repository-final-${iteration}`, () =>
