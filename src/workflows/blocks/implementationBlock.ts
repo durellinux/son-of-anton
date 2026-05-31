@@ -25,7 +25,7 @@ export async function implementationBlock(
   }
 
   const prompt = `follow the anton-implement skill flow for issue ${issueNumber} on the repo ${issueRepo}`;
-  await ctx.run(`${prefix}-execute-gemini`, () => executeGemini(issueNumber, prompt, 'implement'));
+  await executeGemini(ctx, `${prefix}-execute-gemini`, issueNumber, prompt, 'implement');
 
   // Update state after implementation
   await ctx.run(`${prefix}-update-repository-final`, () =>

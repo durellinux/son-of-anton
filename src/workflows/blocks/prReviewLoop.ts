@@ -31,14 +31,12 @@ export async function prReviewLoop(
     }
 
     if (state === IssueState.NEEDS_IMPLEMENTATION && unaddressedCommentIds.length > 0) {
-      await ctx.run(`${prefix}-execute-gemini-${iteration}`, async () => {
-        // Extract issue number from branch name (e.g., anton/30)
-        const issueMatch = prDetails.headRefName.match(/anton\/(\d+)/);
-        const issueNumber = issueMatch ? issueMatch[1] : `pr-${prNumber}`;
-        const issueParam = `for issue ${issueNumber} `;
-        const prompt = `use the anton-pr-fix skill flow ${issueParam} for PR ${prNumber} on branch ${prDetails.headRefName} in repo ${fullRepo} with comment IDs ${unaddressedCommentIds.join(', ')}`;
-        await executeGemini(prNumber, prompt, 'pr-fix');
-      });
+      // Extract issue number from branch name (e.g., anton/30)
+      const issueMatch = prDetails.headRefName.match(/anton\/(\d+)/);
+      const issueNumber = issueMatch ? issueMatch[1] : `pr-${prNumber}`;
+      const issueParam = `for issue ${issueNumber} `;
+      const prompt = `use the anton-pr-fix skill flow ${issueParam} for PR ${prNumber} on branch ${prDetails.headRefName} in repo ${fullRepo} with comment IDs ${unaddressedCommentIds.join(', ')}`;
+      await executeGemini(ctx, `${prefix}-execute-gemini-${iteration}`, prNumber, prompt, 'pr-fix');
     }
 
     await ctx.sleep(5 * 60 * 1000);
