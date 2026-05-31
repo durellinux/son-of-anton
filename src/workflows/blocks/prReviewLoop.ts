@@ -1,6 +1,6 @@
 import * as restate from '@restatedev/restate-sdk';
 import { fetchPrState } from '../actions/prActions';
-import { IssueState } from '../../../issue-state';
+import { IssueState } from '../../../issueState';
 import { executeGemini } from '../gemini';
 
 const MAX_PLAN_ITERATIONS = 1000;

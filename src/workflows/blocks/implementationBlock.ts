@@ -1,6 +1,6 @@
 import * as restate from '@restatedev/restate-sdk';
 import { fetchIssueState, updateRepository } from '../actions/issuesActions';
-import { IssueState } from '../../../issue-state';
+import { IssueState } from '../../../issueState';
 import { executeGemini } from '../gemini';
 
 export async function implementationBlock(

@@ -5,7 +5,7 @@ import {
   IssueState,
   PRComment,
   PullRequest,
-} from '../../../issue-state';
+} from '../../../issueState';
 
 export async function fetchPrState(prNumber: number, fullRepo: string) {
   const { stdout: prDetailsJson } = await execa('gh', [

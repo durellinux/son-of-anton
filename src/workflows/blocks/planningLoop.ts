@@ -1,7 +1,7 @@
 // Iterate planning until plan is approved
 import * as restate from '@restatedev/restate-sdk';
 import { fetchIssueState, updateRepository } from '../actions/issuesActions';
-import { IssueState } from '../../../issue-state';
+import { IssueState } from '../../../issueState';
 import { buildPlanningPrompt, commitPlan } from '../actions/planActions';
 import { executeGemini } from '../gemini';
 
