@@ -1,4 +1,13 @@
-import { determineIssueState, determinePRState, IssueState, Issue, PullRequest, getUnaddressedPRComments, PRComment, PlanningSessionStatus } from './issue-state';
+import {
+  determineIssueState,
+  determinePRState,
+  IssueState,
+  Issue,
+  PullRequest,
+  getUnaddressedPRComments,
+  PRComment,
+  PlanningSessionStatus,
+} from './issueState';
 
 function assert(condition: boolean, message: string) {
   if (!condition) {
@@ -11,17 +20,17 @@ const issueTests = [
     name: 'YOLO mode',
     issue: {
       body: 'Fix this bug #yolo',
-      comments: []
+      comments: [],
     },
-    expected: IssueState.YOLO
+    expected: IssueState.YOLO,
   },
   {
     name: 'Needs planning (no plan)',
     issue: {
       body: 'Fix this bug',
-      comments: []
+      comments: [],
     },
-    expected: IssueState.NEEDS_PLANNING
+    expected: IssueState.NEEDS_PLANNING,
   },
   {
     name: 'Needs planning (plan rejected)',
@@ -30,11 +39,11 @@ const issueTests = [
       comments: [
         {
           body: 'My plan #son-of-anton-plan',
-          reactionGroups: [{ content: 'THUMBS_DOWN', users: { totalCount: 1 } }]
-        }
-      ]
+          reactionGroups: [{ content: 'THUMBS_DOWN', users: { totalCount: 1 } }],
+        },
+      ],
     },
-    expected: IssueState.NEEDS_PLANNING
+    expected: IssueState.NEEDS_PLANNING,
   },
   {
     name: 'Needs implementation (plan approved)',
@@ -43,29 +52,29 @@ const issueTests = [
       comments: [
         {
           body: 'My plan #son-of-anton-plan',
-          reactionGroups: [{ content: 'THUMBS_UP', users: { totalCount: 1 } }]
-        }
-      ]
-    },
-    expected: IssueState.NEEDS_IMPLEMENTATION
-  },
-    {
-        name: 'Needs planning (plan rejected with comments)',
-        issue: {
-            body: 'Fix this bug',
-            comments: [
-                {
-                    body: 'My plan #son-of-anton-plan',
-                    reactionGroups: [{ content: 'THUMBS_DOWN', users: { totalCount: 1 } }]
-                },
-                {
-                    body: '> My plan #son-of-anton-plan\nThis is not good!',
-                    reactionGroups: []
-                }
-            ]
+          reactionGroups: [{ content: 'THUMBS_UP', users: { totalCount: 1 } }],
         },
-        expected: IssueState.NEEDS_PLANNING
+      ],
     },
+    expected: IssueState.NEEDS_IMPLEMENTATION,
+  },
+  {
+    name: 'Needs planning (plan rejected with comments)',
+    issue: {
+      body: 'Fix this bug',
+      comments: [
+        {
+          body: 'My plan #son-of-anton-plan',
+          reactionGroups: [{ content: 'THUMBS_DOWN', users: { totalCount: 1 } }],
+        },
+        {
+          body: '> My plan #son-of-anton-plan\nThis is not good!',
+          reactionGroups: [],
+        },
+      ],
+    },
+    expected: IssueState.NEEDS_PLANNING,
+  },
   {
     name: 'Waiting (plan posted, no reaction)',
     issue: {
@@ -73,11 +82,11 @@ const issueTests = [
       comments: [
         {
           body: 'My plan #son-of-anton-plan',
-          reactionGroups: []
-        }
-      ]
+          reactionGroups: [],
+        },
+      ],
     },
-    expected: IssueState.WAITING
+    expected: IssueState.WAITING,
   },
   {
     name: 'Correctly identifies last plan',
@@ -86,34 +95,34 @@ const issueTests = [
       comments: [
         {
           body: 'Old plan #son-of-anton-plan',
-          reactionGroups: [{ content: 'THUMBS_UP', users: { totalCount: 1 } }]
+          reactionGroups: [{ content: 'THUMBS_UP', users: { totalCount: 1 } }],
         },
         {
           body: 'New plan #son-of-anton-plan',
-          reactionGroups: []
-        }
-      ]
+          reactionGroups: [],
+        },
+      ],
     },
-    expected: IssueState.WAITING
+    expected: IssueState.WAITING,
   },
   {
     name: 'Closed issue',
     issue: {
       body: 'Fix this bug',
       comments: [],
-      state: 'CLOSED'
+      state: 'CLOSED',
     },
-    expected: IssueState.CLOSED
+    expected: IssueState.CLOSED,
   },
   {
     name: 'Waiting for PR review',
     issue: {
       body: 'Fix this bug',
       comments: [],
-      pullRequests: [{ state: 'OPEN' }]
+      pullRequests: [{ state: 'OPEN' }],
     },
-    expected: IssueState.WAITING_PR_REVIEW
-  }
+    expected: IssueState.WAITING_PR_REVIEW,
+  },
 ];
 
 const localPlanningTests = [
@@ -121,19 +130,19 @@ const localPlanningTests = [
     name: 'Local planning: Waiting approval',
     issue: { body: 'Fix bug', comments: [] },
     localPlanning: { status: PlanningSessionStatus.WAITING_APPROVAL },
-    expected: IssueState.WAITING
+    expected: IssueState.WAITING,
   },
   {
     name: 'Local planning: Approved',
     issue: { body: 'Fix bug', comments: [] },
     localPlanning: { status: PlanningSessionStatus.APPROVED },
-    expected: IssueState.NEEDS_IMPLEMENTATION
+    expected: IssueState.NEEDS_IMPLEMENTATION,
   },
   {
     name: 'Local planning: Needs revision',
     issue: { body: 'Fix bug', comments: [] },
     localPlanning: { status: PlanningSessionStatus.NEEDS_REVISION },
-    expected: IssueState.NEEDS_PLANNING
+    expected: IssueState.NEEDS_PLANNING,
   },
   {
     name: 'Local planning takes precedence over GitHub',
@@ -142,13 +151,13 @@ const localPlanningTests = [
       comments: [
         {
           body: 'Plan #son-of-anton-plan',
-          reactionGroups: [{ content: 'THUMBS_DOWN', users: { totalCount: 1 } }]
-        }
-      ]
+          reactionGroups: [{ content: 'THUMBS_DOWN', users: { totalCount: 1 } }],
+        },
+      ],
     },
     localPlanning: { status: PlanningSessionStatus.APPROVED },
-    expected: IssueState.NEEDS_IMPLEMENTATION
-  }
+    expected: IssueState.NEEDS_IMPLEMENTATION,
+  },
 ];
 
 const prTests = [
@@ -157,36 +166,36 @@ const prTests = [
     pr: {
       number: 1,
       reviewDecision: 'CHANGES_REQUESTED',
-      headRefName: 'feature'
+      headRefName: 'feature',
     },
-    expected: IssueState.NEEDS_IMPLEMENTATION
+    expected: IssueState.NEEDS_IMPLEMENTATION,
   },
   {
     name: 'PR Waiting (approved)',
     pr: {
       number: 2,
       reviewDecision: 'APPROVED',
-      headRefName: 'feature'
+      headRefName: 'feature',
     },
-    expected: IssueState.WAITING
+    expected: IssueState.WAITING,
   },
   {
     name: 'PR Needs implementation (review required)',
     pr: {
       number: 3,
       reviewDecision: 'REVIEW_REQUIRED',
-      headRefName: 'feature'
+      headRefName: 'feature',
     },
-    expected: IssueState.NEEDS_IMPLEMENTATION
+    expected: IssueState.NEEDS_IMPLEMENTATION,
   },
   {
     name: 'PR Needs implementation (no review decision)',
     pr: {
       number: 4,
       reviewDecision: null as any,
-      headRefName: 'feature'
+      headRefName: 'feature',
     },
-    expected: IssueState.NEEDS_IMPLEMENTATION
+    expected: IssueState.NEEDS_IMPLEMENTATION,
   },
   {
     name: 'PR Merged',
@@ -194,9 +203,9 @@ const prTests = [
       number: 5,
       reviewDecision: 'APPROVED',
       headRefName: 'feature',
-      state: 'MERGED'
+      state: 'MERGED',
     },
-    expected: IssueState.MERGED
+    expected: IssueState.MERGED,
   },
   {
     name: 'PR Closed',
@@ -204,42 +213,42 @@ const prTests = [
       number: 6,
       reviewDecision: 'CHANGES_REQUESTED',
       headRefName: 'feature',
-      state: 'CLOSED'
+      state: 'CLOSED',
     },
-    expected: IssueState.CLOSED
-  }
+    expected: IssueState.CLOSED,
+  },
 ];
 
 const commentTests = [
-    {
-        name: 'No comments',
-        comments: [] as PRComment[],
-        expected: [] as number[]
-    },
-    {
-        name: 'All unaddressed',
-        comments: [
-            { id: 1, body: 'test1', reactions: { '+1': 0 } },
-            { id: 2, body: 'test2', reactions: { '+1': 0 } }
-        ] as PRComment[],
-        expected: [1, 2]
-    },
-    {
-        name: 'Some addressed',
-        comments: [
-            { id: 1, body: 'test1', reactions: { '+1': 1 } },
-            { id: 2, body: 'test2', reactions: { '+1': 0 } }
-        ] as PRComment[],
-        expected: [2]
-    },
-    {
-        name: 'All addressed',
-        comments: [
-            { id: 1, body: 'test1', reactions: { '+1': 1 } },
-            { id: 2, body: 'test2', reactions: { '+1': 2 } }
-        ] as PRComment[],
-        expected: []
-    }
+  {
+    name: 'No comments',
+    comments: [] as PRComment[],
+    expected: [] as number[],
+  },
+  {
+    name: 'All unaddressed',
+    comments: [
+      { id: 1, body: 'test1', reactions: { '+1': 0 } },
+      { id: 2, body: 'test2', reactions: { '+1': 0 } },
+    ] as PRComment[],
+    expected: [1, 2],
+  },
+  {
+    name: 'Some addressed',
+    comments: [
+      { id: 1, body: 'test1', reactions: { '+1': 1 } },
+      { id: 2, body: 'test2', reactions: { '+1': 0 } },
+    ] as PRComment[],
+    expected: [2],
+  },
+  {
+    name: 'All addressed',
+    comments: [
+      { id: 1, body: 'test1', reactions: { '+1': 1 } },
+      { id: 2, body: 'test2', reactions: { '+1': 2 } },
+    ] as PRComment[],
+    expected: [],
+  },
 ];
 
 for (const test of issueTests) {
@@ -261,9 +270,12 @@ for (const test of prTests) {
 }
 
 for (const test of commentTests) {
-    console.log(`Running comment test: ${test.name}`);
-    const actual = getUnaddressedPRComments(test.comments);
-    assert(JSON.stringify(actual) === JSON.stringify(test.expected), `Expected ${JSON.stringify(test.expected)}, but got ${JSON.stringify(actual)}`);
+  console.log(`Running comment test: ${test.name}`);
+  const actual = getUnaddressedPRComments(test.comments);
+  assert(
+    JSON.stringify(actual) === JSON.stringify(test.expected),
+    `Expected ${JSON.stringify(test.expected)}, but got ${JSON.stringify(actual)}`,
+  );
 }
 
 console.log('All tests passed!');

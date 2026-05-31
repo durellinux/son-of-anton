@@ -4,8 +4,8 @@ services:
   anton:
     build: .
     ports:
-      - "3000:3000"
-      - "9080:9080"
+      - '3000:3000'
+      - '9080:9080'
     environment:
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - GH_TOKEN=${GH_TOKEN}
@@ -17,9 +17,9 @@ services:
   restate:
     image: ghcr.io/restatedev/restate:latest
     ports:
-      - "8080:8080"
-      - "9070:9070"
-      - "9071:9071"
+      - '8080:8080'
+      - '9070:9070'
+      - '9071:9071'
     volumes:
       - restate_data:/target
 
@@ -28,7 +28,7 @@ services:
     depends_on:
       - anton
       - restate
-    entrypoint: ["/bin/sh", "-c"]
+    entrypoint: ['/bin/sh', '-c']
     command:
       - |
         until restate --server http://restate:9070 deployment register http://anton:9080; do

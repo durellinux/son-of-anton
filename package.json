@@ -2,17 +2,20 @@
   "name": "son-of-anton",
   "version": "1.0.0",
   "description": "Autonomous issue fixer daemon",
-  "main": "anton-daemon.ts",
+  "main": "antonDaemon.ts",
   "scripts": {
-    "start": "tsx anton-daemon.ts",
-    "dev": "yarn ui:build && tsx anton-daemon.ts",
-    "test": "yarn tsx issue-state.test.ts && yarn tsx src/repositories/FileSystemIssueRepository.test.ts && yarn tsx src/resources/routes.test.ts",
+    "start": "tsx antonDaemon.ts",
+    "dev": "yarn ui:build && tsx antonDaemon.ts",
+    "test": "yarn tsx issueState.test.ts && yarn tsx src/repositories/fileSystemIssueRepository.test.ts && yarn tsx src/resources/routes.test.ts",
     "tsp:compile": "tsp compile status-api.tsp",
     "tsp:generate": "openapi-ts",
     "generate": "yarn tsp:compile && yarn tsp:generate",
     "ui:dev": "yarn --cwd ui dev",
     "ui:build": "yarn --cwd ui build",
-    "build": "yarn generate && yarn ui:build"
+    "build": "yarn generate && yarn ui:build",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write ."
   },
   "dependencies": {
     "@fastify/static": "^7.0.4",
@@ -23,6 +26,7 @@
     "fastify": "^4.26.2"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@hey-api/openapi-ts": "^0.97.1",
     "@types/node": "^20.11.24",
     "@typespec/compiler": "^1.11.0",
@@ -30,9 +34,14 @@
     "@typespec/openapi": "^1.11.0",
     "@typespec/openapi3": "^1.11.0",
     "@typespec/rest": "^0.81.0",
+    "eslint": "^10.4.1",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.6",
     "pino-pretty": "^10.3.1",
+    "prettier": "^3.8.3",
     "ts-node": "^10.9.2",
     "tsx": "^4.21.1",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "typescript-eslint": "^8.60.0"
   }
 }
