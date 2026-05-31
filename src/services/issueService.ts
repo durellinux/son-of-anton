@@ -77,9 +77,11 @@ export class IssueService {
   }
 
   async deleteIssue(number: number): Promise<void> {
+    const issue = await this.repository.getIssue(number);
     // 1. Terminate Restate workflow
     try {
-      const handle = this.restateClient.workflowHandle(IssueWorkflowV1, `issue-${number}`);
+      const workflowId = issue?.workflowId || `issue-${number}`;
+      const handle = this.restateClient.workflowHandle(IssueWorkflowV1, workflowId);
       await handle.terminate();
     } catch (e) {
       // Ignore if workflow doesn't exist or already terminated

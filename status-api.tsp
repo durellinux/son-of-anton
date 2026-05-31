@@ -48,6 +48,9 @@ model Issue {
 
   @doc("URL to the workflow in Restate")
   workflowUrl?: string;
+
+  @doc("ID of the workflow in Restate")
+  workflowId?: string;
 }
 
 model Session {

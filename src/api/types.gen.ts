@@ -41,6 +41,10 @@ export type Issue = {
      * URL to the workflow in Restate
      */
     workflowUrl?: string;
+    /**
+     * ID of the workflow in Restate
+     */
+    workflowId?: string;
 };
 
 export enum IssueStatus {
