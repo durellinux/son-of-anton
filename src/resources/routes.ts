@@ -1,5 +1,5 @@
 import { FastifyInstance } from 'fastify';
-import { IssueService } from '../services/IssueService';
+import { IssueService } from '../services/issueService';
 import { RouteHandlers } from '../api/fastify.gen';
 
 export function registerRoutes(
