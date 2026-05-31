@@ -1,6 +1,5 @@
 import { execa } from 'execa';
 import { FileSystemIssueRepository } from '../../repositories/fileSystemIssueRepository';
-import { IssueStatus } from '../../api';
 import { IssueState } from '../../../issueState';
 
 const repository = new FileSystemIssueRepository();

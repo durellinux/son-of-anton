@@ -3,7 +3,6 @@ import {
   determinePRState,
   IssueState,
   Issue,
-  PullRequest,
   getUnaddressedPRComments,
   PRComment,
   PlanningSessionStatus,

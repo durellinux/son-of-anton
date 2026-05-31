@@ -168,7 +168,10 @@ export class FileSystemIssueRepository implements IssueRepository {
     try {
       await rm(filePath, { force: true });
     } catch (e) {
-      throw new Error(`Failed to delete issue ${number}: ${e instanceof Error ? e.message : String(e)}`, { cause: e });
+      throw new Error(
+        `Failed to delete issue ${number}: ${e instanceof Error ? e.message : String(e)}`,
+        { cause: e },
+      );
     }
   }
 
@@ -178,7 +181,10 @@ export class FileSystemIssueRepository implements IssueRepository {
       await rm(sessionDir, { recursive: true, force: true });
       await this.deletePlanningSession(number);
     } catch (e) {
-      throw new Error(`Failed to delete sessions for issue ${number}: ${e instanceof Error ? e.message : String(e)}`, { cause: e });
+      throw new Error(
+        `Failed to delete sessions for issue ${number}: ${e instanceof Error ? e.message : String(e)}`,
+        { cause: e },
+      );
     }
   }
 
@@ -187,7 +193,10 @@ export class FileSystemIssueRepository implements IssueRepository {
     try {
       await rm(workspaceDir, { recursive: true, force: true });
     } catch (e) {
-      throw new Error(`Failed to delete workspace for issue ${number}: ${e instanceof Error ? e.message : String(e)}`, { cause: e });
+      throw new Error(
+        `Failed to delete workspace for issue ${number}: ${e instanceof Error ? e.message : String(e)}`,
+        { cause: e },
+      );
     }
   }
 }
