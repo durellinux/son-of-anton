@@ -2,12 +2,16 @@
 
 import type { RouteHandler } from 'fastify';
 
-import type { IssuesApprovePlanData, IssuesApprovePlanErrors, IssuesApprovePlanResponses, IssuesGetData, IssuesGetErrors, IssuesGetPlanningSessionData, IssuesGetPlanningSessionErrors, IssuesGetPlanningSessionResponses, IssuesGetResponses, IssuesGetSessionContentData, IssuesGetSessionContentErrors, IssuesGetSessionContentResponses, IssuesListData, IssuesListResponses, IssuesListSessionsData, IssuesListSessionsErrors, IssuesListSessionsResponses, IssuesProvideFeedbackData, IssuesProvideFeedbackErrors, IssuesProvideFeedbackResponses } from './types.gen.js';
+import type { IssuesApprovePlanData, IssuesApprovePlanErrors, IssuesApprovePlanResponses, IssuesDeleteData, IssuesDeleteErrors, IssuesDeleteResponses, IssuesGetData, IssuesGetErrors, IssuesGetPlanningSessionData, IssuesGetPlanningSessionErrors, IssuesGetPlanningSessionResponses, IssuesGetResponses, IssuesGetSessionContentData, IssuesGetSessionContentErrors, IssuesGetSessionContentResponses, IssuesListData, IssuesListResponses, IssuesListSessionsData, IssuesListSessionsErrors, IssuesListSessionsResponses, IssuesProvideFeedbackData, IssuesProvideFeedbackErrors, IssuesProvideFeedbackResponses } from './types.gen.js';
 
 export type RouteHandlers = {
     issuesList: RouteHandler<{
         Querystring?: IssuesListData['query'];
         Reply: IssuesListResponses;
+    }>;
+    issuesDelete: RouteHandler<{
+        Params: IssuesDeleteData['path'];
+        Reply: IssuesDeleteErrors & IssuesDeleteResponses;
     }>;
     issuesGet: RouteHandler<{
         Params: IssuesGetData['path'];

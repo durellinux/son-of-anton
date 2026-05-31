@@ -31,12 +31,21 @@ class MockRepository implements IssueRepository {
   }
   async savePlanningSession(session: PlanningSession): Promise<void> {}
   async deletePlanningSession(number: number): Promise<void> {}
+  async deleteIssue(number: number): Promise<void> {}
+  async deleteSessions(number: number): Promise<void> {}
+  async deleteWorkspace(number: number): Promise<void> {}
 }
+
+const mockRestateClient = {
+  workflowHandle: () => ({
+    terminate: async () => {}
+  })
+} as any;
 
 async function test() {
   const fastify = Fastify();
   const repository = new MockRepository();
-  const issueService = new IssueService(repository);
+  const issueService = new IssueService(repository, mockRestateClient);
   fastify.register(registerRoutes, { issueService });
 
   console.log('Testing GET /issues...');
@@ -55,6 +64,12 @@ async function test() {
   response = await fastify.inject({ method: 'GET', url: '/issues/2' });
   if (response.statusCode !== 404) {
     throw new Error('GET /issues/2 should be 404');
+  }
+
+  console.log('Testing DELETE /issues/1...');
+  response = await fastify.inject({ method: 'DELETE', url: '/issues/1' });
+  if (response.statusCode !== 204) {
+    throw new Error('DELETE /issues/1 failed');
   }
 
   console.log('Testing GET /issues/1/sessions...');

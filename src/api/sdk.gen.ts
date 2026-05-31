@@ -2,7 +2,7 @@
 
 import { client } from './client.gen.js';
 import type { Client, Options as Options2, TDataShape } from './client/index.js';
-import type { IssuesApprovePlanData, IssuesApprovePlanErrors, IssuesApprovePlanResponses, IssuesGetData, IssuesGetErrors, IssuesGetPlanningSessionData, IssuesGetPlanningSessionErrors, IssuesGetPlanningSessionResponses, IssuesGetResponses, IssuesGetSessionContentData, IssuesGetSessionContentErrors, IssuesGetSessionContentResponses, IssuesListData, IssuesListResponses, IssuesListSessionsData, IssuesListSessionsErrors, IssuesListSessionsResponses, IssuesProvideFeedbackData, IssuesProvideFeedbackErrors, IssuesProvideFeedbackResponses } from './types.gen.js';
+import type { IssuesApprovePlanData, IssuesApprovePlanErrors, IssuesApprovePlanResponses, IssuesDeleteData, IssuesDeleteErrors, IssuesDeleteResponses, IssuesGetData, IssuesGetErrors, IssuesGetPlanningSessionData, IssuesGetPlanningSessionErrors, IssuesGetPlanningSessionResponses, IssuesGetResponses, IssuesGetSessionContentData, IssuesGetSessionContentErrors, IssuesGetSessionContentResponses, IssuesListData, IssuesListResponses, IssuesListSessionsData, IssuesListSessionsErrors, IssuesListSessionsResponses, IssuesProvideFeedbackData, IssuesProvideFeedbackErrors, IssuesProvideFeedbackResponses } from './types.gen.js';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -22,6 +22,11 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
  * List all issues worked by Son of Anton
  */
 export const issuesList = <ThrowOnError extends boolean = false>(options?: Options<IssuesListData, ThrowOnError>) => (options?.client ?? client).get<IssuesListResponses, unknown, ThrowOnError>({ url: '/issues', ...options });
+
+/**
+ * Delete all data for an issue and terminate its workflow
+ */
+export const issuesDelete = <ThrowOnError extends boolean = false>(options: Options<IssuesDeleteData, ThrowOnError>) => (options.client ?? client).delete<IssuesDeleteResponses, IssuesDeleteErrors, ThrowOnError>({ url: '/issues/{number}', ...options });
 
 /**
  * Get details of a specific issue

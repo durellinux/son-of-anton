@@ -162,4 +162,32 @@ export class FileSystemIssueRepository implements IssueRepository {
       );
     }
   }
+
+  async deleteIssue(number: number): Promise<void> {
+    const filePath = path.join(this.baseDir, 'issues', `${number}.json`);
+    try {
+      await rm(filePath, { force: true });
+    } catch (e) {
+      throw new Error(`Failed to delete issue ${number}: ${e instanceof Error ? e.message : String(e)}`, { cause: e });
+    }
+  }
+
+  async deleteSessions(number: number): Promise<void> {
+    const sessionDir = path.join(this.baseDir, 'sessions', String(number));
+    try {
+      await rm(sessionDir, { recursive: true, force: true });
+      await this.deletePlanningSession(number);
+    } catch (e) {
+      throw new Error(`Failed to delete sessions for issue ${number}: ${e instanceof Error ? e.message : String(e)}`, { cause: e });
+    }
+  }
+
+  async deleteWorkspace(number: number): Promise<void> {
+    const workspaceDir = path.join(this.baseDir, 'workspaces', String(number));
+    try {
+      await rm(workspaceDir, { recursive: true, force: true });
+    } catch (e) {
+      throw new Error(`Failed to delete workspace for issue ${number}: ${e instanceof Error ? e.message : String(e)}`, { cause: e });
+    }
+  }
 }
