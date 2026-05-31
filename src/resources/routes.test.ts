@@ -12,8 +12,13 @@ class MockRepository implements IssueRepository {
     if (number === 1) return { number: 1, title: 'Test', url: '', status: IssueStatus.PLANNING };
     return undefined;
   }
-  async listSessions(issueNumber: number, cursor?: string, limit?: number): Promise<Session[] | undefined> {
-    if (issueNumber === 1) return [{ id: 's1', type: 'planning', timestamp: '', status: 'success' }];
+  async listSessions(
+    issueNumber: number,
+    cursor?: string,
+    limit?: number,
+  ): Promise<Session[] | undefined> {
+    if (issueNumber === 1)
+      return [{ id: 's1', type: 'planning', timestamp: '', status: 'success' }];
     return undefined;
   }
   async getSessionContent(issueNumber: number, sessionId: string): Promise<string | undefined> {
@@ -21,7 +26,9 @@ class MockRepository implements IssueRepository {
     return undefined;
   }
   async saveIssue(issue: Issue): Promise<void> {}
-  async getPlanningSession(number: number): Promise<PlanningSession | undefined> { return undefined; }
+  async getPlanningSession(number: number): Promise<PlanningSession | undefined> {
+    return undefined;
+  }
   async savePlanningSession(session: PlanningSession): Promise<void> {}
   async deletePlanningSession(number: number): Promise<void> {}
 }
@@ -65,7 +72,7 @@ async function test() {
   console.log('All API tests passed!');
 }
 
-test().catch(err => {
+test().catch((err) => {
   console.error(err);
   process.exit(1);
 });

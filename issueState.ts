@@ -24,18 +24,20 @@ export interface Issue {
   body: string;
   state: string;
   branch?: string;
+  comments: IssueComment[];
+  pullRequests?: { state: string }[];
 }
 
 export interface GHRawIssue {
-    body: string;
-    state: string;
-    closedByPullRequestsReferences: { number: number }[];
-    branch?: string;
+  body: string;
+  state: string;
+  closedByPullRequestsReferences: { number: number }[];
+  branch?: string;
 }
 
 export interface PullRequestBase {
-    number: number;
-    url: string;
+  number: number;
+  url: string;
 }
 
 export interface PullRequest extends PullRequestBase {
@@ -64,12 +66,18 @@ export interface PlanningSession {
   status: PlanningSessionStatus;
 }
 
-export function determineIssueState(issue: Issue, localPlanningSession?: PlanningSession): IssueState {
+export function determineIssueState(
+  issue: Issue,
+  localPlanningSession?: PlanningSession,
+): IssueState {
   if (issue.state === 'CLOSED') {
     return IssueState.CLOSED;
   }
 
-  if (issue.branch) {
+  if (
+    issue.branch ||
+    (issue.pullRequests && issue.pullRequests.some((pr) => pr.state === 'OPEN'))
+  ) {
     return IssueState.WAITING_PR_REVIEW;
   }
 
@@ -81,15 +89,34 @@ export function determineIssueState(issue: Issue, localPlanningSession?: Plannin
   if (localPlanningSession) {
     switch (localPlanningSession.status) {
       case PlanningSessionStatus.APPROVED:
-          return IssueState.NEEDS_IMPLEMENTATION;
+        return IssueState.NEEDS_IMPLEMENTATION;
       case PlanningSessionStatus.NEEDS_REVISION:
         return IssueState.NEEDS_PLANNING;
       case PlanningSessionStatus.WAITING_APPROVAL:
         return IssueState.WAITING;
     }
-  } else {
-      return IssueState.NEEDS_PLANNING;
   }
+
+  const planComment = [...issue.comments]
+    .reverse()
+    .find((c) => c.body.includes('#son-of-anton-plan') && !c.body.startsWith('>'));
+
+  if (planComment) {
+    const thumbsUp =
+      planComment.reactionGroups.find((rg) => rg.content === 'THUMBS_UP')?.users.totalCount || 0;
+    const thumbsDown =
+      planComment.reactionGroups.find((rg) => rg.content === 'THUMBS_DOWN')?.users.totalCount || 0;
+
+    if (thumbsUp > 0 && thumbsDown === 0) {
+      return IssueState.NEEDS_IMPLEMENTATION;
+    }
+    if (thumbsDown > 0) {
+      return IssueState.NEEDS_PLANNING;
+    }
+    return IssueState.WAITING;
+  }
+
+  return IssueState.NEEDS_PLANNING;
 }
 
 export function determinePRState(pr: PullRequest): IssueState {
@@ -109,6 +136,6 @@ export function determinePRState(pr: PullRequest): IssueState {
 
 export function getUnaddressedPRComments(comments: PRComment[]): number[] {
   return comments
-    .filter(comment => (comment.reactions['+1'] || 0) === 0)
-    .map(comment => comment.id);
+    .filter((comment) => (comment.reactions['+1'] || 0) === 0)
+    .map((comment) => comment.id);
 }

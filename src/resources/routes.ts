@@ -2,7 +2,11 @@ import { FastifyInstance } from 'fastify';
 import { IssueService } from '../services/IssueService';
 import { RouteHandlers } from '../api/fastify.gen';
 
-export function registerRoutes(fastify: FastifyInstance, options: { issueService: IssueService }, done: (err?: Error) => void) {
+export function registerRoutes(
+  fastify: FastifyInstance,
+  options: { issueService: IssueService },
+  done: (err?: Error) => void,
+) {
   const { issueService } = options;
 
   const handlers: RouteHandlers = {

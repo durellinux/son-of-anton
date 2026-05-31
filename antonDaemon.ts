@@ -2,13 +2,12 @@ import Fastify from 'fastify';
 import fastifyStatic from '@fastify/static';
 import { execa } from 'execa';
 import path from 'node:path';
-import * as restate from "@restatedev/restate-sdk";
-import * as restateClients from "@restatedev/restate-sdk-clients";
-import { PullRequestBase, determineIssueState, IssueState, Issue as GH_Issue, PullRequest, getUnaddressedPRComments, PRComment } from './issue-state';
-import { FileSystemIssueRepository } from './src/repositories/FileSystemIssueRepository';
+import * as restate from '@restatedev/restate-sdk';
+import * as restateClients from '@restatedev/restate-sdk-clients';
+import { FileSystemIssueRepository } from './src/repositories/fileSystemIssueRepository';
 import { registerRoutes } from './src/resources/routes';
-import { IssueService } from './src/services/IssueService';
-import {IssueWorkflowV1} from "./src/workflows/IssueWorkflowV1";
+import { IssueService } from './src/services/issueService';
+import { issueWorkflowV1 } from './src/workflows/issueWorkflowV1';
 
 const repository = new FileSystemIssueRepository();
 const issueService = new IssueService(repository);
@@ -22,11 +21,11 @@ const fastify = Fastify({
         ignore: 'pid,hostname',
       },
     },
-  }
+  },
 });
 
 const POLL_INTERVAL = 1 * 60 * 1000; // 1 minute
-const RESTATE_URL = process.env.RESTATE_URL || "http://localhost:8080";
+const RESTATE_URL = process.env.RESTATE_URL || 'http://localhost:8080';
 
 const restateClient = restateClients.connect({ url: RESTATE_URL });
 
@@ -34,8 +33,24 @@ async function runAnton() {
   fastify.log.info('Starting Anton iteration...');
   try {
     // 1. Fetch issues and PRs in Daemon
-    const { stdout: issuesJson } = await execa('gh', ['search', 'issues', '--label', 'son-of-anton', '--state', 'open', '--json', 'number,title,repository,url', '--owner', '@me']);
-    const basicIssues = JSON.parse(issuesJson) as { number: number, title: string, url: string, repository: { nameWithOwner: string } }[];
+    const { stdout: issuesJson } = await execa('gh', [
+      'search',
+      'issues',
+      '--label',
+      'son-of-anton',
+      '--state',
+      'open',
+      '--json',
+      'number,title,repository,url',
+      '--owner',
+      '@me',
+    ]);
+    const basicIssues = JSON.parse(issuesJson) as {
+      number: number;
+      title: string;
+      url: string;
+      repository: { nameWithOwner: string };
+    }[];
     if (basicIssues.length === 0) {
       fastify.log.info('No issues or PRs found to process.');
       return;
@@ -50,15 +65,18 @@ async function runAnton() {
       const storedIssue = await repository.getIssue(issueNumber);
 
       if (!storedIssue) {
-          fastify.log.info(`New issue detected: ${issueNumber} - ${basicIssue.title}`);
-          fastify.log.info(`Submitting IssueWorkflow for issue #${issueNumber}...`);
-          const workflowClient = restateClient.workflowClient(IssueWorkflowV1, `issue-${issueNumber}`);
-          await workflowClient.workflowSubmit({
-            number: issueNumber,
-            title: basicIssue.title,
-            url: basicIssue.url,
-            repository: issueRepo
-          });
+        fastify.log.info(`New issue detected: ${issueNumber} - ${basicIssue.title}`);
+        fastify.log.info(`Submitting IssueWorkflow for issue #${issueNumber}...`);
+        const workflowClient = restateClient.workflowClient(
+          issueWorkflowV1,
+          `issue-${issueNumber}`,
+        );
+        await workflowClient.workflowSubmit({
+          number: issueNumber,
+          title: basicIssue.title,
+          url: basicIssue.url,
+          repository: issueRepo,
+        });
       }
     }
 
@@ -72,16 +90,14 @@ async function runAnton() {
 async function startPolling() {
   while (true) {
     await runAnton();
-    await new Promise(resolve => setTimeout(resolve, POLL_INTERVAL));
+    await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL));
   }
 }
 
 const start = async () => {
   try {
     // 1. Start Restate Service
-    await restate.endpoint()
-      .bind(IssueWorkflowV1)
-      .listen(9080);
+    await restate.endpoint().bind(issueWorkflowV1).listen(9080);
 
     fastify.log.info('Restate service is running on port 9080');
 

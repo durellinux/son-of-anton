@@ -1,6 +1,6 @@
-import { FileSystemIssueRepository } from './FileSystemIssueRepository';
+import { FileSystemIssueRepository } from './fileSystemIssueRepository';
 import { IssueStatus, PlanningSessionStatus } from '../api';
-import { rm, mkdir } from 'node:fs/promises';
+import { rm, mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 async function test() {
@@ -15,7 +15,7 @@ async function test() {
     number: 37,
     title: 'Test Issue',
     url: 'http://test.com',
-    status: IssueStatus.YOLO
+    status: IssueStatus.YOLO,
   };
   await repo.saveIssue(issue);
 
@@ -36,8 +36,7 @@ async function test() {
   const sessionDir = path.join(testDir, 'sessions', '37');
   await mkdir(sessionDir, { recursive: true });
   const sessionContent = 'Log content';
-  const fs = require('node:fs/promises');
-  await fs.writeFile(path.join(sessionDir, 'session1.txt'), sessionContent);
+  await writeFile(path.join(sessionDir, 'session1.txt'), sessionContent);
 
   const sessions = await repo.listSessions(37);
   if (!sessions || sessions.length !== 1 || sessions[0].id !== 'session1') {
@@ -57,14 +56,18 @@ async function test() {
     history: [
       {
         plan: 'My plan',
-        timestamp: new Date().toISOString()
-      }
-    ]
+        timestamp: new Date().toISOString(),
+      },
+    ],
   };
   await repo.savePlanningSession(planningSession);
 
   const fetchedPlanning = await repo.getPlanningSession(37);
-  if (!fetchedPlanning || fetchedPlanning.number !== 37 || fetchedPlanning.status !== PlanningSessionStatus.WAITING_APPROVAL) {
+  if (
+    !fetchedPlanning ||
+    fetchedPlanning.number !== 37 ||
+    fetchedPlanning.status !== PlanningSessionStatus.WAITING_APPROVAL
+  ) {
     throw new Error('getPlanningSession failed');
   }
   if (fetchedPlanning.history.length !== 1 || fetchedPlanning.history[0].plan !== 'My plan') {
@@ -76,7 +79,7 @@ async function test() {
   console.log('All repository tests passed!');
 }
 
-test().catch(err => {
+test().catch((err) => {
   console.error(err);
   process.exit(1);
 });

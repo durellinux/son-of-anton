@@ -16,7 +16,7 @@ export class IssueService {
     const nextCursor = hasNextPage ? items[limit].number.toString() : undefined;
     return {
       items: pagedItems,
-      nextCursor
+      nextCursor,
     };
   }
 
@@ -24,7 +24,11 @@ export class IssueService {
     return this.repository.getIssue(number);
   }
 
-  async getSessions(issueNumber: number, cursor?: string, limit: number = 10): Promise<Paged<Session> | undefined> {
+  async getSessions(
+    issueNumber: number,
+    cursor?: string,
+    limit: number = 10,
+  ): Promise<Paged<Session> | undefined> {
     const items = await this.repository.listSessions(issueNumber, cursor, limit + 1);
     if (!items) return undefined;
     const hasNextPage = items.length > limit;
@@ -32,7 +36,7 @@ export class IssueService {
     const nextCursor = hasNextPage ? items[limit].id : undefined;
     return {
       items: pagedItems,
-      nextCursor
+      nextCursor,
     };
   }
 
