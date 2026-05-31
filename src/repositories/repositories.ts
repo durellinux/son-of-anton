@@ -13,4 +13,7 @@ export interface IssueRepository {
   getPlanningSession(issueNumber: number): Promise<PlanningSession | undefined>;
   savePlanningSession(session: PlanningSession): Promise<void>;
   deletePlanningSession(issueNumber: number): Promise<void>;
+  deleteIssue(number: number): Promise<void>;
+  deleteSessions(number: number): Promise<void>;
+  deleteWorkspace(number: number): Promise<void>;
 }

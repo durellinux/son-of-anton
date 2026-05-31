@@ -1,5 +1,7 @@
+import * as restateClients from "@restatedev/restate-sdk-clients";
 import { Issue, Session, PlanningSession, PlanningSessionStatus } from '../api';
 import { IssueRepository } from '../repositories/repositories';
+import { IssueWorkflowV1 } from '../workflows/IssueWorkflowV1';
 
 export type Paged<T> = {
   items: T[];
@@ -7,7 +9,10 @@ export type Paged<T> = {
 };
 
 export class IssueService {
-  constructor(private repository: IssueRepository) {}
+  constructor(
+    private repository: IssueRepository,
+    private restateClient: restateClients.IngressClient
+  ) {}
 
   async getIssues(cursor?: string, limit: number = 10): Promise<Paged<Issue>> {
     const items = await this.repository.listIssues(cursor, limit + 1);
@@ -69,5 +74,21 @@ export class IssueService {
       lastStep.feedback = feedback;
     }
     await this.repository.savePlanningSession(session);
+  }
+
+  async deleteIssue(number: number): Promise<void> {
+    // 1. Terminate Restate workflow
+    try {
+      const handle = this.restateClient.workflowHandle(IssueWorkflowV1, `issue-${number}`);
+      await handle.terminate();
+    } catch (e) {
+      // Ignore if workflow doesn't exist or already terminated
+      console.warn(`Failed to terminate workflow for issue ${number}:`, e);
+    }
+
+    // 2. Delete data from repository
+    await this.repository.deleteSessions(number);
+    await this.repository.deleteWorkspace(number);
+    await this.repository.deleteIssue(number);
   }
 }

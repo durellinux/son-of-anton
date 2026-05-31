@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Title,
@@ -28,6 +28,7 @@ import {
   issuesGetPlanningSession,
   issuesApprovePlan,
   issuesProvideFeedback,
+  issuesDelete,
 } from '../api/sdk.gen';
 import { IssueStatus } from '../api/types.gen';
 
@@ -35,8 +36,10 @@ export function IssueDetail() {
   const { number } = useParams<{ number: string }>();
   const issueNumber = Number(number);
   const [selectedSession, setSelectedSession] = useState<string | null>(null);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [feedback, setFeedback] = useState('');
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const { data: issue, isLoading: isLoadingIssue } = useQuery({
     queryKey: ['issue', issueNumber],
@@ -77,6 +80,15 @@ export function IssueDetail() {
     },
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: () => issuesDelete({ path: { number: issueNumber } }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['issues'] });
+      navigate('/');
+    },
+  });
+
+
   if (isLoadingIssue)
     return (
       <Center h={400}>
@@ -96,12 +108,15 @@ export function IssueDetail() {
 
   return (
     <Stack gap="xl">
-      <Breadcrumbs>
-        <Anchor component={Link} to="/">
-          Dashboard
-        </Anchor>
-        <Text>Issue #{issue.data.number}</Text>
-      </Breadcrumbs>
+      <Group justify="space-between">
+        <Breadcrumbs>
+          <Anchor component={Link} to="/">Dashboard</Anchor>
+          <Text>Issue #{issue.data.number}</Text>
+        </Breadcrumbs>
+        <Button color="red" variant="light" onClick={() => setDeleteModalOpen(true)}>
+          Delete Issue
+        </Button>
+      </Group>
 
       <Card withBorder padding="xl" radius="md">
         <Stack gap="md">
@@ -261,6 +276,23 @@ export function IssueDetail() {
             </Code>
           </ScrollArea>
         )}
+      </Modal>
+
+      <Modal
+        opened={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        title="Delete Issue"
+        centered
+      >
+        <Stack>
+          <Text>Are you sure you want to delete all local data and the Restate workflow for this issue? This action cannot be undone.</Text>
+          <Group justify="flex-end">
+            <Button variant="outline" onClick={() => setDeleteModalOpen(false)}>Cancel</Button>
+            <Button color="red" onClick={() => deleteMutation.mutate()} loading={deleteMutation.isPending}>
+              Delete
+            </Button>
+          </Group>
+        </Stack>
       </Modal>
     </Stack>
   );

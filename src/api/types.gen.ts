@@ -136,6 +136,31 @@ export type IssuesListResponses = {
 
 export type IssuesListResponse = IssuesListResponses[keyof IssuesListResponses];
 
+export type IssuesDeleteData = {
+    body?: never;
+    path: {
+        number: number;
+    };
+    query?: never;
+    url: '/issues/{number}';
+};
+
+export type IssuesDeleteErrors = {
+    /**
+     * The server cannot find the requested resource.
+     */
+    404: unknown;
+};
+
+export type IssuesDeleteResponses = {
+    /**
+     * There is no content to send for this request, but the headers may be useful.
+     */
+    204: void;
+};
+
+export type IssuesDeleteResponse = IssuesDeleteResponses[keyof IssuesDeleteResponses];
+
 export type IssuesGetData = {
     body?: never;
     path: {

@@ -109,6 +109,9 @@ interface Issues {
   @doc("Get details of a specific issue")
   @get get(@path number: int32): Issue | { @statusCode _: 404 };
 
+  @doc("Delete all data for an issue and terminate its workflow")
+  @delete delete(@path number: int32): void | { @statusCode _: 404 };
+
   @doc("List all sessions associated with an issue")
   @route("/{number}/sessions")
   @get listSessions(@path number: int32, @query cursor?: string, @query limit?: int32): Paged<Session> | { @statusCode _: 404 };

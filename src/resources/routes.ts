@@ -24,6 +24,15 @@ export function registerRoutes(
       }
       await reply.send(issue as any);
     },
+    issuesDelete: async (request, reply) => {
+      const { number } = request.params;
+      try {
+        await issueService.deleteIssue(Number(number));
+        await reply.code(204).send();
+      } catch (e) {
+        await reply.code(404).send({ error: (e as Error).message } as any);
+      }
+    },
     issuesListSessions: async (request, reply) => {
       const { number } = request.params;
       const { cursor, limit } = request.query || {};
@@ -75,6 +84,7 @@ export function registerRoutes(
 
   fastify.get('/issues', handlers.issuesList);
   fastify.get('/issues/:number', handlers.issuesGet);
+  fastify.delete('/issues/:number', handlers.issuesDelete);
   fastify.get('/issues/:number/sessions', handlers.issuesListSessions);
   fastify.get('/issues/:number/sessions/:id', handlers.issuesGetSessionContent);
   fastify.get('/issues/:number/planning', handlers.issuesGetPlanningSession);

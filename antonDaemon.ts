@@ -9,8 +9,11 @@ import { registerRoutes } from './src/resources/routes';
 import { IssueService } from './src/services/issueService';
 import { issueWorkflowV1 } from './src/workflows/issueWorkflowV1';
 
+const RESTATE_URL = process.env.RESTATE_URL || 'http://localhost:8080';
+const restateClient = restateClients.connect({ url: RESTATE_URL });
+
 const repository = new FileSystemIssueRepository();
-const issueService = new IssueService(repository);
+const issueService = new IssueService(repository, restateClient);
 
 const fastify = Fastify({
   logger: {
@@ -25,9 +28,6 @@ const fastify = Fastify({
 });
 
 const POLL_INTERVAL = 1 * 60 * 1000; // 1 minute
-const RESTATE_URL = process.env.RESTATE_URL || 'http://localhost:8080';
-
-const restateClient = restateClients.connect({ url: RESTATE_URL });
 
 async function runAnton() {
   fastify.log.info('Starting Anton iteration...');
