@@ -23,10 +23,14 @@ export interface IssueComment {
 export interface Issue {
   body: string;
   state: string;
-  comments: IssueComment[];
-  pullRequests: {
+  branch?: string;
+}
+
+export interface GHRawIssue {
+    body: string;
     state: string;
-  }[];
+    closedByPullRequestsReferences: { number: number }[];
+    branch?: string;
 }
 
 export interface PullRequestBase {
@@ -65,7 +69,7 @@ export function determineIssueState(issue: Issue, localPlanningSession?: Plannin
     return IssueState.CLOSED;
   }
 
-  if (issue.pullRequests && issue.pullRequests.some(pr => pr.state === 'OPEN')) {
+  if (issue.branch) {
     return IssueState.WAITING_PR_REVIEW;
   }
 

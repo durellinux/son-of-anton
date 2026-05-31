@@ -1,4 +1,4 @@
-import {determineIssueState, Issue as GH_Issue, IssueState} from "../../../issue-state";
+import {determineIssueState, GHRawIssue, Issue as GH_Issue, IssueState, PullRequest} from "../../../issue-state";
 import {Issue, IssueStatus} from "../../api";
 import {FileSystemIssueRepository} from "../../repositories/FileSystemIssueRepository";
 import {execa} from "execa";
@@ -26,11 +26,26 @@ function mapStateToStatus(state: IssueState): IssueStatus {
     }
 }
 
+export async function fetchIssueDetails(issueNumber: number, issueRepo: string): Promise<GH_Issue> {
+    const {stdout: issueDetailsJson} = await execa('gh', ['issue', 'view', String(issueNumber), '-R', issueRepo, '--json', 'body,closedByPullRequestsReferences,state']);
+    const rawDetails = JSON.parse(issueDetailsJson) as GHRawIssue;
+
+    if (rawDetails.closedByPullRequestsReferences && rawDetails.closedByPullRequestsReferences.length > 0) {
+        const {stdout: prDetailsJson} = await execa('gh', ['pr', 'view', String(rawDetails.closedByPullRequestsReferences[0].number), '-R', issueRepo, '--json', 'headRefName']);
+        const branch = (JSON.parse(prDetailsJson) as any).headRefName;
+        rawDetails.branch = branch;
+    }
+
+    return {
+        body: rawDetails.body,
+        state: rawDetails.state,
+        branch: rawDetails.branch
+    };
+}
+
 export async function fetchIssueState(issueNumber: number, issueRepo: string) {
     const localPlanningSession = await repository.getPlanningSession(issueNumber);
-    const {stdout: issueDetailsJson} = await execa('gh', ['issue', 'view', String(issueNumber), '-R', issueRepo, '--json', 'body,comments,state']);
-    const issueDetails = JSON.parse(issueDetailsJson) as GH_Issue;
-
+    const issueDetails = await fetchIssueDetails(issueNumber, issueRepo);
     const state = determineIssueState(issueDetails, localPlanningSession as any);
     return {state};
 }

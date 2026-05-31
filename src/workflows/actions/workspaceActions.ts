@@ -2,7 +2,7 @@ import { execa } from "execa";
 import path from "node:path";
 import { mkdir, stat } from "node:fs/promises";
 
-export async function setupWorkspace(issueNumber: number, issueRepo: string) {
+export async function setupWorkspace(issueNumber: number, issueRepo: string, branch: string | undefined) {
     const [owner, repoName] = issueRepo.split('/');
     const workspacePath = path.join('.anton', 'workspaces', String(issueNumber), owner);
     
@@ -17,9 +17,15 @@ export async function setupWorkspace(issueNumber: number, issueRepo: string) {
         // If stat fails, the directory does not exist, so clone the repo
         await execa('gh', ['repo', 'clone', issueRepo], { cwd: workspacePath });
     }
+
+    if (branch) {
+        await execa('git', ['checkout', branch], { cwd: repoPath });
+    }
 }
 
 export async function findPullRequest(issueNumber: number, issueRepo: string): Promise<{prNumber: number, prUrl: string}> {
+    const {stdout: issueDetailsJson} = await execa('gh', ['issue', 'view', String(issueNumber), '-R', issueRepo, '--json', 'body,closedByPullRequestsReferences,state']);
+
     const [owner, repoName] = issueRepo.split('/');
     const repoPath = path.join('.anton', 'workspaces', String(issueNumber), owner, repoName);
     
