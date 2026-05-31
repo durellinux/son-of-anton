@@ -31,16 +31,6 @@ export async function findPullRequest(
   issueNumber: number,
   issueRepo: string,
 ): Promise<{ prNumber: number; prUrl: string }> {
-  const { stdout: issueDetailsJson } = await execa('gh', [
-    'issue',
-    'view',
-    String(issueNumber),
-    '-R',
-    issueRepo,
-    '--json',
-    'body,closedByPullRequestsReferences,state',
-  ]);
-
   const [owner, repoName] = issueRepo.split('/');
   const repoPath = path.join('.anton', 'workspaces', String(issueNumber), owner, repoName);
 

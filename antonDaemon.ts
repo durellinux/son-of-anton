@@ -13,7 +13,7 @@ const RESTATE_URL = process.env.RESTATE_URL || 'http://localhost:8080';
 const restateClient = restateClients.connect({ url: RESTATE_URL });
 
 const repository = new FileSystemIssueRepository();
-const issueService = new IssueService(repository, restateClient);
+const issueService = new IssueService(repository, restateClient as any);
 
 const fastify = Fastify({
   logger: {

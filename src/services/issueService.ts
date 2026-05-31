@@ -1,7 +1,7 @@
-import * as restateClients from "@restatedev/restate-sdk-clients";
+import * as restateClients from '@restatedev/restate-sdk-clients';
 import { Issue, Session, PlanningSession, PlanningSessionStatus } from '../api';
 import { IssueRepository } from '../repositories/repositories';
-import { IssueWorkflowV1 } from '../workflows/IssueWorkflowV1';
+import { Workflow } from '@restatedev/restate-sdk';
 
 export type Paged<T> = {
   items: T[];
@@ -11,7 +11,7 @@ export type Paged<T> = {
 export class IssueService {
   constructor(
     private repository: IssueRepository,
-    private restateClient: restateClients.IngressClient
+    private restateClient: restateClients.IngressClient<any>,
   ) {}
 
   async getIssues(cursor?: string, limit: number = 10): Promise<Paged<Issue>> {
@@ -81,10 +81,10 @@ export class IssueService {
     // 1. Terminate Restate workflow
     try {
       let workflowId = `issue-${number}`;
-      let workflowName = "IssueWorkflowV1";
+      let workflowName = 'IssueWorkflowV1';
 
       if (issue?.workflowUrl) {
-        const urlParts = issue.workflowUrl.split("/");
+        const urlParts = issue.workflowUrl.split('/');
         const id = urlParts.pop();
         const name = urlParts.pop();
         if (id && name) {
@@ -93,7 +93,10 @@ export class IssueService {
         }
       }
 
-      const handle = this.restateClient.workflowHandle({ name: workflowName } as any, workflowId);
+      const handle: any = await this.restateClient.workflowHandle(
+        { name: workflowName } as any,
+        workflowId,
+      );
       await handle.terminate();
     } catch (e) {
       // Ignore if workflow doesn't exist or already terminated

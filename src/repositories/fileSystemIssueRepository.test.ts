@@ -76,7 +76,7 @@ async function test() {
   console.log('planning sessions passed.');
 
   console.log('Testing deletion methods...');
-  
+
   // Test deleteIssue
   await repo.deleteIssue(37);
   const deletedIssue = await repo.getIssue(37);
@@ -99,16 +99,17 @@ async function test() {
   const workspaceDir = path.join(testDir, 'workspaces', '37');
   await mkdir(workspaceDir, { recursive: true });
   await writeFile(path.join(workspaceDir, 'code.ts'), 'content');
-  
+
   await repo.deleteWorkspace(37);
   try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const fs = require('node:fs/promises');
     await fs.stat(workspaceDir);
     throw new Error('deleteWorkspace failed: workspace directory still exists');
   } catch (e: any) {
     if (e.code !== 'ENOENT') throw e;
   }
-  
+
   console.log('deletion methods passed.');
 
   await rm(testDir, { recursive: true, force: true });
