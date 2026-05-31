@@ -44,7 +44,6 @@ export type Issue = {
     /**
      * ID of the workflow in Restate
      */
-    workflowId?: string;
 };
 
 export enum IssueStatus {

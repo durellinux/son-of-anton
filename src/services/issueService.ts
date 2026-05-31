@@ -80,8 +80,20 @@ export class IssueService {
     const issue = await this.repository.getIssue(number);
     // 1. Terminate Restate workflow
     try {
-      const workflowId = issue?.workflowId || `issue-${number}`;
-      const handle = this.restateClient.workflowHandle(IssueWorkflowV1, workflowId);
+      let workflowId = `issue-${number}`;
+      let workflowName = "IssueWorkflowV1";
+
+      if (issue?.workflowUrl) {
+        const urlParts = issue.workflowUrl.split("/");
+        const id = urlParts.pop();
+        const name = urlParts.pop();
+        if (id && name) {
+          workflowId = id;
+          workflowName = name;
+        }
+      }
+
+      const handle = this.restateClient.workflowHandle({ name: workflowName } as any, workflowId);
       await handle.terminate();
     } catch (e) {
       // Ignore if workflow doesn't exist or already terminated
