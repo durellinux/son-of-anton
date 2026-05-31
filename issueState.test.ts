@@ -20,106 +20,32 @@ const issueTests = [
     name: 'YOLO mode',
     issue: {
       body: 'Fix this bug #yolo',
-      comments: [],
+      state: 'OPEN',
     },
     expected: IssueState.YOLO,
   },
   {
-    name: 'Needs planning (no plan)',
+    name: 'Needs planning (no session)',
     issue: {
       body: 'Fix this bug',
-      comments: [],
+      state: 'OPEN',
     },
     expected: IssueState.NEEDS_PLANNING,
-  },
-  {
-    name: 'Needs planning (plan rejected)',
-    issue: {
-      body: 'Fix this bug',
-      comments: [
-        {
-          body: 'My plan #son-of-anton-plan',
-          reactionGroups: [{ content: 'THUMBS_DOWN', users: { totalCount: 1 } }],
-        },
-      ],
-    },
-    expected: IssueState.NEEDS_PLANNING,
-  },
-  {
-    name: 'Needs implementation (plan approved)',
-    issue: {
-      body: 'Fix this bug',
-      comments: [
-        {
-          body: 'My plan #son-of-anton-plan',
-          reactionGroups: [{ content: 'THUMBS_UP', users: { totalCount: 1 } }],
-        },
-      ],
-    },
-    expected: IssueState.NEEDS_IMPLEMENTATION,
-  },
-  {
-    name: 'Needs planning (plan rejected with comments)',
-    issue: {
-      body: 'Fix this bug',
-      comments: [
-        {
-          body: 'My plan #son-of-anton-plan',
-          reactionGroups: [{ content: 'THUMBS_DOWN', users: { totalCount: 1 } }],
-        },
-        {
-          body: '> My plan #son-of-anton-plan\nThis is not good!',
-          reactionGroups: [],
-        },
-      ],
-    },
-    expected: IssueState.NEEDS_PLANNING,
-  },
-  {
-    name: 'Waiting (plan posted, no reaction)',
-    issue: {
-      body: 'Fix this bug',
-      comments: [
-        {
-          body: 'My plan #son-of-anton-plan',
-          reactionGroups: [],
-        },
-      ],
-    },
-    expected: IssueState.WAITING,
-  },
-  {
-    name: 'Correctly identifies last plan',
-    issue: {
-      body: 'Fix this bug',
-      comments: [
-        {
-          body: 'Old plan #son-of-anton-plan',
-          reactionGroups: [{ content: 'THUMBS_UP', users: { totalCount: 1 } }],
-        },
-        {
-          body: 'New plan #son-of-anton-plan',
-          reactionGroups: [],
-        },
-      ],
-    },
-    expected: IssueState.WAITING,
   },
   {
     name: 'Closed issue',
     issue: {
       body: 'Fix this bug',
-      comments: [],
       state: 'CLOSED',
     },
     expected: IssueState.CLOSED,
   },
   {
-    name: 'Waiting for PR review',
+    name: 'Waiting for PR review (branch exists)',
     issue: {
       body: 'Fix this bug',
-      comments: [],
-      pullRequests: [{ state: 'OPEN' }],
+      state: 'OPEN',
+      branch: 'anton/60',
     },
     expected: IssueState.WAITING_PR_REVIEW,
   },
@@ -128,35 +54,21 @@ const issueTests = [
 const localPlanningTests = [
   {
     name: 'Local planning: Waiting approval',
-    issue: { body: 'Fix bug', comments: [] },
+    issue: { body: 'Fix bug', state: 'OPEN' },
     localPlanning: { status: PlanningSessionStatus.WAITING_APPROVAL },
     expected: IssueState.WAITING,
   },
   {
     name: 'Local planning: Approved',
-    issue: { body: 'Fix bug', comments: [] },
+    issue: { body: 'Fix bug', state: 'OPEN' },
     localPlanning: { status: PlanningSessionStatus.APPROVED },
     expected: IssueState.NEEDS_IMPLEMENTATION,
   },
   {
     name: 'Local planning: Needs revision',
-    issue: { body: 'Fix bug', comments: [] },
+    issue: { body: 'Fix bug', state: 'OPEN' },
     localPlanning: { status: PlanningSessionStatus.NEEDS_REVISION },
     expected: IssueState.NEEDS_PLANNING,
-  },
-  {
-    name: 'Local planning takes precedence over GitHub',
-    issue: {
-      body: 'Fix bug',
-      comments: [
-        {
-          body: 'Plan #son-of-anton-plan',
-          reactionGroups: [{ content: 'THUMBS_DOWN', users: { totalCount: 1 } }],
-        },
-      ],
-    },
-    localPlanning: { status: PlanningSessionStatus.APPROVED },
-    expected: IssueState.NEEDS_IMPLEMENTATION,
   },
 ];
 
@@ -167,6 +79,7 @@ const prTests = [
       number: 1,
       reviewDecision: 'CHANGES_REQUESTED',
       headRefName: 'feature',
+      state: 'OPEN',
     },
     expected: IssueState.NEEDS_IMPLEMENTATION,
   },
@@ -176,6 +89,7 @@ const prTests = [
       number: 2,
       reviewDecision: 'APPROVED',
       headRefName: 'feature',
+      state: 'OPEN',
     },
     expected: IssueState.WAITING,
   },
@@ -185,15 +99,7 @@ const prTests = [
       number: 3,
       reviewDecision: 'REVIEW_REQUIRED',
       headRefName: 'feature',
-    },
-    expected: IssueState.NEEDS_IMPLEMENTATION,
-  },
-  {
-    name: 'PR Needs implementation (no review decision)',
-    pr: {
-      number: 4,
-      reviewDecision: null as any,
-      headRefName: 'feature',
+      state: 'OPEN',
     },
     expected: IssueState.NEEDS_IMPLEMENTATION,
   },
@@ -265,7 +171,7 @@ for (const test of localPlanningTests) {
 
 for (const test of prTests) {
   console.log(`Running PR test: ${test.name}`);
-  const actual = determinePRState(test.pr as PullRequest);
+  const actual = determinePRState(test.pr as any);
   assert(actual === test.expected, `Expected ${test.expected}, but got ${actual}`);
 }
 
