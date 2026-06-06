@@ -17,7 +17,7 @@ export class GitHubPoller {
     this.log = log;
     this.mappings = [
       {
-        requiredLabels: ['type:epic', 'status:triage'],
+        requiredLabels: ['type:epic', 'status:triage', 'son-of-anton'],
         workflow: epicSpecificationWorkflow,
       },
       {
@@ -33,7 +33,7 @@ export class GitHubPoller {
       const args = [
         'search',
         'issues',
-        'label:son-of-anton OR (label:type:epic label:status:triage)',
+        'label:son-of-anton',
         '--state',
         'open',
         '--json',
@@ -58,38 +58,36 @@ export class GitHubPoller {
       for (const issue of issues) {
         const issueLabels = issue.labels.map((l: any) => l.name);
 
-        for (const mapping of this.mappings) {
-          const matches = mapping.requiredLabels.every((label) => issueLabels.includes(label));
+        const matchingMapping = this.mappings.find((mapping) =>
+          mapping.requiredLabels.every((label) => issueLabels.includes(label)),
+        );
 
-          if (matches) {
-            const workflowId = `issue-${issue.number}`;
+        if (matchingMapping) {
+          const workflowId = `issue-${issue.number}`;
 
+          this.log.info(
+            `Issue #${issue.number} matches requirements. Triggering with ID ${workflowId}...`,
+          );
+
+          const workflowClient = await this.restateClient.workflowClient(
+            matchingMapping.workflow,
+            workflowId,
+          );
+
+          try {
+            await workflowClient.workflowSubmit({
+              number: issue.number,
+              title: issue.title,
+              url: issue.url,
+              repository: issue.repository.nameWithOwner,
+            });
             this.log.info(
-              `Issue #${issue.number} matches requirements. Triggering with ID ${workflowId}...`,
+              `Successfully submitted workflow for issue #${issue.number} with ID ${workflowId}`,
             );
-
-            try {
-              await this.restateClient.send({
-                service: mapping.workflow.name,
-                handler: 'run',
-                parameter: {
-                  number: issue.number,
-                  title: issue.title,
-                  url: issue.url,
-                  repository: issue.repository.nameWithOwner,
-                },
-                key: workflowId,
-              });
-              this.log.info(
-                `Successfully submitted workflow for issue #${issue.number} with ID ${workflowId}`,
-              );
-            } catch (submitError: any) {
-              // If it's already running or completed with this ID, Restate handles it.
-              // We log it just in case.
-              this.log.warn(
-                `Could not submit workflow for issue #${issue.number}: ${submitError.message}`,
-              );
-            }
+          } catch (submitError: any) {
+            this.log.warn(
+              `Could not submit workflow for issue #${issue.number}: ${submitError.message}`,
+            );
           }
         }
       }

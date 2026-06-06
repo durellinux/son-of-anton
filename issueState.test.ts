@@ -53,9 +53,9 @@ const issueTests = [
     issue: {
       body: 'Epic issue',
       state: 'OPEN',
+      labels: ['status:specifying'],
     },
     expected: IssueState.SPECIFYING,
-    skip: true, // We don't have auto-detection for SPECIFYING yet, it's workflow-driven
   },
 ];
 

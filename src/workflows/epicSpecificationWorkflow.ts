@@ -56,7 +56,7 @@ Tasks:
 3. Follow the existing ADR format (e.g., docs/adr/0001-ui-technology-selection.md).
 4. Name the file with the next available number, e.g., 0004-new-feature.md.
 5. Create a Pull Request with the new ADR.
-6. The PR title should be "Spec: ${params.title}" and the body should include "Fixes #${issueNumber}".
+6. The PR title should be "ADR: ${params.title}" and the body should include "Fixes #${issueNumber}".
 7. Use the "son-of-anton" label for the PR.
 
 Do not stop until the PR is created.`;
@@ -69,6 +69,11 @@ Do not stop until the PR is created.`;
       );
 
       const finalState = await prReviewLoop(ctx, prNumber, prUrl);
+
+      // Transition labels back
+      await ctx.run('remove-specifying-label', () =>
+        removeLabel(issueNumber, issueRepo, 'status:specifying'),
+      );
 
       // Update final repository status
       await ctx.run('update-final-status', () =>
