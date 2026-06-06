@@ -2,6 +2,13 @@ import { execa } from 'execa';
 import path from 'node:path';
 import { mkdir, stat } from 'node:fs/promises';
 
+export class RebaseConflictError extends Error {
+  constructor(public conflictDetails: string) {
+    super(`Rebase conflict detected: ${conflictDetails}`);
+    this.name = 'RebaseConflictError';
+  }
+}
+
 export async function setupWorkspace(
   issueNumber: number,
   issueRepo: string,
@@ -22,8 +29,45 @@ export async function setupWorkspace(
     await execa('gh', ['repo', 'clone', issueRepo], { cwd: workspacePath });
   }
 
+  // Fetch Latest State
+  console.log(`Fetching latest state for ${issueRepo}...`);
+  await execa('git', ['fetch', 'origin'], { cwd: repoPath });
+
+  // Determine Default Branch
+  const { stdout: repoViewJson } = await execa(
+    'gh',
+    ['repo', 'view', issueRepo, '--json', 'defaultBranchRef'],
+    { cwd: repoPath },
+  );
+  const defaultBranch = JSON.parse(repoViewJson).defaultBranchRef.name;
+  console.log(`Default branch identified as: ${defaultBranch}`);
+
   if (branch) {
-    await execa('git', ['checkout', branch], { cwd: repoPath });
+    console.log(`Setting up branch: ${branch}`);
+    // Checkout the branch. If it doesn't exist locally, try to track it from origin
+    try {
+      await execa('git', ['checkout', branch], { cwd: repoPath });
+    } catch {
+      await execa('git', ['checkout', '-b', branch, `origin/${branch}`], { cwd: repoPath });
+    }
+
+    // Reset the local branch to origin/<branch> to ensure it matches the remote state.
+    await execa('git', ['reset', '--hard', `origin/${branch}`], { cwd: repoPath });
+
+    // Rebase the branch onto origin/<defaultBranch>.
+    console.log(`Rebasing ${branch} onto origin/${defaultBranch}...`);
+    try {
+      await execa('git', ['rebase', `origin/${defaultBranch}`], { cwd: repoPath });
+    } catch (error: any) {
+      const stderr = error.stderr || error.message;
+      console.error(`Rebase conflict detected: ${stderr}`);
+      // If rebase fails, throw RebaseConflictError
+      throw new RebaseConflictError(stderr);
+    }
+  } else {
+    console.log(`No branch specified, checking out default branch: ${defaultBranch}`);
+    await execa('git', ['checkout', defaultBranch], { cwd: repoPath });
+    await execa('git', ['reset', '--hard', `origin/${defaultBranch}`], { cwd: repoPath });
   }
 }
 

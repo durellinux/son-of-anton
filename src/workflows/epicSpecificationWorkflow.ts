@@ -5,10 +5,11 @@ import {
   addLabel,
   removeLabel,
 } from './actions/issuesActions';
-import { setupWorkspace, findPullRequest } from './actions/workspaceActions';
+import { findPullRequest } from './actions/workspaceActions';
 import { prReviewLoop } from './blocks/prReviewLoop';
 import { labelBootstrappingBlock } from './blocks/labelBootstrappingBlock';
 import { geminiLoop } from './blocks/geminiLoop';
+import { setupWorkspaceBlock } from './blocks/setupWorkspaceBlock';
 import { IssueState } from '../../issueState';
 
 export const epicSpecificationWorkflow = restate.workflow({
@@ -39,9 +40,7 @@ export const epicSpecificationWorkflow = restate.workflow({
       );
 
       // Setup workspace
-      await ctx.run('setup-workspace', () =>
-        setupWorkspace(issueNumber, issueRepo, ghIssue.branch),
-      );
+      await setupWorkspaceBlock(ctx, issueNumber, issueRepo, ghIssue.branch);
 
       // Research and draft ADR
       const prompt = `Research requirements for the epic issue #${issueNumber}: "${params.title}" in ${issueRepo}.
