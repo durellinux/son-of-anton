@@ -17,14 +17,14 @@ description: This skill implements an approved plan for a specific GitHub issue.
 Made by: #son-of-anton"
    ```
 2. Setup the work environment:
-   - Define the workspace path: `.anton/workspaces/{issue_number}/{repo}`.
+   - Define the workspace path: `workspaces/{repo}`.
    - Check if the workspace directory exists.
    - If it doesn't exist:
-     - Clone the repository: `git clone https://github.com/{repo} .anton/workspaces/{issue_number}/{repo}`.
-     - `cd .anton/workspaces/{issue_number}/{repo}`.
+     - Clone the repository: `git clone https://github.com/{repo} workspaces/{repo}`.
+     - `cd workspaces/{repo}`.
      - Create a new branch: `git checkout -b anton/{issue_number}`.
    - If it exists:
-     - `cd .anton/workspaces/{issue_number}/{repo}`.
+     - `cd workspaces/{repo}`.
      - Reuse the existing clone.
      - Ensure you are on the `anton/{issue_number}` branch.
 3. If the branch already existed, check the current state of the code in the workspace and use it as a starting point.

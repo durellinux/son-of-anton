@@ -1,5 +1,5 @@
 import path from 'node:path';
-import { mkdir } from 'node:fs/promises';
+import { mkdir, cp } from 'node:fs/promises';
 import { createWriteStream } from 'node:fs';
 import { execa } from 'execa';
 
@@ -23,6 +23,9 @@ export class NoModelsAvailableError extends Error {
 }
 
 export async function executeGemini(id: number, prompt: string, type: string): Promise<string> {
+  const issueDir = path.join('.anton', String(id));
+  const sessionDir = path.join(issueDir, 'sessions');
+
   while (true) {
     const selectedModel = MODELS.find((m) => (modelCooldowns.get(m) || 0) < Date.now());
 
@@ -34,22 +37,26 @@ export async function executeGemini(id: number, prompt: string, type: string): P
 
     // Session Logging
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const sessionDir = path.join('.anton', 'sessions', String(id));
     await mkdir(sessionDir, { recursive: true });
+
+    // Copy .gemini and GEMINI.md to issue directory
+    try {
+      await cp('.gemini', path.join(issueDir, '.gemini'), { recursive: true, force: true });
+      await cp('GEMINI.md', path.join(issueDir, 'GEMINI.md'), { force: true });
+    } catch (e) {
+      console.error(`Failed to copy .gemini or GEMINI.md to ${issueDir}:`, e);
+    }
 
     const sessionFilePath = path.join(sessionDir, `${type}-${timestamp}.txt`);
     const logStream = createWriteStream(sessionFilePath);
 
-    const subprocess = execa('gemini', [
-      '-p',
-      prompt,
-      '--sandbox',
-      'true',
-      '--approval-mode',
-      'yolo',
-      '--model',
-      selectedModel,
-    ]);
+    const subprocess = execa(
+      'gemini',
+      ['-p', prompt, '--sandbox', 'true', '--approval-mode', 'yolo', '--model', selectedModel],
+      {
+        cwd: issueDir,
+      },
+    );
 
     let fullOutput = '';
 

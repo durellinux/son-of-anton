@@ -10,27 +10,28 @@ export class FileSystemIssueRepository implements IssueRepository {
     this.baseDir = baseDir;
   }
 
-  private async ensureIssuesDir() {
-    const issuesDir = path.join(this.baseDir, 'issues');
-    await mkdir(issuesDir, { recursive: true });
-    return issuesDir;
+  private async ensureIssueDir(number: number) {
+    const issueDir = path.join(this.baseDir, String(number));
+    await mkdir(issueDir, { recursive: true });
+    return issueDir;
   }
 
   async listIssues(cursor?: string, limit: number = 10): Promise<Issue[]> {
-    const issuesDir = await this.ensureIssuesDir();
-    let issueFiles: string[];
+    let entries: { name: string; isDirectory: boolean }[];
     try {
-      issueFiles = await readdir(issuesDir);
+      const dirents = await readdir(this.baseDir, { withFileTypes: true });
+      entries = dirents.map((d) => ({ name: d.name, isDirectory: d.isDirectory() }));
     } catch (e) {
+      if ((e as any).code === 'ENOENT') return [];
       throw new Error(
         `Failed to list issues directory: ${e instanceof Error ? e.message : String(e)}`,
         { cause: e },
       );
     }
 
-    const allIssueNumbers = issueFiles
-      .filter((f) => f.endsWith('.json'))
-      .map((f) => parseInt(f.replace('.json', ''), 10))
+    const allIssueNumbers = entries
+      .filter((e) => e.isDirectory)
+      .map((e) => parseInt(e.name, 10))
       .filter((n) => !isNaN(n))
       .sort((a, b) => b - a);
 
@@ -44,7 +45,7 @@ export class FileSystemIssueRepository implements IssueRepository {
   }
 
   async getIssue(number: number): Promise<Issue | undefined> {
-    const filePath = path.join(this.baseDir, 'issues', `${number}.json`);
+    const filePath = path.join(this.baseDir, String(number), 'issue.json');
     try {
       const content = await readFile(filePath, 'utf-8');
       return JSON.parse(content) as Issue;
@@ -60,8 +61,8 @@ export class FileSystemIssueRepository implements IssueRepository {
   }
 
   async saveIssue(issue: Issue): Promise<void> {
-    const issuesDir = await this.ensureIssuesDir();
-    const filePath = path.join(issuesDir, `${issue.number}.json`);
+    const issueDir = await this.ensureIssueDir(issue.number);
+    const filePath = path.join(issueDir, 'issue.json');
     await writeFile(filePath, JSON.stringify(issue, null, 2));
   }
 
@@ -70,7 +71,7 @@ export class FileSystemIssueRepository implements IssueRepository {
     cursor?: string,
     limit: number = 10,
   ): Promise<Session[] | undefined> {
-    const sessionDir = path.join(this.baseDir, 'sessions', String(issueNumber));
+    const sessionDir = path.join(this.baseDir, String(issueNumber), 'sessions');
     try {
       const files = await readdir(sessionDir);
       const sessionFiles = files
@@ -111,8 +112,8 @@ export class FileSystemIssueRepository implements IssueRepository {
   async getSessionContent(issueNumber: number, sessionId: string): Promise<string | undefined> {
     const filePathFull = path.join(
       this.baseDir,
-      'sessions',
       String(issueNumber),
+      'sessions',
       `${sessionId}.txt`,
     );
     try {
@@ -129,7 +130,8 @@ export class FileSystemIssueRepository implements IssueRepository {
   }
 
   async getPlanningSession(issueNumber: number): Promise<PlanningSession | undefined> {
-    const filePath = path.join(this.baseDir, 'planning', `${issueNumber}.json`);
+    const issueDir = await this.ensureIssueDir(issueNumber);
+    const filePath = path.join(issueDir, 'plan.json');
     try {
       const content = await readFile(filePath, 'utf-8');
       return JSON.parse(content) as PlanningSession;
@@ -145,14 +147,13 @@ export class FileSystemIssueRepository implements IssueRepository {
   }
 
   async savePlanningSession(session: PlanningSession): Promise<void> {
-    const planningDir = path.join(this.baseDir, 'planning');
-    await mkdir(planningDir, { recursive: true });
-    const filePath = path.join(planningDir, `${session.number}.json`);
+    const issueDir = await this.ensureIssueDir(session.number);
+    const filePath = path.join(issueDir, 'plan.json');
     await writeFile(filePath, JSON.stringify(session, null, 2));
   }
 
   async deletePlanningSession(issueNumber: number): Promise<void> {
-    const filePath = path.join(this.baseDir, 'planning', `${issueNumber}.json`);
+    const filePath = path.join(this.baseDir, String(issueNumber), 'plan.json');
     try {
       await rm(filePath, { force: true });
     } catch (e) {
@@ -164,7 +165,7 @@ export class FileSystemIssueRepository implements IssueRepository {
   }
 
   async deleteIssue(number: number): Promise<void> {
-    const filePath = path.join(this.baseDir, 'issues', `${number}.json`);
+    const filePath = path.join(this.baseDir, String(number), 'issue.json');
     try {
       await rm(filePath, { force: true });
     } catch (e) {
@@ -176,7 +177,7 @@ export class FileSystemIssueRepository implements IssueRepository {
   }
 
   async deleteSessions(number: number): Promise<void> {
-    const sessionDir = path.join(this.baseDir, 'sessions', String(number));
+    const sessionDir = path.join(this.baseDir, String(number), 'sessions');
     try {
       await rm(sessionDir, { recursive: true, force: true });
       await this.deletePlanningSession(number);
@@ -189,7 +190,7 @@ export class FileSystemIssueRepository implements IssueRepository {
   }
 
   async deleteWorkspace(number: number): Promise<void> {
-    const workspaceDir = path.join(this.baseDir, 'workspaces', String(number));
+    const workspaceDir = path.join(this.baseDir, String(number), 'workspaces');
     try {
       await rm(workspaceDir, { recursive: true, force: true });
     } catch (e) {

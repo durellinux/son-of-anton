@@ -33,7 +33,7 @@ async function test() {
   console.log('listIssues passed.');
 
   console.log('Testing sessions...');
-  const sessionDir = path.join(testDir, 'sessions', '37');
+  const sessionDir = path.join(testDir, '37', 'sessions');
   await mkdir(sessionDir, { recursive: true });
   const sessionContent = 'Log content';
   await writeFile(path.join(sessionDir, 'session1.txt'), sessionContent);
@@ -96,7 +96,7 @@ async function test() {
   }
 
   // Test deleteWorkspace
-  const workspaceDir = path.join(testDir, 'workspaces', '37');
+  const workspaceDir = path.join(testDir, '37', 'workspaces');
   await mkdir(workspaceDir, { recursive: true });
   await writeFile(path.join(workspaceDir, 'code.ts'), 'content');
 
