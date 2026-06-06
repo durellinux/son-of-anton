@@ -1,12 +1,10 @@
 import { execa } from 'execa';
 import * as restateClients from '@restatedev/restate-sdk-clients';
 import { issueWorkflowV1 } from '../workflows/issueWorkflowV1';
-import crypto from 'node:crypto';
 
 export interface WorkflowMapping {
   requiredLabels: string[];
   workflow: any;
-  workflowName: string;
 }
 
 export class GitHubPoller {
@@ -21,18 +19,8 @@ export class GitHubPoller {
       {
         requiredLabels: ['son-of-anton', 'status:triage'],
         workflow: issueWorkflowV1,
-        workflowName: 'IssueWorkflowV1',
       },
     ];
-  }
-
-  private calculateLabelsHash(labels: string[]): string {
-    // We sort labels to ensure the hash is consistent regardless of order
-    return crypto
-      .createHash('sha1')
-      .update(labels.sort().join(','))
-      .digest('hex')
-      .substring(0, 8);
   }
 
   public async poll() {
@@ -71,14 +59,9 @@ export class GitHubPoller {
           const matches = mapping.requiredLabels.every(label => issueLabels.includes(label));
           
           if (matches) {
-            const labelsHash = this.calculateLabelsHash(issueLabels);
-            // The ID includes the labelsHash to ensure each unique state change triggers a new workflow instance.
-            // Restate maintains idempotency for the same ID. By including the labelsHash, we ensure that
-            // if the issue's labels change, we trigger a new processing loop (or the same one re-evaluates).
-            // Restate idempotency retention is typically 1 month by default.
-            const workflowId = `issue-${issue.number}-${mapping.workflowName}-${labelsHash}`;
+            const workflowId = `issue-${issue.number}`;
             
-            this.log.info(`Issue #${issue.number} matches ${mapping.workflowName} requirements. Triggering with ID ${workflowId}...`);
+            this.log.info(`Issue #${issue.number} matches requirements. Triggering with ID ${workflowId}...`);
             
             const workflowClient = await this.restateClient.workflowClient(
               mapping.workflow,
