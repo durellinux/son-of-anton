@@ -21,8 +21,57 @@ This ADR designs the full SDLC flow orchestration, resolving the limitations of 
 
 ## 2. Flows, Triggers & Human-in-the-Loop
 
+```mermaid
+sequenceDiagram
+    actor Human as Human Engineer
+    participant Poller as Polling Mechanism
+    participant SDLC as SDLC Orchestrator
+    participant EpicSpec as Epic Specification Agent
+    participant Planner as Epic Planner Agent
+    participant Impl as Implementation Agent
+    participant PRRev as PR Reviewer Agent
+    participant PRShep as PR Shepherd Agent
+    
+    Human->>Poller: Creates/Updates Issue (type:epic, status:triage)
+    Poller->>SDLC: Trigger Match
+    SDLC->>EpicSpec: Start epicSpecification Flow
+    EpicSpec->>EpicSpec: Drafts ADR/Spec
+    EpicSpec->>Human: Requests Approval (ctx.promise)
+    Human-->>EpicSpec: Approves Spec
+    
+    EpicSpec->>SDLC: Completes
+    SDLC->>Planner: Trigger epicPlanner Flow
+    Planner->>Planner: Proposes Task Breakdown
+    Planner->>Human: Requests Approval (ctx.promise)
+    Human-->>Planner: Approves Plan
+    Planner->>SDLC: Generates type:task issues
+    
+    Human->>Poller: Marks task as ready
+    Poller->>SDLC: Trigger Match
+    SDLC->>Impl: Start implementationAgent Flow
+    Impl->>Impl: Writes Implementation Plan
+    Impl->>Human: Requests Approval (ctx.promise)
+    Human-->>Impl: Approves Plan
+    Impl->>Impl: Writes Code & Opens PR
+    
+    Impl->>Poller: New PR created
+    Poller->>SDLC: Trigger Match
+    SDLC->>PRRev: Start prReviewer Flow
+    PRRev->>PRRev: Performs Automated Code Review
+    PRRev-->>Impl: Leaves Comments
+    
+    Poller->>SDLC: PR Updates (commits, CI, comments)
+    SDLC->>PRShep: Start prShepherd Flow
+    PRShep->>PRShep: Handles CI/Rebases/Feedback
+    PRShep->>Human: Request final review if needed
+    Human-->>PRShep: Approves PR
+    PRShep->>SDLC: Completes Issue
+```
+
 ### State & Triggers
-For the first iteration, the orchestration will rely on polling instead of webhooks to drive the state machine. We will poll the issue tracker (e.g., GitHub or Jira) for all tracked labels. On a match, the system will start the proper workflow, and Restate will take care of deduplication by ID (ensuring the deduplication ID is stored for at least 1 month). Standard labels to be used include:
+For the first iteration, the orchestration will rely on a dedicated Polling Mechanism instead of webhooks to drive the state machine. Son of Anton will periodically poll the issue tracker's API (e.g., GitHub Issues API) on a fixed interval (e.g., every 5 minutes). The poller will query for issues matching specific combinations of tracked labels. 
+When a change is detected (e.g., a new issue is created with `type:epic` and `status:triage`, or an existing epic has its labels updated to match this state), the poller triggers the appropriate Restate workflow.
+To prevent processing the same state change multiple times, the orchestration system relies on Restate's idempotency and deduplication by ID, ensuring the deduplication ID (derived from the issue ID and the specific state transition) is stored for at least 1 month. Standard labels to be used include:
 - `type:epic`
 - `type:task`
 - `status:triage`
