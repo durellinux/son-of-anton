@@ -11,25 +11,25 @@ description: Researches an issue and proposes a plan for its fix. Use when you h
 ## Tasks
 
 1. Setup the work environment:
-   - Define the workspace path: `.anton/workspaces/{issue_number}/{repo}`.
+   - Define the workspace path: `workspaces/{repo}`.
    - Check if the workspace directory exists.
    - If it doesn't exist:
-     - Clone the repository: `git clone https://github.com/{repo} .anton/workspaces/{issue_number}/{repo}`.
-     - `cd .anton/workspaces/{issue_number}/{repo}`.
+     - Clone the repository: `git clone https://github.com/{repo} workspaces/{repo}`.
+     - `cd workspaces/{repo}`.
    - If it exists:
-     - `cd .anton/workspaces/{issue_number}/{repo}`.
+     - `cd workspaces/{repo}`.
      - Reuse the existing clone.
 2. Research the codebase to understand the issue.
 3. Read the issue body and all comments to gather requirements and feedback from previous plans (if any).
 4. Plan the necessary changes.
 5. Save the proposed plan into a local planning session file:
-   - Read the file `../../../../../.anton/planning/{issue_number}.json` if it exists.
+   - Read the file `../../../plan.json` if it exists.
    - If it doesn't exist, create a new `history` array.
    - If it exists, parse the JSON and get the `history` array.
    - Append a new `PlanningStep` to the `history`:
      - `plan`: The plan you just created.
      - `timestamp`: Current timestamp in ISO format.
-   - Save the updated (or new) `PlanningSession` back to `../../../../../.anton/planning/{issue_number}.json`:
+   - Save the updated (or new) `PlanningSession` back to `../../../plan.json`:
      - `number`: {issue_number} (as an integer)
      - `status`: "waiting_approval"
      - `history`: The updated history array.
