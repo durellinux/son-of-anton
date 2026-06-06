@@ -7,13 +7,13 @@ export async function geminiLoop(
   id: number,
   prompt: string,
   type: string,
-) {
+): Promise<string> {
   let attempt = 1;
   while (true) {
     const result = await ctx.run(`${runNamePrefix}-attempt-${attempt}`, async () => {
       try {
-        await executeGemini(id, prompt, type);
-        return { success: true };
+        const output = await executeGemini(id, prompt, type);
+        return { success: true, output };
       } catch (error: any) {
         if (error instanceof NoModelsAvailableError || error.name === 'NoModelsAvailableError') {
           return { success: false, waitTimeMs: error.waitTimeMs };
@@ -23,7 +23,7 @@ export async function geminiLoop(
     });
 
     if (result.success) {
-      break;
+      return result.output!;
     }
 
     if (result.waitTimeMs) {

@@ -22,7 +22,7 @@ export class NoModelsAvailableError extends Error {
   }
 }
 
-export async function executeGemini(id: number, prompt: string, type: string): Promise<void> {
+export async function executeGemini(id: number, prompt: string, type: string): Promise<string> {
   while (true) {
     const selectedModel = MODELS.find((m) => (modelCooldowns.get(m) || 0) < Date.now());
 
@@ -51,9 +51,12 @@ export async function executeGemini(id: number, prompt: string, type: string): P
       selectedModel,
     ]);
 
+    let fullOutput = '';
+
     // Hook into the stream
     subprocess.stdout?.on('data', (chunk) => {
       const data = chunk.toString();
+      fullOutput += data;
       logStream.write(data);
     });
 
@@ -65,7 +68,7 @@ export async function executeGemini(id: number, prompt: string, type: string): P
 
     try {
       await subprocess;
-      return;
+      return fullOutput;
     } catch (error: any) {
       const output = (error.stdout || '') + (error.stderr || '') + (error.message || '');
       if (output.includes('429')) {
