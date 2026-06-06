@@ -2,10 +2,10 @@ import Fastify from 'fastify';
 import { registerRoutes } from './routes';
 import { IssueRepository } from '../repositories/repositories';
 import { Issue, Session, IssueStatus, PlanningSession } from '../api';
-import { IssueService, Paged } from '../services/issueService';
+import { IssueService } from '../services/issueService';
 
 class MockRepository implements IssueRepository {
-  async listIssues(cursor?: string, limit?: number): Promise<Issue[]> {
+  async listIssues(_cursor?: string, _limit?: number): Promise<Issue[]> {
     return [{ number: 1, title: 'Test', url: '', status: IssueStatus.PLANNING }];
   }
   async getIssue(number: number): Promise<Issue | undefined> {
@@ -14,8 +14,8 @@ class MockRepository implements IssueRepository {
   }
   async listSessions(
     issueNumber: number,
-    cursor?: string,
-    limit?: number,
+    _cursor?: string,
+    _limit?: number,
   ): Promise<Session[] | undefined> {
     if (issueNumber === 1)
       return [{ id: 's1', type: 'planning', timestamp: '', status: 'success' }];
@@ -25,15 +25,15 @@ class MockRepository implements IssueRepository {
     if (issueNumber === 1 && sessionId === 's1') return 'content';
     return undefined;
   }
-  async saveIssue(issue: Issue): Promise<void> {}
-  async getPlanningSession(number: number): Promise<PlanningSession | undefined> {
+  async saveIssue(_issue: Issue): Promise<void> {}
+  async getPlanningSession(_number: number): Promise<PlanningSession | undefined> {
     return undefined;
   }
-  async savePlanningSession(session: PlanningSession): Promise<void> {}
-  async deletePlanningSession(number: number): Promise<void> {}
-  async deleteIssue(number: number): Promise<void> {}
-  async deleteSessions(number: number): Promise<void> {}
-  async deleteWorkspace(number: number): Promise<void> {}
+  async savePlanningSession(_session: PlanningSession): Promise<void> {}
+  async deletePlanningSession(_number: number): Promise<void> {}
+  async deleteIssue(_number: number): Promise<void> {}
+  async deleteSessions(_number: number): Promise<void> {}
+  async deleteWorkspace(_number: number): Promise<void> {}
 }
 
 const mockRestateClient = {

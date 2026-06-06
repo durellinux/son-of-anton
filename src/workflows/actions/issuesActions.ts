@@ -3,7 +3,6 @@ import {
   GHRawIssue,
   Issue as GH_Issue,
   IssueState,
-  PullRequest,
 } from '../../../issueState';
 import { Issue, IssueStatus } from '../../api';
 import { FileSystemIssueRepository } from '../../repositories/fileSystemIssueRepository';
