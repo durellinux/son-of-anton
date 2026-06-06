@@ -25,6 +25,7 @@ export interface Issue {
   body: string;
   state: string;
   branch?: string;
+  labels?: string[];
 }
 
 export interface GHRawIssue {
@@ -32,6 +33,7 @@ export interface GHRawIssue {
   state: string;
   closedByPullRequestsReferences: { number: number }[];
   branch?: string;
+  labels: { name: string }[];
 }
 
 export interface PullRequestBase {
@@ -71,6 +73,10 @@ export function determineIssueState(
 ): IssueState {
   if (issue.state === 'CLOSED') {
     return IssueState.CLOSED;
+  }
+
+  if (issue.labels?.includes('status:specifying')) {
+    return IssueState.SPECIFYING;
   }
 
   if (issue.branch) {
