@@ -43,7 +43,3 @@ Fixes #{{issue_number}}
 
 Made by: #son-of-anton"
    ```
-9. Remove the trigger label to prevent duplicate processing:
-    ```bash
-    gh issue edit {{issue_number}} --remove-label "son-of-anton"
-    ```
