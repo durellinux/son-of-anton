@@ -36,8 +36,9 @@ sequenceDiagram
     Poller->>SDLC: Trigger Match
     SDLC->>EpicSpec: Start epicSpecification Flow
     EpicSpec->>EpicSpec: Drafts ADR/Spec
-    EpicSpec->>Human: Requests Approval (ctx.promise)
-    Human-->>EpicSpec: Approves Spec
+    EpicSpec->>EpicSpec: Opens PR with ADR/Spec
+    EpicSpec->>Human: Requests PR Review & Merge
+    Human-->>EpicSpec: Merges PR (Closes Epic Issue)
     
     EpicSpec->>SDLC: Completes
     SDLC->>Planner: Trigger epicPlanner Flow
@@ -87,8 +88,8 @@ The system will be split into several distinct workflows:
 
 1. **Epic Specification Flow (`epicSpecification`)**
    - **Trigger:** Detected via polling the issue tracker for issues with `type:epic` in a `status:triage` state.
-   - **Behavior:** The agent researches the epic and drafts an ADR or Specification.
-   - **Human-in-the-Loop:** A human engineer must review and approve the specification plan before it is finalized.
+   - **Behavior:** The agent researches the epic, drafts an ADR or Specification, and opens a Pull Request.
+   - **Human-in-the-Loop:** A human engineer must review and merge the PR containing the ADR/Spec. Merging this PR will automatically close the `type:epic` issue.
 
 2. **Epic Planner Flow (`epicPlanner`)**
    - **Trigger:** Triggered after the Epic Specification is approved.
@@ -117,7 +118,7 @@ To implement this modular system, we will introduce new specialized Restate work
 - `prReviewer`
 - `prShepherd`
 
-For the flows requiring human intervention (`epicSpecification`, `epicPlanner`, and `implementationAgent`), we will standardize a planning/approval suspension loop. This will use Restate's `ctx.promise` to mimic the current `IssueWorkflowV1` behavior, effectively putting the workflow to sleep until a human provides approval via a GitHub comment or an API call.
+For the flows requiring human intervention (`epicPlanner` and `implementationAgent`), we will standardize a planning/approval suspension loop. This will use Restate's `ctx.promise` to mimic the current `IssueWorkflowV1` behavior, effectively putting the workflow to sleep until a human provides approval via a GitHub comment or an API call. For the `epicSpecification` flow, approval is implicitly handled by the human merging the generated Pull Request.
 
 ## 4. Pros & Cons
 
