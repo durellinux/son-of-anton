@@ -16,7 +16,7 @@ export class GitHubPoller {
     this.log = log;
     this.mappings = [
       {
-        requiredLabels: ['son-of-anton', 'status:triage'],
+        requiredLabels: ['son-of-anton'],
         workflow: issueWorkflowV1,
       },
     ];
