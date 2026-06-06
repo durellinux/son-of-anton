@@ -22,7 +22,7 @@ This ADR designs the full SDLC flow orchestration, resolving the limitations of 
 ## 2. Flows, Triggers & Human-in-the-Loop
 
 ### State & Triggers
-The orchestration will rely heavily on GitHub Webhooks/events and Issue Labels to drive the state machine. Standard labels to be used include:
+For the first iteration, the orchestration will rely on polling instead of webhooks to drive the state machine. We will poll the issue tracker (e.g., GitHub or Jira) for all tracked labels. On a match, the system will start the proper workflow, and Restate will take care of deduplication by ID (ensuring the deduplication ID is stored for at least 1 month). Standard labels to be used include:
 - `type:epic`
 - `type:task`
 - `status:triage`
@@ -37,7 +37,7 @@ Before interacting with a repository, Son of Anton must autonomously verify that
 The system will be split into several distinct workflows:
 
 1. **Epic Specification Flow (`epicSpecification`)**
-   - **Trigger:** Issue created/updated with `type:epic` in a `status:triage` state.
+   - **Trigger:** Detected via polling the issue tracker for issues with `type:epic` in a `status:triage` state.
    - **Behavior:** The agent researches the epic and drafts an ADR or Specification.
    - **Human-in-the-Loop:** A human engineer must review and approve the specification plan before it is finalized.
 
@@ -47,16 +47,16 @@ The system will be split into several distinct workflows:
    - **Human-in-the-Loop:** A human engineer must review and approve the task breakdown plan before the agent generates the individual `type:task` GitHub issues.
 
 3. **Implementation Flow (`implementationAgent`)**
-   - **Trigger:** Issue created/updated with `type:task` that is ready for work.
+   - **Trigger:** Detected via polling the issue tracker for issues with `type:task` that are ready for work.
    - **Behavior:** The agent researches the codebase and writes an implementation plan. 
    - **Human-in-the-Loop:** A human engineer must approve the implementation plan before the agent writes the code and opens a Pull Request.
 
 4. **Code Review Flow (`prReviewer`)**
-   - **Trigger:** Triggered on PR opening.
+   - **Trigger:** Detected via polling for newly opened PRs.
    - **Behavior:** Performs an initial automated code review pass, leaving comments on the PR for both the author and other reviewers.
 
 5. **PR Shepherd Flow (`prShepherd`)**
-   - **Trigger:** Triggered by PR updates, such as new commits, CI failures, or new review comments.
+   - **Trigger:** Detected via polling for PR updates, such as new commits, CI failures, or new review comments.
    - **Behavior:** Actively rebases the branch, attempts to fix CI failures, and addresses feedback iteratively until the PR is green and approved.
 
 ## 3. Technical Architecture
