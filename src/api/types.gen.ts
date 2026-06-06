@@ -41,13 +41,11 @@ export type Issue = {
      * URL to the workflow in Restate
      */
     workflowUrl?: string;
-    /**
-     * ID of the workflow in Restate
-     */
 };
 
 export enum IssueStatus {
     PLANNING = 'Planning',
+    SPECIFYING = 'Specifying',
     WAITING_PLAN_REVIEW = 'Waiting Plan review',
     IMPLEMENTING = 'Implementing',
     WAITING_PR_REVIEW = 'Waiting PR review',

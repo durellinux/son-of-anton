@@ -48,6 +48,15 @@ const issueTests = [
     },
     expected: IssueState.WAITING_PR_REVIEW,
   },
+  {
+    name: 'Specifying state check',
+    issue: {
+      body: 'Epic issue',
+      state: 'OPEN',
+    },
+    expected: IssueState.SPECIFYING,
+    skip: true, // We don't have auto-detection for SPECIFYING yet, it's workflow-driven
+  },
 ];
 
 const localPlanningTests = [
@@ -157,6 +166,7 @@ const commentTests = [
 ];
 
 for (const test of issueTests) {
+  if ((test as any).skip) continue;
   console.log(`Running issue test: ${test.name}`);
   const actual = determineIssueState(test.issue as Issue);
   assert(actual === test.expected, `Expected ${test.expected}, but got ${actual}`);
