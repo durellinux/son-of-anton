@@ -1,10 +1,11 @@
 import * as restate from '@restatedev/restate-sdk';
 import { fetchIssueDetails, fetchIssueState, updateRepository } from './actions/issuesActions';
-import { setupWorkspace, findPullRequest } from './actions/workspaceActions';
+import { findPullRequest } from './actions/workspaceActions';
 import { planningLoop } from './blocks/planningLoop';
 import { implementationBlock } from './blocks/implementationBlock';
 import { prReviewLoop } from './blocks/prReviewLoop';
 import { labelBootstrappingBlock } from './blocks/labelBootstrappingBlock';
+import { setupWorkspaceBlock } from './blocks/setupWorkspaceBlock';
 
 export const issueWorkflowV1 = restate.workflow({
   name: 'IssueWorkflowV1',
@@ -27,9 +28,7 @@ export const issueWorkflowV1 = restate.workflow({
       await ctx.run('create-issue', () =>
         updateRepository(issueNumber, params.title, params.url, state, workflowUrl),
       );
-      await ctx.run('setup-workspace', () =>
-        setupWorkspace(issueNumber, issueRepo, ghIssue.branch),
-      );
+      await setupWorkspaceBlock(ctx, issueNumber, issueRepo, ghIssue.branch);
 
       await planningLoop(ctx, issueNumber, issueRepo, params.title, params.url, workflowUrl);
       await implementationBlock(ctx, issueNumber, issueRepo, params.title, params.url, workflowUrl);
