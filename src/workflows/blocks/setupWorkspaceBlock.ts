@@ -7,9 +7,10 @@ export async function setupWorkspaceBlock(
   issueNumber: number,
   issueRepo: string,
   branch: string | undefined,
+  prefix: string = 'setup-workspace',
 ) {
   try {
-    await ctx.run(`setup-workspace`, () => setupWorkspace(issueNumber, issueRepo, branch));
+    await ctx.run(`${prefix}-setup-workspace`, () => setupWorkspace(issueNumber, issueRepo, branch));
   } catch (error: any) {
     if (error instanceof RebaseConflictError || error.name === 'RebaseConflictError') {
       const conflictDetails = error.conflictDetails || (error as any).message;
@@ -30,7 +31,7 @@ Instructions:
 
 Once the rebase is finished, summarize what was done.`;
 
-      await geminiLoop(ctx, `resolve-rebase-conflict`, issueNumber, prompt, 'resolve-conflict');
+      await geminiLoop(ctx, `${prefix}-resolve-rebase-conflict`, issueNumber, prompt, 'resolve-conflict');
     } else {
       throw error;
     }
