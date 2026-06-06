@@ -22,23 +22,35 @@ export const REQUIRED_LABELS: LabelInfo[] = [
 
 export async function ensureLabels(repo: string): Promise<void> {
   console.log(`Ensuring labels for repository: ${repo}`);
-  for (const label of REQUIRED_LABELS) {
-    try {
-      await execa('gh', [
-        'label',
-        'create',
-        label.name,
-        '--repo',
-        repo,
-        '--color',
-        label.color,
-        '--description',
-        label.description,
-        '--force',
-      ]);
-    } catch (error) {
-      console.error(`Failed to ensure label '${label.name}' for ${repo}:`, error);
-      // We don't throw here to allow other labels to be processed
+
+  try {
+    // Fetch existing labels to avoid unnecessary create calls
+    const { stdout } = await execa('gh', ['label', 'list', '--repo', repo, '--json', 'name']);
+    const existingLabels = new Set(JSON.parse(stdout).map((l: any) => l.name));
+
+    for (const label of REQUIRED_LABELS) {
+      if (existingLabels.has(label.name)) {
+        console.log(`Label '${label.name}' already exists for ${repo}, skipping.`);
+        continue;
+      }
+
+      try {
+        await execa('gh', [
+          'label',
+          'create',
+          label.name,
+          '--repo',
+          repo,
+          '--color',
+          label.color,
+          '--description',
+          label.description,
+        ]);
+      } catch (error) {
+        console.error(`Failed to create label '${label.name}' for ${repo}:`, error);
+      }
     }
+  } catch (error) {
+    console.error(`Failed to fetch labels for ${repo}:`, error);
   }
 }
