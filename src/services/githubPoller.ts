@@ -64,17 +64,17 @@ export class GitHubPoller {
               `Issue #${issue.number} matches requirements. Triggering with ID ${workflowId}...`,
             );
 
-            const workflowClient = await this.restateClient.workflowClient(
-              mapping.workflow,
-              workflowId,
-            );
-
             try {
-              await workflowClient.workflowSubmit({
-                number: issue.number,
-                title: issue.title,
-                url: issue.url,
-                repository: issue.repository.nameWithOwner,
+              await this.restateClient.send({
+                service: mapping.workflow.name,
+                handler: 'run',
+                parameter: {
+                  number: issue.number,
+                  title: issue.title,
+                  url: issue.url,
+                  repository: issue.repository.nameWithOwner,
+                },
+                key: workflowId,
               });
               this.log.info(
                 `Successfully submitted workflow for issue #${issue.number} with ID ${workflowId}`,
@@ -89,8 +89,11 @@ export class GitHubPoller {
           }
         }
       }
-    } catch (error) {
-      this.log.error('Error during GitHub polling:', error);
+    } catch (error: any) {
+      this.log.error({ err: error }, `Error during GitHub polling: ${error.message || error}`);
+      if (error.stack) {
+        this.log.error(error.stack);
+      }
     }
   }
 }
