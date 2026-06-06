@@ -1,5 +1,6 @@
 import { execa } from 'execa';
 import { issueWorkflowV1 } from '../workflows/issueWorkflowV1';
+import { epicSpecificationWorkflow } from '../workflows/epicSpecificationWorkflow';
 
 export interface WorkflowMapping {
   requiredLabels: string[];
@@ -16,6 +17,10 @@ export class GitHubPoller {
     this.log = log;
     this.mappings = [
       {
+        requiredLabels: ['type:epic', 'status:triage'],
+        workflow: epicSpecificationWorkflow,
+      },
+      {
         requiredLabels: ['son-of-anton'],
         workflow: issueWorkflowV1,
       },
@@ -28,8 +33,7 @@ export class GitHubPoller {
       const args = [
         'search',
         'issues',
-        '--label',
-        'son-of-anton',
+        'label:son-of-anton OR (label:type:epic label:status:triage)',
         '--state',
         'open',
         '--json',

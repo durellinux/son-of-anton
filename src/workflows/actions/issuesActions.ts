@@ -16,6 +16,8 @@ function mapStateToStatus(state: IssueState): IssueStatus {
       return IssueStatus.YOLO;
     case IssueState.NEEDS_PLANNING:
       return IssueStatus.PLANNING;
+    case IssueState.SPECIFYING:
+      return IssueStatus.SPECIFYING;
     case IssueState.NEEDS_IMPLEMENTATION:
       return IssueStatus.IMPLEMENTING;
     case IssueState.WAITING_PR_REVIEW:
@@ -29,6 +31,14 @@ function mapStateToStatus(state: IssueState): IssueStatus {
     default:
       return IssueStatus.PLANNING;
   }
+}
+
+export async function addLabel(issueNumber: number, repo: string, label: string) {
+  await execa('gh', ['issue', 'edit', String(issueNumber), '-R', repo, '--add-label', label]);
+}
+
+export async function removeLabel(issueNumber: number, repo: string, label: string) {
+  await execa('gh', ['issue', 'edit', String(issueNumber), '-R', repo, '--remove-label', label]);
 }
 
 export async function fetchIssueDetails(issueNumber: number, issueRepo: string): Promise<GH_Issue> {

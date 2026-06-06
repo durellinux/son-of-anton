@@ -12,6 +12,7 @@ namespace AntonStatus;
 
 enum IssueStatus {
   Planning: "Planning",
+  Specifying: "Specifying",
   WaitingPlanReview: "Waiting Plan review",
   Implementing: "Implementing",
   WaitingPRReview: "Waiting PR review",
