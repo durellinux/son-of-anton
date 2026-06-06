@@ -69,17 +69,17 @@ export class GitHubPoller {
             `Issue #${issue.number} matches requirements. Triggering with ID ${workflowId}...`,
           );
 
-          const workflowClient = await this.restateClient.workflowClient(
-            matchingMapping.workflow,
-            workflowId,
-          );
-
           try {
-            await workflowClient.workflowSubmit({
-              number: issue.number,
-              title: issue.title,
-              url: issue.url,
-              repository: issue.repository.nameWithOwner,
+            await this.restateClient.send({
+              service: matchingMapping.workflow.name,
+              handler: 'run',
+              parameter: {
+                number: issue.number,
+                title: issue.title,
+                url: issue.url,
+                repository: issue.repository.nameWithOwner,
+              },
+              key: workflowId,
             });
             this.log.info(
               `Successfully submitted workflow for issue #${issue.number} with ID ${workflowId}`,
