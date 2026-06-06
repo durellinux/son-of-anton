@@ -30,7 +30,6 @@ export async function ensureLabels(repo: string): Promise<void> {
 
     for (const label of REQUIRED_LABELS) {
       if (existingLabels.has(label.name)) {
-        console.log(`Label '${label.name}' already exists for ${repo}, skipping.`);
         continue;
       }
 
