@@ -1,5 +1,4 @@
 import { execa } from 'execa';
-import * as restateClients from '@restatedev/restate-sdk-clients';
 import { issueWorkflowV1 } from '../workflows/issueWorkflowV1';
 
 export interface WorkflowMapping {
@@ -54,20 +53,22 @@ export class GitHubPoller {
 
       for (const issue of issues) {
         const issueLabels = issue.labels.map((l: any) => l.name);
-        
+
         for (const mapping of this.mappings) {
-          const matches = mapping.requiredLabels.every(label => issueLabels.includes(label));
-          
+          const matches = mapping.requiredLabels.every((label) => issueLabels.includes(label));
+
           if (matches) {
             const workflowId = `issue-${issue.number}`;
-            
-            this.log.info(`Issue #${issue.number} matches requirements. Triggering with ID ${workflowId}...`);
-            
+
+            this.log.info(
+              `Issue #${issue.number} matches requirements. Triggering with ID ${workflowId}...`,
+            );
+
             const workflowClient = await this.restateClient.workflowClient(
               mapping.workflow,
-              workflowId
+              workflowId,
             );
-            
+
             try {
               await workflowClient.workflowSubmit({
                 number: issue.number,
@@ -75,11 +76,15 @@ export class GitHubPoller {
                 url: issue.url,
                 repository: issue.repository.nameWithOwner,
               });
-              this.log.info(`Successfully submitted workflow for issue #${issue.number} with ID ${workflowId}`);
+              this.log.info(
+                `Successfully submitted workflow for issue #${issue.number} with ID ${workflowId}`,
+              );
             } catch (submitError: any) {
               // If it's already running or completed with this ID, Restate handles it.
               // We log it just in case.
-              this.log.warn(`Could not submit workflow for issue #${issue.number}: ${submitError.message}`);
+              this.log.warn(
+                `Could not submit workflow for issue #${issue.number}: ${submitError.message}`,
+              );
             }
           }
         }

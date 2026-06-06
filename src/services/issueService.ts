@@ -1,7 +1,6 @@
 import * as restateClients from '@restatedev/restate-sdk-clients';
 import { Issue, Session, PlanningSession, PlanningSessionStatus } from '../api';
 import { IssueRepository } from '../repositories/repositories';
-import { Workflow } from '@restatedev/restate-sdk';
 
 export type Paged<T> = {
   items: T[];
