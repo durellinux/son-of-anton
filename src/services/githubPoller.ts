@@ -1,4 +1,5 @@
 import { execa } from 'execa';
+import * as restateClients from '@restatedev/restate-sdk-clients';
 import { issueWorkflowV1 } from '../workflows/issueWorkflowV1';
 import { epicSpecificationWorkflow } from '../workflows/epicSpecificationWorkflow';
 import { epicPlannerWorkflow } from '../workflows/epicPlannerWorkflow';
@@ -9,11 +10,11 @@ export interface WorkflowMapping {
 }
 
 export class GitHubPoller {
-  private restateClient: any;
+  private restateClient: restateClients.IngressClient<any>;
   private mappings: WorkflowMapping[];
   private log: any;
 
-  constructor(restateClient: any, log: any) {
+  constructor(restateClient: restateClients.IngressClient<any>, log: any) {
     this.restateClient = restateClient;
     this.log = log;
     this.mappings = [
@@ -57,11 +58,17 @@ export class GitHubPoller {
 
       const { stdout } = await execa('gh', args);
 
-      const issues = JSON.parse(stdout) as any[];
+      const issues = JSON.parse(stdout) as Array<{
+        number: number;
+        title: string;
+        url: string;
+        labels: Array<{ name: string }>;
+        repository: { nameWithOwner: string };
+      }>;
       this.log.info(`Found ${issues.length} issues with label 'son-of-anton'.`);
 
       for (const issue of issues) {
-        const issueLabels = issue.labels.map((l: any) => l.name);
+        const issueLabels = issue.labels.map((l) => l.name);
 
         const matchingMapping = this.mappings.find((mapping) =>
           mapping.requiredLabels.every((label) => issueLabels.includes(label)),

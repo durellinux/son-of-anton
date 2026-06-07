@@ -74,14 +74,14 @@ export async function fetchIssueDetails(issueNumber: number, issueRepo: string):
     body: rawDetails.body,
     state: rawDetails.state,
     branch: rawDetails.branch,
-    labels: rawDetails.labels ? rawDetails.labels.map((l: any) => l.name) : undefined,
+    labels: rawDetails.labels ? rawDetails.labels.map((l) => l.name) : undefined,
   };
 }
 
 export async function fetchIssueState(issueNumber: number, issueRepo: string) {
   const localPlanningSession = await repository.getPlanningSession(issueNumber);
   const issueDetails = await fetchIssueDetails(issueNumber, issueRepo);
-  const state = determineIssueState(issueDetails, localPlanningSession as any);
+  const state = determineIssueState(issueDetails, localPlanningSession);
   return { state };
 }
 

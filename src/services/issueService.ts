@@ -69,13 +69,13 @@ export class IssueService {
       const urlParts = issue.workflowUrl.split('/');
       const workflowId = urlParts.pop();
       if (workflowId) {
-        const handle: any = this.restateClient.workflowHandle(
+        const handle = this.restateClient.workflowHandle(
           { name: 'EpicPlannerWorkflow' } as any,
           workflowId,
         );
         // Using resolveAwaitable for Restate 1.x
         const iteration = session.history.length;
-        await handle.resolveAwaitable(`epic-approval-${iteration}`, null);
+        await (handle as any).resolveAwaitable(`epic-approval-${iteration}`, null);
       }
     }
   }
@@ -96,12 +96,12 @@ export class IssueService {
       const urlParts = issue.workflowUrl.split('/');
       const workflowId = urlParts.pop();
       if (workflowId) {
-        const handle: any = this.restateClient.workflowHandle(
+        const handle = this.restateClient.workflowHandle(
           { name: 'EpicPlannerWorkflow' } as any,
           workflowId,
         );
         const iteration = session.history.length;
-        await handle.resolveAwaitable(`epic-approval-${iteration}`, null);
+        await (handle as any).resolveAwaitable(`epic-approval-${iteration}`, null);
       }
     }
   }

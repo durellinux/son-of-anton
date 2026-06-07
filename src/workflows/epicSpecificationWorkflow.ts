@@ -84,8 +84,7 @@ Do not stop until the PR is created.`;
       if (finalState === IssueState.MERGED) {
         await ctx.run('create-planning-issue', async () => {
           const files = await fetchPrFiles(prNumber, issueRepo);
-          const adrFile =
-            files.find((f) => f.startsWith('docs/adr/')) || '{path to ADR file added by the PR}';
+          const adrFile = files.find((f) => f.startsWith('docs/adr/')) || 'docs/adr/';
 
           const currentLabels = ghIssue.labels || [];
           const labelsToKeep = currentLabels.filter(

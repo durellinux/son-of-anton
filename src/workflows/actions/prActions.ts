@@ -45,5 +45,5 @@ export async function fetchPrFiles(prNumber: number, fullRepo: string): Promise<
     'files',
   ]);
   const { files } = JSON.parse(filesJson);
-  return files.map((f: any) => f.path);
+  return files.map((f: { path: string }) => f.path);
 }

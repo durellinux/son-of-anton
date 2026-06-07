@@ -7,10 +7,15 @@ import {
 } from './actions/issuesActions';
 import { setupWorkspaceBlock } from './blocks/setupWorkspaceBlock';
 import { geminiLoop } from './blocks/geminiLoop';
-import { IssueState } from '../../issueState';
+import { IssueState, PlanningSessionStatus } from '../../issueState';
 import { FileSystemIssueRepository } from '../repositories/fileSystemIssueRepository';
 
 const repository = new FileSystemIssueRepository();
+
+interface Task {
+  title: string;
+  body: string;
+}
 
 export const epicPlannerWorkflow = restate.workflow({
   name: 'EpicPlannerWorkflow',
@@ -40,7 +45,7 @@ export const epicPlannerWorkflow = restate.workflow({
       await setupWorkspaceBlock(ctx, issueNumber, issueRepo, ghIssue.branch);
 
       let iteration = 0;
-      let tasks: { title: string; body: string }[] = [];
+      let tasks: Task[] = [];
       const MAX_ITERATIONS = 100;
 
       while (iteration < MAX_ITERATIONS) {
@@ -85,7 +90,7 @@ Tasks:
         tasks = await ctx.run(`parse-tasks-${iteration}`, () => {
           const jsonMatch = geminiOutput.match(/\{[\s\S]*\}/);
           if (!jsonMatch) throw new Error('Could not find JSON in Gemini output');
-          return JSON.parse(jsonMatch[0]).tasks as { title: string; body: string }[];
+          return JSON.parse(jsonMatch[0]).tasks as Task[];
         });
 
         // Save to repository for human review
@@ -98,9 +103,9 @@ Tasks:
           });
           await repository.savePlanningSession({
             number: issueNumber,
-            status: 'waiting_approval' as any,
+            status: PlanningSessionStatus.WAITING_APPROVAL,
             history,
-          } as any);
+          });
         });
 
         await ctx.run(`update-status-waiting-${iteration}`, () =>
