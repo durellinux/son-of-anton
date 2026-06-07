@@ -84,17 +84,20 @@ Do not stop until the PR is created.`;
       if (finalState === IssueState.MERGED) {
         await ctx.run('create-planning-issue', async () => {
           const files = await fetchPrFiles(prNumber, issueRepo);
-          const adrFile = files.find((f) => f.startsWith('docs/adr/')) || '{path to ADR file added by the PR}';
-          
+          const adrFile =
+            files.find((f) => f.startsWith('docs/adr/')) || '{path to ADR file added by the PR}';
+
           const currentLabels = ghIssue.labels || [];
-          const labelsToKeep = currentLabels.filter((l) => l !== 'son-of-anton');
-          const newLabels = Array.from(new Set([...labelsToKeep, 'type:task', 'status:planning', 'type:epic']));
-          
+          const labelsToKeep = currentLabels.filter(
+            (l) => l !== 'son-of-anton' && l !== 'type:epic',
+          );
+          const newLabels = Array.from(new Set([...labelsToKeep, 'type:task', 'status:planning']));
+
           await createGitHubIssue(
             issueRepo,
             `Plan ${params.title}`,
             `Plan the work for the ADR: ${adrFile}.\n\n#### Goal\nCreate the issues required to implement the ADR.\nEach ticket should be cohesive and clear in scope.\n`,
-            newLabels
+            newLabels,
           );
         });
       }

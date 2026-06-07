@@ -2,7 +2,6 @@ import * as restate from '@restatedev/restate-sdk';
 import {
   fetchIssueDetails,
   createGitHubIssue,
-  addLabel,
   removeLabel,
   updateRepository,
 } from './actions/issuesActions';
@@ -58,7 +57,9 @@ Tasks:
 }
 `;
 
-        const sessionBefore = await ctx.run(`fetch-session-before-${iteration}`, () => repository.getPlanningSession(issueNumber));
+        const sessionBefore = await ctx.run(`fetch-session-before-${iteration}`, () =>
+          repository.getPlanningSession(issueNumber),
+        );
         if (sessionBefore?.status === 'needs_revision' && sessionBefore.history.length > 0) {
           const lastFeedback = sessionBefore.history[sessionBefore.history.length - 1].feedback;
           if (lastFeedback) {
@@ -66,7 +67,13 @@ Tasks:
           }
         }
 
-        const geminiOutput = await geminiLoop(ctx, `propose-tasks-${iteration}`, issueNumber, prompt, 'planning');
+        const geminiOutput = await geminiLoop(
+          ctx,
+          `propose-tasks-${iteration}`,
+          issueNumber,
+          prompt,
+          'planning',
+        );
 
         // Parse tasks from gemini output
         tasks = await ctx.run(`parse-tasks-${iteration}`, () => {
@@ -97,7 +104,9 @@ Tasks:
         // Wait for human approval via ctx.promise
         await ctx.promise<void>(`epic-approval-${iteration}`);
 
-        const sessionAfter = await ctx.run(`check-session-after-${iteration}`, () => repository.getPlanningSession(issueNumber));
+        const sessionAfter = await ctx.run(`check-session-after-${iteration}`, () =>
+          repository.getPlanningSession(issueNumber),
+        );
         if (sessionAfter?.status === 'approved') {
           break;
         }
@@ -107,11 +116,12 @@ Tasks:
       for (let i = 0; i < tasks.length; i++) {
         const task = tasks[i];
         await ctx.run(`create-task-${i}`, () =>
-          createGitHubIssue(issueRepo, `[Task] ${task.title}`, `${task.body}\n\nPart of epic #${issueNumber}`, [
-            'type:task',
-            'status:triage',
-            'son-of-anton',
-          ]),
+          createGitHubIssue(
+            issueRepo,
+            `[Task] ${task.title}`,
+            `${task.body}\n\nPart of epic #${issueNumber}`,
+            ['type:task', 'status:triage', 'son-of-anton'],
+          ),
         );
       }
 
