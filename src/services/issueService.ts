@@ -58,10 +58,25 @@ export class IssueService {
   }
 
   async approvePlan(issueNumber: number): Promise<void> {
+    const issue = await this.repository.getIssue(issueNumber);
     const session = await this.repository.getPlanningSession(issueNumber);
     if (!session) throw new Error(`Planning session not found for issue ${issueNumber}`);
     session.status = PlanningSessionStatus.APPROVED;
     await this.repository.savePlanningSession(session);
+
+    // Resolve Restate promise if applicable
+    if (issue?.workflowUrl?.includes('EpicPlannerWorkflow')) {
+      const urlParts = issue.workflowUrl.split('/');
+      const workflowId = urlParts.pop();
+      if (workflowId) {
+        const handle: any = this.restateClient.workflowHandle(
+          { name: 'EpicPlannerWorkflow' } as any,
+          workflowId,
+        );
+        // Using resolveAwaitable for Restate 1.x
+        await handle.resolveAwaitable('epic-approval', null);
+      }
+    }
   }
 
   async provideFeedback(issueNumber: number, feedback: string): Promise<void> {
