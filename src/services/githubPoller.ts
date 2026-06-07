@@ -2,6 +2,7 @@ import { execa } from 'execa';
 import { issueWorkflowV1 } from '../workflows/issueWorkflowV1';
 import { epicSpecificationWorkflow } from '../workflows/epicSpecificationWorkflow';
 import { epicPlannerWorkflow } from '../workflows/epicPlannerWorkflow';
+import { implementationAgentWorkflow } from '../workflows/implementationAgentWorkflow';
 
 export interface WorkflowMapping {
   requiredLabels: string[];
@@ -24,6 +25,10 @@ export class GitHubPoller {
       {
         requiredLabels: ['type:epic', 'status:triage', 'son-of-anton'],
         workflow: epicSpecificationWorkflow,
+      },
+      {
+        requiredLabels: ['son-of-anton', 'ready type:task'],
+        workflow: implementationAgentWorkflow,
       },
       {
         requiredLabels: ['son-of-anton'],

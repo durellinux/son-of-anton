@@ -1,8 +1,10 @@
 import { execa } from 'execa';
 import { FileSystemIssueRepository } from '../../repositories/fileSystemIssueRepository';
 import { IssueState } from '../../../issueState';
+import { PlanningSessionStatus } from '../../api';
 
 const repository = new FileSystemIssueRepository();
+
 
 export async function getPlanningSession(issueNumber: number) {
   return repository.getPlanningSession(issueNumber);
@@ -28,6 +30,17 @@ export async function commitPlan(issueNumber: number, issueRepo: string) {
     `body=${commentBody}`,
   ]);
   return commentJson;
+}
+
+export async function updatePlanningSessionStatus(
+  issueNumber: number,
+  status: PlanningSessionStatus,
+) {
+  const session = await repository.getPlanningSession(issueNumber);
+  if (session) {
+    session.status = status;
+    await repository.savePlanningSession(session);
+  }
 }
 
 export function buildPlanningPrompt(

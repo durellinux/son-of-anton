@@ -9,6 +9,7 @@ import { IssueService } from './src/services/issueService';
 import { issueWorkflowV1 } from './src/workflows/issueWorkflowV1';
 import { epicSpecificationWorkflow } from './src/workflows/epicSpecificationWorkflow';
 import { epicPlannerWorkflow } from './src/workflows/epicPlannerWorkflow';
+import { implementationAgentWorkflow } from './src/workflows/implementationAgentWorkflow';
 import { GitHubPoller } from './src/services/githubPoller';
 
 const RESTATE_URL = process.env.RESTATE_URL || 'http://localhost:8080';
@@ -48,6 +49,7 @@ const start = async () => {
       .bind(issueWorkflowV1)
       .bind(epicSpecificationWorkflow)
       .bind(epicPlannerWorkflow)
+      .bind(implementationAgentWorkflow)
       .listen(9080);
 
     fastify.log.info('Restate service is running on port 9080');
