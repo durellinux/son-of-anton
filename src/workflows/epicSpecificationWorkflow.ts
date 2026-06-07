@@ -4,6 +4,7 @@ import {
   updateRepository,
   addLabel,
   removeLabel,
+  createGitHubIssue,
 } from './actions/issuesActions';
 import { findPullRequest } from './actions/workspaceActions';
 import { prReviewLoop } from './blocks/prReviewLoop';
@@ -11,6 +12,7 @@ import { labelBootstrappingBlock } from './blocks/labelBootstrappingBlock';
 import { geminiLoop } from './blocks/geminiLoop';
 import { setupWorkspaceBlock } from './blocks/setupWorkspaceBlock';
 import { IssueState } from '../../issueState';
+import { fetchPrFiles } from './actions/prActions';
 
 export const epicSpecificationWorkflow = restate.workflow({
   name: 'EpicSpecificationWorkflow',
@@ -55,7 +57,7 @@ Tasks:
 3. Follow the existing ADR format (e.g., docs/adr/0001-ui-technology-selection.md).
 4. Name the file with the next available number, e.g., 0004-new-feature.md.
 5. Create a Pull Request with the new ADR.
-6. The PR title should be "ADR: ${params.title}" and the body should include "Specifies #${issueNumber}".
+6. The PR title should be "ADR: ${params.title}" and the body should include "Fixes #${issueNumber}".
 7. Use the "son-of-anton" label for the PR.
 
 Do not stop until the PR is created.`;
@@ -80,9 +82,21 @@ Do not stop until the PR is created.`;
       );
 
       if (finalState === IssueState.MERGED) {
-        await ctx.run('add-planning-label', () =>
-          addLabel(issueNumber, issueRepo, 'status:planning'),
-        );
+        await ctx.run('create-planning-issue', async () => {
+          const files = await fetchPrFiles(prNumber, issueRepo);
+          const adrFile = files.find((f) => f.startsWith('docs/adr/')) || '{path to ADR file added by the PR}';
+          
+          const currentLabels = ghIssue.labels || [];
+          const labelsToKeep = currentLabels.filter((l) => l !== 'son-of-anton');
+          const newLabels = Array.from(new Set([...labelsToKeep, 'type:task', 'status:planning', 'type:epic']));
+          
+          await createGitHubIssue(
+            issueRepo,
+            `Plan ${params.title}`,
+            `Plan the work for the ADR: ${adrFile}.\n\n#### Goal\nCreate the issues required to implement the ADR.\nEach ticket should be cohesive and clear in scope.\n`,
+            newLabels
+          );
+        });
       }
     },
   },

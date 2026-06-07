@@ -33,3 +33,17 @@ export async function fetchPrState(prNumber: number, fullRepo: string) {
 
   return { state, prDetails, unaddressedCommentIds };
 }
+
+export async function fetchPrFiles(prNumber: number, fullRepo: string): Promise<string[]> {
+  const { stdout: filesJson } = await execa('gh', [
+    'pr',
+    'view',
+    String(prNumber),
+    '-R',
+    fullRepo,
+    '--json',
+    'files',
+  ]);
+  const { files } = JSON.parse(filesJson);
+  return files.map((f: any) => f.path);
+}
