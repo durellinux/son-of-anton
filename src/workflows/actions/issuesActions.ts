@@ -100,3 +100,21 @@ export async function updateRepository(
   };
   await repository.saveIssue(issue);
 }
+
+export async function createGitHubIssue(
+  repo: string,
+  title: string,
+  body: string,
+  labels: string[],
+): Promise<number> {
+  const args = ['issue', 'create', '-R', repo, '-t', title, '-b', body];
+  for (const label of labels) {
+    args.push('-l', label);
+  }
+  const { stdout } = await execa('gh', args);
+  const match = stdout.match(/\/issues\/(\d+)/);
+  if (!match) {
+    throw new Error(`Failed to parse issue number from gh output: ${stdout}`);
+  }
+  return parseInt(match[1], 10);
+}

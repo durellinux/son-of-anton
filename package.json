@@ -6,7 +6,7 @@
   "scripts": {
     "start": "tsx antonDaemon.ts",
     "dev": "yarn ui:build && tsx antonDaemon.ts",
-    "test": "yarn tsx issueState.test.ts && yarn tsx src/repositories/fileSystemIssueRepository.test.ts && yarn tsx src/resources/routes.test.ts && yarn tsx src/workflows/actions/workspaceActions.test.ts",
+    "test": "npx tsx issueState.test.ts && npx tsx src/repositories/fileSystemIssueRepository.test.ts && npx tsx src/resources/routes.test.ts && npx tsx src/workflows/actions/workspaceActions.test.ts && npx tsx src/workflows/epicPlannerWorkflow.test.ts",
     "tsp:compile": "tsp compile status-api.tsp",
     "tsp:generate": "openapi-ts",
     "generate": "yarn tsp:compile && yarn tsp:generate",
