@@ -23,13 +23,8 @@ export const epicPlannerWorkflow = restate.workflow({
       const { number: issueNumber, repository: issueRepo } = params;
       const workflowUrl = `http://localhost:8080/visualize/EpicPlannerWorkflow/${ctx.key}`;
 
-      // Transition labels
-      await ctx.run('transition-labels', async () => {
-        await addLabel(issueNumber, issueRepo, 'status:planning');
-      });
-
       await ctx.run('update-repo-planning', () =>
-        updateRepository(issueNumber, params.title, params.url, IssueState.WAITING, workflowUrl),
+        updateRepository(issueNumber, params.title, params.url, IssueState.PLANNING, workflowUrl),
       );
 
       const ghIssue = await ctx.run('fetch-github-details', () =>
@@ -39,7 +34,14 @@ export const epicPlannerWorkflow = restate.workflow({
       // Setup workspace to access ADRs
       await setupWorkspaceBlock(ctx, issueNumber, issueRepo, ghIssue.branch);
 
-      const prompt = `You are an expert software architect. Read the Epic issue #${issueNumber} and the ADRs in docs/adr/ to understand the requirements.
+      let iteration = 0;
+      let tasks: { title: string; body: string }[] = [];
+      const MAX_ITERATIONS = 100;
+
+      while (iteration < MAX_ITERATIONS) {
+        iteration++;
+
+        let prompt = `You are an expert software architect. Read the Epic issue #${issueNumber} and the ADRs in docs/adr/ to understand the requirements.
 Epic: ${params.title}
 Body: ${ghIssue.body}
 
@@ -56,31 +58,50 @@ Tasks:
 }
 `;
 
-      const geminiOutput = await geminiLoop(ctx, 'propose-tasks', issueNumber, prompt, 'planning');
+        const sessionBefore = await ctx.run(`fetch-session-before-${iteration}`, () => repository.getPlanningSession(issueNumber));
+        if (sessionBefore?.status === 'needs_revision' && sessionBefore.history.length > 0) {
+          const lastFeedback = sessionBefore.history[sessionBefore.history.length - 1].feedback;
+          if (lastFeedback) {
+            prompt += `\nUser feedback from previous iteration:\n${lastFeedback}\nPlease update the plan to incorporate this feedback.`;
+          }
+        }
 
-      // Parse tasks from gemini output
-      const tasks = await ctx.run('parse-tasks', () => {
-        const jsonMatch = geminiOutput.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) throw new Error('Could not find JSON in Gemini output');
-        return JSON.parse(jsonMatch[0]).tasks as { title: string; body: string }[];
-      });
+        const geminiOutput = await geminiLoop(ctx, `propose-tasks-${iteration}`, issueNumber, prompt, 'planning');
 
-      // Save to repository for human review
-      await ctx.run('save-proposal', async () => {
-        await repository.savePlanningSession({
-          number: issueNumber,
-          status: 'waiting_approval' as any,
-          history: [
-            {
-              plan: geminiOutput,
-              timestamp: new Date().toISOString(),
-            },
-          ],
-        } as any);
-      });
+        // Parse tasks from gemini output
+        tasks = await ctx.run(`parse-tasks-${iteration}`, () => {
+          const jsonMatch = geminiOutput.match(/\{[\s\S]*\}/);
+          if (!jsonMatch) throw new Error('Could not find JSON in Gemini output');
+          return JSON.parse(jsonMatch[0]).tasks as { title: string; body: string }[];
+        });
 
-      // Wait for human approval via ctx.promise
-      await ctx.promise<void>('epic-approval');
+        // Save to repository for human review
+        await ctx.run(`save-proposal-${iteration}`, async () => {
+          const currentSession = await repository.getPlanningSession(issueNumber);
+          const history = currentSession?.history || [];
+          history.push({
+            plan: geminiOutput,
+            timestamp: new Date().toISOString(),
+          });
+          await repository.savePlanningSession({
+            number: issueNumber,
+            status: 'waiting_approval' as any,
+            history,
+          } as any);
+        });
+
+        await ctx.run(`update-status-waiting-${iteration}`, () =>
+          updateRepository(issueNumber, params.title, params.url, IssueState.WAITING, workflowUrl),
+        );
+
+        // Wait for human approval via ctx.promise
+        await ctx.promise<void>(`epic-approval-${iteration}`);
+
+        const sessionAfter = await ctx.run(`check-session-after-${iteration}`, () => repository.getPlanningSession(issueNumber));
+        if (sessionAfter?.status === 'approved') {
+          break;
+        }
+      }
 
       // Create tasks
       for (let i = 0; i < tasks.length; i++) {

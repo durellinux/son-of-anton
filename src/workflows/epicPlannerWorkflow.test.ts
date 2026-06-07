@@ -27,7 +27,7 @@ async function test() {
       return await fn?.(); // Fallback for pure function runs without dependencies
     },
     promise: async (name: string) => {
-      if (name === 'epic-approval') {
+      if (name === 'epic-approval-1') {
         promiseResolved = true;
         return;
       }

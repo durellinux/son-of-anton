@@ -49,7 +49,7 @@ export async function fetchIssueDetails(issueNumber: number, issueRepo: string):
     '-R',
     issueRepo,
     '--json',
-    'body,closedByPullRequestsReferences,state',
+    'body,closedByPullRequestsReferences,state,labels',
   ]);
   const rawDetails = JSON.parse(issueDetailsJson) as GHRawIssue;
 
@@ -74,6 +74,7 @@ export async function fetchIssueDetails(issueNumber: number, issueRepo: string):
     body: rawDetails.body,
     state: rawDetails.state,
     branch: rawDetails.branch,
+    labels: rawDetails.labels ? rawDetails.labels.map((l: any) => l.name) : undefined,
   };
 }
 
