@@ -23,7 +23,13 @@ export const epicPlannerWorkflow = restate.workflow({
       const workflowUrl = `http://localhost:8080/visualize/EpicPlannerWorkflow/${ctx.key}`;
 
       await ctx.run('update-repo-planning', () =>
-        updateRepository(issueNumber, params.title, params.url, IssueState.NEEDS_PLANNING, workflowUrl),
+        updateRepository(
+          issueNumber,
+          params.title,
+          params.url,
+          IssueState.NEEDS_PLANNING,
+          workflowUrl,
+        ),
       );
 
       const ghIssue = await ctx.run('fetch-github-details', () =>
