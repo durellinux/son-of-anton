@@ -1,5 +1,5 @@
 import * as restate from '@restatedev/restate-sdk';
-import { removeLabel } from './actions/issuesActions';
+import { addLabel, removeLabel } from './actions/issuesActions';
 import { planningLoop } from './blocks/planningLoop';
 import { implementationBlock } from './blocks/implementationBlock';
 
@@ -21,7 +21,11 @@ export const implementationAgentWorkflow = restate.workflow({
 
       // Call the removeLabel action
       await ctx.run('remove-ready-label', () =>
-        removeLabel(issueNumber, issueRepo, 'ready type:task'),
+        removeLabel(issueNumber, issueRepo, 'status:ready'),
+      );
+
+      await ctx.run('add-in-review-label', () =>
+        addLabel(issueNumber, issueRepo, 'status:in-review'),
       );
     },
   },
