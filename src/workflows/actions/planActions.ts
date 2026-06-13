@@ -5,7 +5,6 @@ import { PlanningSessionStatus } from '../../api';
 
 const repository = new FileSystemIssueRepository();
 
-
 export async function getPlanningSession(issueNumber: number) {
   return repository.getPlanningSession(issueNumber);
 }
