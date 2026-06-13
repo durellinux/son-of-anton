@@ -27,7 +27,7 @@ export class GitHubPoller {
         workflow: epicSpecificationWorkflow,
       },
       {
-        requiredLabels: ['son-of-anton', 'ready type:task'],
+        requiredLabels: ['type:task', 'status:ready', 'son-of-anton'],
         workflow: implementationAgentWorkflow,
       },
       {
