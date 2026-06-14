@@ -8,6 +8,7 @@ export enum IssueState {
   CLOSED = 'CLOSED',
   MERGED = 'MERGED',
   FAILED = 'FAILED',
+  CONFLICT_DETECTED = 'CONFLICT_DETECTED',
 }
 
 export interface IssueComment {

@@ -8,7 +8,7 @@ import {
 } from '../../../issueState';
 
 export async function updateBranch(prNumber: number, fullRepo: string) {
-  await execa('gh', ['pr', 'update-branch', String(prNumber), '-R', fullRepo]);
+  await execa('gh', ['pr', 'update-branch', String(prNumber), '-R', fullRepo, '--rebase']);
 }
 
 export async function mergePR(prNumber: number, fullRepo: string) {

@@ -51,7 +51,8 @@ export enum IssueStatus {
     WAITING_PR_REVIEW = 'Waiting PR review',
     YOLO = 'YOLO',
     DONE = 'Done',
-    CLOSED = 'Closed'
+    CLOSED = 'Closed',
+    CONFLICT_DETECTED = 'Conflict detected'
 }
 
 export type PlanningSession = {

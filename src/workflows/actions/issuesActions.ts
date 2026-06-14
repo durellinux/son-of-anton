@@ -28,6 +28,8 @@ function mapStateToStatus(state: IssueState): IssueStatus {
       return IssueStatus.CLOSED;
     case IssueState.MERGED:
       return IssueStatus.DONE;
+    case IssueState.CONFLICT_DETECTED:
+      return IssueStatus.CONFLICT_DETECTED;
     default:
       return IssueStatus.PLANNING;
   }

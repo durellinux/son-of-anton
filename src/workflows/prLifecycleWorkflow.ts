@@ -1,7 +1,10 @@
 import * as restate from '@restatedev/restate-sdk';
-import { fetchConnectedPRs } from './actions/issuesActions';
+import { fetchConnectedPRs, updateRepository } from './actions/issuesActions';
 import { prReviewerBlock } from './blocks/prReviewerBlock';
 import { prShepherdBlock } from './blocks/prShepherdBlock';
+import { IssueState } from '../../issueState';
+
+const MAX_PLAN_ITERATIONS = 1000;
 
 export const prLifecycleWorkflow = restate.workflow({
   name: 'PrLifecycleWorkflow',
@@ -12,6 +15,7 @@ export const prLifecycleWorkflow = restate.workflow({
     ) => {
       const issueNumber = params.number;
       const repository = params.repository;
+      const workflowUrl = `http://localhost:8080/visualize/PrLifecycleWorkflow/${ctx.key}`;
 
       const prNumbers = await ctx.run('fetch-connected-prs', () =>
         fetchConnectedPRs(issueNumber, repository),
@@ -26,12 +30,58 @@ export const prLifecycleWorkflow = restate.workflow({
       const prTasks = prNumbers.map(async (prNumber) => {
         // Run review
         await prReviewerBlock(ctx, issueNumber, prNumber, repository);
-
-        // Run shepherd
-        return await prShepherdBlock(ctx, issueNumber, prNumber, repository);
       });
 
       await Promise.all(prTasks);
+
+      let iteration = 0;
+      let allCompleted = false;
+
+      while (iteration < MAX_PLAN_ITERATIONS && !allCompleted) {
+        iteration++;
+
+        const shepherdTasks = prNumbers.map(async (prNumber) => {
+          return await prShepherdBlock(ctx, issueNumber, prNumber, repository, iteration);
+        });
+
+        const results = await Promise.all(shepherdTasks);
+
+        let maxWaitTimeMs = 0;
+        let conflictDetected = false;
+        allCompleted = true;
+
+        for (const result of results) {
+          if (result.state !== IssueState.MERGED && result.state !== IssueState.CLOSED && result.state !== IssueState.FAILED) {
+            allCompleted = false;
+          }
+          if (result.state === IssueState.CONFLICT_DETECTED) {
+            conflictDetected = true;
+          }
+          if (result.waitTimeMs > maxWaitTimeMs) {
+            maxWaitTimeMs = result.waitTimeMs;
+          }
+        }
+
+        if (conflictDetected) {
+          await ctx.run(`set-conflict-${iteration}`, () =>
+            updateRepository(
+              issueNumber,
+              params.title,
+              params.url,
+              IssueState.CONFLICT_DETECTED,
+              workflowUrl
+            )
+          );
+        }
+
+        if (allCompleted) {
+          break;
+        }
+
+        if (maxWaitTimeMs > 0) {
+          await ctx.sleep(maxWaitTimeMs);
+        }
+      }
     },
   },
 });
