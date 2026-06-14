@@ -92,16 +92,17 @@ export class IssueService {
     await this.repository.savePlanningSession(session);
 
     // Resolve Restate promise if applicable
-    if (issue?.workflowUrl?.includes('EpicPlannerWorkflow')) {
+    if (issue?.workflowUrl) {
       const urlParts = issue.workflowUrl.split('/');
       const workflowId = urlParts.pop();
-      if (workflowId) {
-        const handle: any = this.restateClient.workflowHandle(
-          { name: 'EpicPlannerWorkflow' } as any,
+      const workflowName = urlParts.pop();
+      if (workflowId && workflowName) {
+        const client: any = this.restateClient.workflowClient(
+          { name: workflowName } as any,
           workflowId,
         );
         const iteration = session.history.length;
-        await handle.resolveAwaitable(`epic-approval-${iteration}`, null);
+        await client.submitApproval({ iteration });
       }
     }
   }
@@ -123,11 +124,11 @@ export class IssueService {
         }
       }
 
-      const handle: any = await this.restateClient.workflowHandle(
+      const client: any = this.restateClient.workflowClient(
         { name: workflowName } as any,
         workflowId,
       );
-      await handle.terminate();
+      await client.terminate();
     } catch (e) {
       // Ignore if workflow doesn't exist or already terminated
       console.warn(`Failed to terminate workflow for issue ${number}:`, e);

@@ -42,5 +42,8 @@ export const issueWorkflowV1 = restate.workflow({
         updateRepository(issueNumber, params.title, params.url, finalState, workflowUrl),
       );
     },
+    submitApproval: async (ctx: restate.WorkflowSharedContext, req: { iteration: number }) => {
+      ctx.promise<void>(`approval-${req.iteration}`).resolve();
+    },
   },
 });
