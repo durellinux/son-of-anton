@@ -6,8 +6,8 @@ export async function prReviewerBlock(
   issueNumber: number,
   prNumber: number,
   fullRepo: string,
-  prefix: string = 'pr-reviewer',
+  prefix: string,
 ) {
   const prompt = `Use the anton-pr-review skill to perform an automated code review on PR ${prNumber} in repo ${fullRepo}.`;
-  await geminiLoop(ctx, `${prefix}-${prNumber}`, issueNumber, prompt, 'pr-review');
+  await geminiLoop(ctx, `${prefix}-pr-review-${prNumber}`, issueNumber, prompt, 'pr-review');
 }
