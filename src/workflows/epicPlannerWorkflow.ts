@@ -108,7 +108,7 @@ Tasks:
         );
 
         // Wait for human approval via ctx.promise
-        await ctx.promise<void>(`epic-approval-${iteration}`);
+        await ctx.promise<void>(`approval-${iteration}`);
 
         const sessionAfter = await ctx.run(`check-session-after-${iteration}`, () =>
           repository.getPlanningSession(issueNumber),
@@ -138,6 +138,9 @@ Tasks:
       await ctx.run('update-final-status', () =>
         updateRepository(issueNumber, params.title, params.url, IssueState.MERGED, workflowUrl),
       );
+    },
+    submitApproval: async (ctx: restate.WorkflowSharedContext, req: { iteration: number }) => {
+      ctx.promise<void>(`approval-${req.iteration}`).resolve();
     },
   },
 });

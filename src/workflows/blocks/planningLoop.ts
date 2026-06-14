@@ -56,7 +56,7 @@ export async function planningLoop(
       );
     }
 
-    await ctx.sleep(5 * 60 * 1000);
+    await ctx.promise<void>('approval-' + iteration);
   }
 
   throw new Error(`Planning loop exceeded maximum iterations: ${maxIterations}`);

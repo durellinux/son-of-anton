@@ -37,7 +37,7 @@ class MockRepository implements IssueRepository {
 }
 
 const mockRestateClient = {
-  workflowHandle: () => ({
+  workflowClient: () => ({
     terminate: async () => {},
   }),
 } as any;

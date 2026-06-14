@@ -28,5 +28,8 @@ export const implementationAgentWorkflow = restate.workflow({
         addLabel(issueNumber, issueRepo, 'status:in-review'),
       );
     },
+    submitApproval: async (ctx: restate.WorkflowSharedContext, req: { iteration: number }) => {
+      ctx.promise<void>(`approval-${req.iteration}`).resolve();
+    },
   },
 });
