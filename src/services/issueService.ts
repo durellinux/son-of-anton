@@ -65,17 +65,17 @@ export class IssueService {
     await this.repository.savePlanningSession(session);
 
     // Resolve Restate promise if applicable
-    if (issue?.workflowUrl?.includes('EpicPlannerWorkflow')) {
+    if (issue?.workflowUrl) {
       const urlParts = issue.workflowUrl.split('/');
       const workflowId = urlParts.pop();
-      if (workflowId) {
-        const handle: any = this.restateClient.workflowHandle(
-          { name: 'EpicPlannerWorkflow' } as any,
+      const workflowName = urlParts.pop();
+      if (workflowId && workflowName) {
+        const client: any = this.restateClient.workflowClient(
+          { name: workflowName } as any,
           workflowId,
         );
-        // Using resolveAwaitable for Restate 1.x
         const iteration = session.history.length;
-        await handle.resolveAwaitable(`epic-approval-${iteration}`, null);
+        await client.submitApproval({ iteration });
       }
     }
   }
