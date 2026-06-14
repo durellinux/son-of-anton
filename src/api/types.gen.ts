@@ -117,7 +117,7 @@ export type IssuesListData = {
         cursor?: string;
         limit?: number;
     };
-    url: '/issues';
+    url: '/api/issues';
 };
 
 export type IssuesListResponses = {
@@ -144,7 +144,7 @@ export type IssuesDeleteData = {
         number: number;
     };
     query?: never;
-    url: '/issues/{number}';
+    url: '/api/issues/{number}';
 };
 
 export type IssuesDeleteErrors = {
@@ -169,7 +169,7 @@ export type IssuesGetData = {
         number: number;
     };
     query?: never;
-    url: '/issues/{number}';
+    url: '/api/issues/{number}';
 };
 
 export type IssuesGetErrors = {
@@ -194,7 +194,7 @@ export type IssuesGetPlanningSessionData = {
         number: number;
     };
     query?: never;
-    url: '/issues/{number}/planning';
+    url: '/api/issues/{number}/planning';
 };
 
 export type IssuesGetPlanningSessionErrors = {
@@ -219,7 +219,7 @@ export type IssuesApprovePlanData = {
         number: number;
     };
     query?: never;
-    url: '/issues/{number}/planning/approve';
+    url: '/api/issues/{number}/planning/approve';
 };
 
 export type IssuesApprovePlanErrors = {
@@ -246,7 +246,7 @@ export type IssuesProvideFeedbackData = {
         number: number;
     };
     query?: never;
-    url: '/issues/{number}/planning/feedback';
+    url: '/api/issues/{number}/planning/feedback';
 };
 
 export type IssuesProvideFeedbackErrors = {
@@ -274,7 +274,7 @@ export type IssuesListSessionsData = {
         cursor?: string;
         limit?: number;
     };
-    url: '/issues/{number}/sessions';
+    url: '/api/issues/{number}/sessions';
 };
 
 export type IssuesListSessionsErrors = {
@@ -309,7 +309,7 @@ export type IssuesGetSessionContentData = {
         id: string;
     };
     query?: never;
-    url: '/issues/{number}/sessions/{id}';
+    url: '/api/issues/{number}/sessions/{id}';
 };
 
 export type IssuesGetSessionContentErrors = {
