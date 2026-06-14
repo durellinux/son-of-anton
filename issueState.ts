@@ -45,6 +45,9 @@ export interface PullRequest extends PullRequestBase {
   reviewDecision: string;
   state: string;
   headRefName: string;
+  statusCheckRollup?: { state: string }[];
+  mergeStateStatus?: string;
+  mergeable?: string;
 }
 
 export interface PRComment {

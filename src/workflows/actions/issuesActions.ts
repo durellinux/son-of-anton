@@ -41,6 +41,21 @@ export async function removeLabel(issueNumber: number, repo: string, label: stri
   await execa('gh', ['issue', 'edit', String(issueNumber), '-R', repo, '--remove-label', label]);
 }
 
+export async function fetchConnectedPRs(issueNumber: number, repo: string): Promise<number[]> {
+  const { stdout: issueDetailsJson } = await execa('gh', [
+    'issue',
+    'view',
+    String(issueNumber),
+    '-R',
+    repo,
+    '--json',
+    'closedByPullRequestsReferences',
+  ]);
+  const rawDetails = JSON.parse(issueDetailsJson) as GHRawIssue;
+  if (!rawDetails.closedByPullRequestsReferences) return [];
+  return rawDetails.closedByPullRequestsReferences.map((pr) => pr.number);
+}
+
 export async function fetchIssueDetails(issueNumber: number, issueRepo: string): Promise<GH_Issue> {
   const { stdout: issueDetailsJson } = await execa('gh', [
     'issue',
