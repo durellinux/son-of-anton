@@ -3,6 +3,7 @@ import { issueWorkflowV1 } from '../workflows/issueWorkflowV1';
 import { epicSpecificationWorkflow } from '../workflows/epicSpecificationWorkflow';
 import { epicPlannerWorkflow } from '../workflows/epicPlannerWorkflow';
 import { implementationAgentWorkflow } from '../workflows/implementationAgentWorkflow';
+import { prLifecycleWorkflow } from '../workflows/prLifecycleWorkflow';
 
 export interface WorkflowMapping {
   requiredLabels: string[];
@@ -29,6 +30,10 @@ export class GitHubPoller {
       {
         requiredLabels: ['type:task', 'status:ready', 'son-of-anton'],
         workflow: implementationAgentWorkflow,
+      },
+      {
+        requiredLabels: ['status:in-review', 'son-of-anton'],
+        workflow: prLifecycleWorkflow,
       },
       {
         requiredLabels: ['son-of-anton'],
