@@ -29,7 +29,7 @@ export const prLifecycleWorkflow = restate.workflow({
       // Track all PRs in parallel
       const prTasks = prNumbers.map(async (prNumber) => {
         // Run review
-        await prReviewerBlock(ctx, issueNumber, prNumber, repository);
+        await prReviewerBlock(ctx, issueNumber, prNumber, repository, 'pr-lifecycle');
       });
 
       await Promise.all(prTasks);
@@ -41,7 +41,14 @@ export const prLifecycleWorkflow = restate.workflow({
         iteration++;
 
         const shepherdTasks = prNumbers.map(async (prNumber) => {
-          return await prShepherdBlock(ctx, issueNumber, prNumber, repository, iteration);
+          return await prShepherdBlock(
+            ctx,
+            issueNumber,
+            prNumber,
+            repository,
+            iteration,
+            'pr-lifecycle',
+          );
         });
 
         const results = await Promise.all(shepherdTasks);
