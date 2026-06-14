@@ -33,12 +33,20 @@ export async function prShepherdBlock(
     (check) => check.state === 'FAILURE' || check.state === 'ERROR',
   );
 
-  if (hasCiFailure || unaddressedCommentIds.length > 0) {
+  if (hasCiFailure) {
     const issueParam = `for issue ${issueNumber}`;
-    const prompt = `use the anton-pr-fix skill flow ${issueParam} for PR ${prNumber} on branch ${prDetails.headRefName} in repo ${fullRepo}. ${hasCiFailure ? 'Fix the CI failures.' : ''} ${unaddressedCommentIds.length > 0 ? `Address comment IDs ${unaddressedCommentIds.join(', ')}.` : ''}`;
+    const prompt = `use the anton-pr-fix skill flow ${issueParam} for PR ${prNumber} on branch ${prDetails.headRefName} in repo ${fullRepo}. Fix the CI failures.`;
 
-    await geminiLoop(ctx, `${prefix}-execute-gemini-${iteration}-${prNumber}`, issueNumber, prompt, 'pr-fix');
-    return { state: IssueState.WAITING, waitTimeMs: 0 };
+    await geminiLoop(ctx, `${prefix}-fix-ci-${iteration}-${prNumber}`, issueNumber, prompt, 'pr-fix');
+    return { state: IssueState.WAITING, waitTimeMs: 5 * 60 * 1000 };
+  }
+
+  if (unaddressedCommentIds.length > 0) {
+    const issueParam = `for issue ${issueNumber}`;
+    const prompt = `use the anton-pr-fix skill flow ${issueParam} for PR ${prNumber} on branch ${prDetails.headRefName} in repo ${fullRepo}. Address comment IDs ${unaddressedCommentIds.join(', ')}.`;
+
+    await geminiLoop(ctx, `${prefix}-fix-comments-${iteration}-${prNumber}`, issueNumber, prompt, 'pr-fix');
+    return { state: IssueState.WAITING, waitTimeMs: 5 * 60 * 1000 };
   }
 
   return { state: IssueState.WAITING, waitTimeMs: 5 * 60 * 1000 };
