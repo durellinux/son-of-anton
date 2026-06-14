@@ -51,7 +51,11 @@ export const prLifecycleWorkflow = restate.workflow({
         allCompleted = true;
 
         for (const result of results) {
-          if (result.state !== IssueState.MERGED && result.state !== IssueState.CLOSED && result.state !== IssueState.FAILED) {
+          if (
+            result.state !== IssueState.MERGED &&
+            result.state !== IssueState.CLOSED &&
+            result.state !== IssueState.FAILED
+          ) {
             allCompleted = false;
           }
           if (result.state === IssueState.CONFLICT_DETECTED) {
@@ -69,8 +73,8 @@ export const prLifecycleWorkflow = restate.workflow({
               params.title,
               params.url,
               IssueState.CONFLICT_DETECTED,
-              workflowUrl
-            )
+              workflowUrl,
+            ),
           );
         }
 
