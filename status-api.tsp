@@ -104,7 +104,7 @@ model Paged<T> {
   nextCursor?: string;
 }
 
-@route("/issues")
+@route("/api/issues")
 interface Issues {
   @doc("List all issues worked by Son of Anton")
   @get list(@query cursor?: string, @query limit?: int32): Paged<Issue>;

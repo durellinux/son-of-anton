@@ -82,14 +82,14 @@ export function registerRoutes(
     },
   };
 
-  fastify.get('/issues', handlers.issuesList);
-  fastify.get('/issues/:number', handlers.issuesGet);
-  fastify.delete('/issues/:number', handlers.issuesDelete);
-  fastify.get('/issues/:number/sessions', handlers.issuesListSessions);
-  fastify.get('/issues/:number/sessions/:id', handlers.issuesGetSessionContent);
-  fastify.get('/issues/:number/planning', handlers.issuesGetPlanningSession);
-  fastify.post('/issues/:number/planning/approve', handlers.issuesApprovePlan);
-  fastify.post('/issues/:number/planning/feedback', handlers.issuesProvideFeedback);
+  fastify.get('/api/issues', handlers.issuesList);
+  fastify.get('/api/issues/:number', handlers.issuesGet);
+  fastify.delete('/api/issues/:number', handlers.issuesDelete);
+  fastify.get('/api/issues/:number/sessions', handlers.issuesListSessions);
+  fastify.get('/api/issues/:number/sessions/:id', handlers.issuesGetSessionContent);
+  fastify.get('/api/issues/:number/planning', handlers.issuesGetPlanningSession);
+  fastify.post('/api/issues/:number/planning/approve', handlers.issuesApprovePlan);
+  fastify.post('/api/issues/:number/planning/feedback', handlers.issuesProvideFeedback);
 
   done();
 }
