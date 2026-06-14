@@ -302,6 +302,8 @@ function getStatusColor(status: IssueStatus) {
   switch (status) {
     case IssueStatus.PLANNING:
       return 'blue';
+    case IssueStatus.SPECIFYING:
+      return 'violet';
     case IssueStatus.WAITING_PLAN_REVIEW:
       return 'yellow';
     case IssueStatus.IMPLEMENTING:
@@ -310,6 +312,12 @@ function getStatusColor(status: IssueStatus) {
       return 'cyan';
     case IssueStatus.YOLO:
       return 'pink';
+    case IssueStatus.CONFLICT_DETECTED:
+      return 'red';
+    case IssueStatus.DONE:
+      return 'green';
+    case IssueStatus.CLOSED:
+      return 'gray';
     default:
       return 'gray';
   }

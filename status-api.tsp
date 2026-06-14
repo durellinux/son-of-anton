@@ -19,6 +19,7 @@ enum IssueStatus {
   YOLO: "YOLO",
   Done: "Done",
   Closed: "Closed",
+  ConflictDetected: "Conflict detected",
 }
 
 model Issue {
