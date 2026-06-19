@@ -20,12 +20,12 @@ export class GitHubPoller {
     this.log = log;
     this.mappings = [
       {
-        requiredLabels: ['type:epic', 'status:planning', 'son-of-anton'],
-        workflow: epicPlannerWorkflow,
-      },
-      {
         requiredLabels: ['type:epic', 'status:triage', 'son-of-anton'],
         workflow: epicSpecificationWorkflow,
+      },
+      {
+        requiredLabels: ['type:task', 'status:planning', 'son-of-anton'],
+        workflow: epicPlannerWorkflow,
       },
       {
         requiredLabels: ['type:task', 'status:ready', 'son-of-anton'],
