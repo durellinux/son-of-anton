@@ -10,16 +10,7 @@ description: Researches an issue and proposes a plan for its fix. Use when you h
 
 ## Tasks
 
-1. Setup the work environment:
-   - Define the workspace path: `workspaces/{repo}`.
-   - Check if the workspace directory exists.
-   - If it doesn't exist:
-     - Clone the repository: `git clone https://github.com/{repo} workspaces/{repo}`.
-     - `cd workspaces/{repo}`.
-   - If it exists:
-     - `cd workspaces/{repo}`.
-     - Reuse the existing clone.
-2. Research the codebase to understand the issue.
+1. Research the codebase to understand the issue. Note that the workspace under `workspaces/{repo}` is already prepared, clean, and you are positioned in it.
 3. Read the issue body and all comments to gather requirements and feedback from previous plans (if any).
 4. Plan the necessary changes.
 5. Save the proposed plan into a local planning session file:
