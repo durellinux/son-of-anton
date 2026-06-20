@@ -50,6 +50,7 @@ export async function executeGemini(id: number, prompt: string, type: string): P
       {
         cwd: issueDir,
         stdin: 'ignore',
+        timeout: 30 * 60 * 1000,
       },
     );
 
@@ -68,25 +69,13 @@ export async function executeGemini(id: number, prompt: string, type: string): P
       logStream.write(data);
     });
 
-    let timeoutId: NodeJS.Timeout | undefined;
-    const timeoutPromise = new Promise<never>((_, reject) => {
-      timeoutId = setTimeout(() => {
-        try {
-          logStream.write('\n\n[Timeout] Agent execution timed out after 30 minutes.\n');
-          subprocess.kill();
-        } catch (e) {
-          // ignore
-        }
-        reject(new Error('Agent execution timed out after 30 minutes.'));
-      }, 30 * 60 * 1000);
-    });
-
     try {
-      await Promise.race([subprocess, timeoutPromise]);
+      await subprocess;
       return fullOutput;
     } catch (error: any) {
-      if (error.message === 'Agent execution timed out after 30 minutes.') {
-        throw error;
+      if (error.timedOut) {
+        logStream.write('\n\n[Timeout] Agent execution timed out after 30 minutes.\n');
+        throw new Error('Agent execution timed out after 30 minutes.', { cause: error });
       }
       const output = (error.stdout || '') + (error.stderr || '') + (error.message || '');
       if (output.includes('429')) {
@@ -105,9 +94,6 @@ export async function executeGemini(id: number, prompt: string, type: string): P
       }
       throw error;
     } finally {
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
       logStream.end();
     }
   }
