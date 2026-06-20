@@ -13,7 +13,7 @@ export class IssueService {
     private restateClient: restateClients.IngressClient<any>,
   ) {}
 
-  async getIssues(cursor?: string, limit: number = 10): Promise<Paged<Issue>> {
+  async getIssues(cursor?: string, limit: number = 100): Promise<Paged<Issue>> {
     const items = await this.repository.listIssues(cursor, limit + 1);
     const hasNextPage = items.length > limit;
     const pagedItems = hasNextPage ? items.slice(0, limit) : items;

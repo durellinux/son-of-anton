@@ -16,7 +16,7 @@ export class FileSystemIssueRepository implements IssueRepository {
     return issueDir;
   }
 
-  async listIssues(cursor?: string, limit: number = 10): Promise<Issue[]> {
+  async listIssues(cursor?: string, limit: number = 100): Promise<Issue[]> {
     let entries: { name: string; isDirectory: boolean }[];
     try {
       const dirents = await readdir(this.baseDir, { withFileTypes: true });

@@ -43,7 +43,7 @@ export const issueWorkflowV1 = restate.workflow({
       );
     },
     submitApproval: async (ctx: restate.WorkflowSharedContext, req: { iteration: number }) => {
-      ctx.promise<void>(`approval-${req.iteration}`).resolve();
+      await ctx.promise<void>(`approval-${req.iteration}`).resolve();
     },
   },
     options: {

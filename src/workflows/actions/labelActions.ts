@@ -16,6 +16,7 @@ export const REQUIRED_LABELS: LabelInfo[] = [
     description: 'In the process of specifying requirements',
   },
   { name: 'status:planning', color: 'C5DEF5', description: 'Planning the implementation' },
+  { name: 'type:ready', color: '3DFB92', description: 'Ready to be picked up for implementation' },
   { name: 'status:implementing', color: '0E8A16', description: 'Currently being implemented' },
   { name: 'son-of-anton', color: '000000', description: 'Issues managed by Son of Anton' },
 ];
