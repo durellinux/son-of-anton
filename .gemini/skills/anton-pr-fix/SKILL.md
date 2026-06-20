@@ -12,19 +12,7 @@ description: This skill addresses review comments on a Pull Request. Use when yo
 
 ## Tasks
 
-1. Setup the work environment:
-   - Identify the target repository from the `repo` parameter (e.g., `owner/repo`).
-   - Extract the repo name (e.g., `repo`).
-   - Define the workspace path: `workspaces/{repo}`.
-   - Check if the workspace directory exists.
-   - If it doesn't exist:
-     - Clone the repository: `git clone https://github.com/{{repo}} workspaces/{repo}`.
-     - `cd workspaces/{repo}`.
-     - Checkout the PR branch: `git checkout {{branch_name}}`.
-   - If it exists:
-     - `cd workspaces/{repo}`.
-     - Reuse the existing clone.
-     - Ensure you are on the `{{branch_name}}` branch.
+1. Work in the pre-configured workspace path: `workspaces/{repo}`. The workspace setup and branch checkouts have already been managed automatically by the system. Ensure you are working on the `{{branch_name}}` branch.
 2. Fetch review comments:
    ```bash
    gh api repos/{{repo}}/pulls/{{pr_number}}/comments

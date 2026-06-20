@@ -16,17 +16,7 @@ description: This skill implements an approved plan for a specific GitHub issue.
 
 Made by: #son-of-anton"
    ```
-2. Setup the work environment:
-   - Define the workspace path: `workspaces/{repo}`.
-   - Check if the workspace directory exists.
-   - If it doesn't exist:
-     - Clone the repository: `git clone https://github.com/{repo} workspaces/{repo}`.
-     - `cd workspaces/{repo}`.
-     - Create a new branch: `git checkout -b anton/{issue_number}`.
-   - If it exists:
-     - `cd workspaces/{repo}`.
-     - Reuse the existing clone.
-     - Ensure you are on the `anton/{issue_number}` branch.
+2. Work in the pre-configured workspace path: `workspaces/{repo}`. The workspace setup and branching have already been managed automatically by the system. Ensure you are working on the `anton/{issue_number}` branch.
 3. If the branch already existed, check the current state of the code in the workspace and use it as a starting point.
 4. Implement the fix in the workspace.
 5. Apply edits using file-system tools.

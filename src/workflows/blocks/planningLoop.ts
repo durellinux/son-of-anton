@@ -2,7 +2,13 @@
 import * as restate from '@restatedev/restate-sdk';
 import { fetchIssueState, updateRepository } from '../actions/issuesActions';
 import { IssueState } from '../../../issueState';
-import { buildPlanningPrompt, commitPlan } from '../actions/planActions';
+import {
+  buildPlanningPrompt,
+  commitPlan,
+  getPlanningSession,
+  savePlanningSession,
+} from '../actions/planActions';
+import { PlanningSessionStatus } from '../../../issueState';
 import { geminiLoop } from './geminiLoop';
 
 const MAX_PLAN_ITERATIONS = 1000;
@@ -47,8 +53,33 @@ export async function planningLoop(
         updateRepository(issueNumber, title, issueUrl, state, workflowUrl),
       );
 
-      const prompt = buildPlanningPrompt(issueNumber, issueRepo, state);
-      await geminiLoop(ctx, `${prefix}-execute-gemini-${iteration}`, issueNumber, prompt, 'plan');
+      const localPlanningSession = await ctx.run(
+        `${prefix}-get-planning-session-${iteration}`,
+        () => getPlanningSession(issueNumber),
+      );
+
+      const prompt = buildPlanningPrompt(issueNumber, issueRepo, state, localPlanningSession);
+      const newPlan = await geminiLoop(
+        ctx,
+        `${prefix}-execute-gemini-${iteration}`,
+        issueNumber,
+        prompt,
+        'plan',
+      );
+
+      await ctx.run(`${prefix}-save-planning-session-${iteration}`, async () => {
+        const session = localPlanningSession || {
+          number: issueNumber,
+          status: PlanningSessionStatus.WAITING_APPROVAL,
+          history: [],
+        };
+        session.history.push({
+          plan: newPlan,
+          timestamp: new Date().toISOString(),
+        });
+        session.status = PlanningSessionStatus.WAITING_APPROVAL;
+        await savePlanningSession(session);
+      });
 
       // Update state after planning
       await ctx.run(`${prefix}-update-repository-final-${iteration}`, () =>

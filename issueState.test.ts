@@ -1,3 +1,4 @@
+import { describe, it, expect } from 'vitest';
 import {
   determineIssueState,
   determinePRState,
@@ -8,189 +9,152 @@ import {
   PlanningSessionStatus,
 } from './issueState';
 
-function assert(condition: boolean, message: string) {
-  if (!condition) {
-    throw new Error(message);
-  }
-}
-
-const issueTests = [
-  {
-    name: 'YOLO mode',
-    issue: {
+describe('determineIssueState', () => {
+  it('identifies YOLO mode', () => {
+    const issue = {
       body: 'Fix this bug #yolo',
       state: 'OPEN',
-    },
-    expected: IssueState.YOLO,
-  },
-  {
-    name: 'Needs planning (no session)',
-    issue: {
+    };
+    expect(determineIssueState(issue as Issue)).toBe(IssueState.YOLO);
+  });
+
+  it('identifies needs planning (no session)', () => {
+    const issue = {
       body: 'Fix this bug',
       state: 'OPEN',
-    },
-    expected: IssueState.NEEDS_PLANNING,
-  },
-  {
-    name: 'Closed issue',
-    issue: {
+    };
+    expect(determineIssueState(issue as Issue)).toBe(IssueState.NEEDS_PLANNING);
+  });
+
+  it('identifies closed issue', () => {
+    const issue = {
       body: 'Fix this bug',
       state: 'CLOSED',
-    },
-    expected: IssueState.CLOSED,
-  },
-  {
-    name: 'Waiting for PR review (branch exists)',
-    issue: {
+    };
+    expect(determineIssueState(issue as Issue)).toBe(IssueState.CLOSED);
+  });
+
+  it('identifies waiting for PR review (branch exists)', () => {
+    const issue = {
       body: 'Fix this bug',
       state: 'OPEN',
       branch: 'anton/60',
-    },
-    expected: IssueState.WAITING_PR_REVIEW,
-  },
-  {
-    name: 'Specifying state check',
-    issue: {
+    };
+    expect(determineIssueState(issue as Issue)).toBe(IssueState.WAITING_PR_REVIEW);
+  });
+
+  it('identifies specifying state check', () => {
+    const issue = {
       body: 'Epic issue',
       state: 'OPEN',
       labels: ['status:specifying'],
-    },
-    expected: IssueState.SPECIFYING,
-  },
-];
+    };
+    expect(determineIssueState(issue as Issue)).toBe(IssueState.SPECIFYING);
+  });
 
-const localPlanningTests = [
-  {
-    name: 'Local planning: Waiting approval',
-    issue: { body: 'Fix bug', state: 'OPEN' },
-    localPlanning: { status: PlanningSessionStatus.WAITING_APPROVAL },
-    expected: IssueState.WAITING,
-  },
-  {
-    name: 'Local planning: Approved',
-    issue: { body: 'Fix bug', state: 'OPEN' },
-    localPlanning: { status: PlanningSessionStatus.APPROVED },
-    expected: IssueState.NEEDS_IMPLEMENTATION,
-  },
-  {
-    name: 'Local planning: Needs revision',
-    issue: { body: 'Fix bug', state: 'OPEN' },
-    localPlanning: { status: PlanningSessionStatus.NEEDS_REVISION },
-    expected: IssueState.NEEDS_PLANNING,
-  },
-];
+  it('identifies local planning: Waiting approval', () => {
+    const issue = { body: 'Fix bug', state: 'OPEN' };
+    const localPlanning = { status: PlanningSessionStatus.WAITING_APPROVAL };
+    expect(determineIssueState(issue as unknown as Issue, localPlanning as any)).toBe(
+      IssueState.WAITING,
+    );
+  });
 
-const prTests = [
-  {
-    name: 'PR Needs implementation (changes requested)',
-    pr: {
+  it('identifies local planning: Approved', () => {
+    const issue = { body: 'Fix bug', state: 'OPEN' };
+    const localPlanning = { status: PlanningSessionStatus.APPROVED };
+    expect(determineIssueState(issue as unknown as Issue, localPlanning as any)).toBe(
+      IssueState.NEEDS_IMPLEMENTATION,
+    );
+  });
+
+  it('identifies local planning: Needs revision', () => {
+    const issue = { body: 'Fix bug', state: 'OPEN' };
+    const localPlanning = { status: PlanningSessionStatus.NEEDS_REVISION };
+    expect(determineIssueState(issue as unknown as Issue, localPlanning as any)).toBe(
+      IssueState.NEEDS_PLANNING,
+    );
+  });
+});
+
+describe('determinePRState', () => {
+  it('identifies PR Needs implementation (changes requested)', () => {
+    const pr = {
       number: 1,
       reviewDecision: 'CHANGES_REQUESTED',
       headRefName: 'feature',
       state: 'OPEN',
-    },
-    expected: IssueState.NEEDS_IMPLEMENTATION,
-  },
-  {
-    name: 'PR Waiting (approved)',
-    pr: {
+    };
+    expect(determinePRState(pr as any)).toBe(IssueState.NEEDS_IMPLEMENTATION);
+  });
+
+  it('identifies PR Waiting (approved)', () => {
+    const pr = {
       number: 2,
       reviewDecision: 'APPROVED',
       headRefName: 'feature',
       state: 'OPEN',
-    },
-    expected: IssueState.WAITING,
-  },
-  {
-    name: 'PR Needs implementation (review required)',
-    pr: {
+    };
+    expect(determinePRState(pr as any)).toBe(IssueState.WAITING);
+  });
+
+  it('identifies PR Needs implementation (review required)', () => {
+    const pr = {
       number: 3,
       reviewDecision: 'REVIEW_REQUIRED',
       headRefName: 'feature',
       state: 'OPEN',
-    },
-    expected: IssueState.NEEDS_IMPLEMENTATION,
-  },
-  {
-    name: 'PR Merged',
-    pr: {
+    };
+    expect(determinePRState(pr as any)).toBe(IssueState.NEEDS_IMPLEMENTATION);
+  });
+
+  it('identifies PR Merged', () => {
+    const pr = {
       number: 5,
       reviewDecision: 'APPROVED',
       headRefName: 'feature',
       state: 'MERGED',
-    },
-    expected: IssueState.MERGED,
-  },
-  {
-    name: 'PR Closed',
-    pr: {
+    };
+    expect(determinePRState(pr as any)).toBe(IssueState.MERGED);
+  });
+
+  it('identifies PR Closed', () => {
+    const pr = {
       number: 6,
       reviewDecision: 'CHANGES_REQUESTED',
       headRefName: 'feature',
       state: 'CLOSED',
-    },
-    expected: IssueState.CLOSED,
-  },
-];
+    };
+    expect(determinePRState(pr as any)).toBe(IssueState.CLOSED);
+  });
+});
 
-const commentTests = [
-  {
-    name: 'No comments',
-    comments: [] as PRComment[],
-    expected: [] as number[],
-  },
-  {
-    name: 'All unaddressed',
-    comments: [
+describe('getUnaddressedPRComments', () => {
+  it('returns empty array when no comments', () => {
+    expect(getUnaddressedPRComments([])).toEqual([]);
+  });
+
+  it('returns all comments when all are unaddressed', () => {
+    const comments = [
       { id: 1, body: 'test1', reactions: { '+1': 0 } },
       { id: 2, body: 'test2', reactions: { '+1': 0 } },
-    ] as PRComment[],
-    expected: [1, 2],
-  },
-  {
-    name: 'Some addressed',
-    comments: [
+    ] as PRComment[];
+    expect(getUnaddressedPRComments(comments)).toEqual([1, 2]);
+  });
+
+  it('returns only unaddressed comments when some are addressed', () => {
+    const comments = [
       { id: 1, body: 'test1', reactions: { '+1': 1 } },
       { id: 2, body: 'test2', reactions: { '+1': 0 } },
-    ] as PRComment[],
-    expected: [2],
-  },
-  {
-    name: 'All addressed',
-    comments: [
+    ] as PRComment[];
+    expect(getUnaddressedPRComments(comments)).toEqual([2]);
+  });
+
+  it('returns empty array when all comments are addressed', () => {
+    const comments = [
       { id: 1, body: 'test1', reactions: { '+1': 1 } },
       { id: 2, body: 'test2', reactions: { '+1': 2 } },
-    ] as PRComment[],
-    expected: [],
-  },
-];
-
-for (const test of issueTests) {
-  if ((test as any).skip) continue;
-  console.log(`Running issue test: ${test.name}`);
-  const actual = determineIssueState(test.issue as Issue);
-  assert(actual === test.expected, `Expected ${test.expected}, but got ${actual}`);
-}
-
-for (const test of localPlanningTests) {
-  console.log(`Running local planning test: ${test.name}`);
-  const actual = determineIssueState(test.issue as unknown as Issue, test.localPlanning as any);
-  assert(actual === test.expected, `Expected ${test.expected}, but got ${actual}`);
-}
-
-for (const test of prTests) {
-  console.log(`Running PR test: ${test.name}`);
-  const actual = determinePRState(test.pr as any);
-  assert(actual === test.expected, `Expected ${test.expected}, but got ${actual}`);
-}
-
-for (const test of commentTests) {
-  console.log(`Running comment test: ${test.name}`);
-  const actual = getUnaddressedPRComments(test.comments);
-  assert(
-    JSON.stringify(actual) === JSON.stringify(test.expected),
-    `Expected ${JSON.stringify(test.expected)}, but got ${JSON.stringify(actual)}`,
-  );
-}
-
-console.log('All tests passed!');
+    ] as PRComment[];
+    expect(getUnaddressedPRComments(comments)).toEqual([]);
+  });
+});
