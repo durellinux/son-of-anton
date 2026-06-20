@@ -1,5 +1,4 @@
 import { execa } from 'execa';
-import { issueWorkflowV1 } from '../workflows/issueWorkflowV1';
 import { epicSpecificationWorkflow } from '../workflows/epicSpecificationWorkflow';
 import { epicPlannerWorkflow } from '../workflows/epicPlannerWorkflow';
 import { implementationAgentWorkflow } from '../workflows/implementationAgentWorkflow';
@@ -35,10 +34,11 @@ export class GitHubPoller {
         requiredLabels: ['status:in-review', 'son-of-anton'],
         workflow: prLifecycleWorkflow,
       },
-      {
-        requiredLabels: ['son-of-anton'],
-        workflow: issueWorkflowV1,
-      },
+      // Disabling generic workflow, to test specific ones
+      // {
+      //   requiredLabels: ['son-of-anton'],
+      //   workflow: issueWorkflowV1,
+      // },
     ];
   }
 
@@ -53,6 +53,7 @@ export class GitHubPoller {
         'open',
         '--json',
         'number,title,url,labels,repository',
+        '--paginate',
       ];
 
       const githubRepos = process.env.GITHUB_REPOS;

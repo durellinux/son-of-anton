@@ -52,7 +52,7 @@ Body: ${ghIssue.body}
 
 Tasks:
 1. Find the relevant ADR for this epic in docs/adr/.
-2. Based on the ADR and the epic description, propose a list of individual tasks (type:task) to implement this epic.
+2. Based on the ADR and the epic description, propose a list of individual tasks to implement this epic.
 3. For each task, provide a title and a brief description.
 4. Output the task list in JSON format so it can be parsed:
 {
@@ -126,7 +126,7 @@ Tasks:
             issueRepo,
             `[Task] ${task.title}`,
             `${task.body}\n\nPart of epic #${issueNumber}`,
-            ['type:task', 'status:triage', 'son-of-anton'],
+            ['type:task'],
           ),
         );
       }
