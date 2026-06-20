@@ -53,7 +53,6 @@ export class GitHubPoller {
         'open',
         '--json',
         'number,title,url,labels,repository',
-        '--paginate',
       ];
 
       const githubRepos = process.env.GITHUB_REPOS;
