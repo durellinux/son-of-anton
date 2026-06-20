@@ -2,7 +2,7 @@
 import * as restate from '@restatedev/restate-sdk';
 import { fetchIssueState, updateRepository } from '../actions/issuesActions';
 import { IssueState } from '../../../issueState';
-import { buildPlanningPrompt, commitPlan } from '../actions/planActions';
+import { buildPlanningPrompt, commitPlan, savePlanningSession } from '../actions/planActions';
 import { llmLoop } from './llmLoop';
 
 const MAX_PLAN_ITERATIONS = 1000;
@@ -48,7 +48,11 @@ export async function planningLoop(
       );
 
       const prompt = buildPlanningPrompt(issueNumber, issueRepo, state);
-      await llmLoop(ctx, `${prefix}-execute-llm-${iteration}`, issueNumber, prompt, 'plan');
+      const planOutput = await llmLoop(ctx, `${prefix}-execute-llm-${iteration}`, issueNumber, prompt, 'plan');
+
+      await ctx.run(`${prefix}-save-plan-${iteration}`, () =>
+        savePlanningSession(issueNumber, planOutput),
+      );
 
       // Update state after planning
       await ctx.run(`${prefix}-update-repository-final-${iteration}`, () =>
@@ -61,3 +65,4 @@ export async function planningLoop(
 
   throw new Error(`Planning loop exceeded maximum iterations: ${maxIterations}`);
 }
+
