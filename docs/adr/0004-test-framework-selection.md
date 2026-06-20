@@ -1,7 +1,7 @@
 # ADR 4: Test Framework Selection
 
 ## Status
-Proposed
+Accepted
 
 ## Context
 Currently, the `son-of-anton` project uses manual `assert` functions and `tsx` scripts to run tests. This approach is limited as it lacks features like:
