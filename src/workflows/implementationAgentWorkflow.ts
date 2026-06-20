@@ -32,8 +32,8 @@ export const implementationAgentWorkflow = restate.workflow({
       ctx.promise<void>(`approval-${req.iteration}`).resolve();
     },
   },
-    options: {
-        inactivityTimeout: { minutes: 60 },
-        abortTimeout: { minutes: 60 },
-    },
+  options: {
+    inactivityTimeout: { minutes: 60 },
+    abortTimeout: { minutes: 60 },
+  },
 });

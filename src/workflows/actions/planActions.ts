@@ -33,7 +33,6 @@ export async function savePlanningSession(issueNumber: number, plan: string) {
   await repository.savePlanningSession(session);
 }
 
-
 export async function commitPlan(issueNumber: number, issueRepo: string) {
   const localPlanningSession = await getPlanningSession(issueNumber);
 
