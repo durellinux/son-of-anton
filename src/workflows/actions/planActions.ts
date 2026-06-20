@@ -1,6 +1,7 @@
 import { execa } from 'execa';
 import { FileSystemIssueRepository } from '../../repositories/fileSystemIssueRepository';
 import { IssueState } from '../../../issueState';
+import { PlanningSessionStatus } from '../../api';
 
 const repository = new FileSystemIssueRepository();
 
@@ -11,6 +12,27 @@ export async function getPlanningSession(issueNumber: number) {
 export async function deletePlanningSession(issueNumber: number) {
   return repository.deletePlanningSession(issueNumber);
 }
+
+export async function savePlanningSession(issueNumber: number, plan: string) {
+  let session = await repository.getPlanningSession(issueNumber);
+  if (!session) {
+    session = {
+      number: issueNumber,
+      status: PlanningSessionStatus.WAITING_APPROVAL,
+      history: [],
+    };
+  } else {
+    session.status = PlanningSessionStatus.WAITING_APPROVAL;
+  }
+
+  session.history.push({
+    plan,
+    timestamp: new Date().toISOString(),
+  });
+
+  await repository.savePlanningSession(session);
+}
+
 
 export async function commitPlan(issueNumber: number, issueRepo: string) {
   const localPlanningSession = await getPlanningSession(issueNumber);

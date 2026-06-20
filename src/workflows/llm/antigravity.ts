@@ -47,9 +47,12 @@ export async function executeAntigravity(
     const sessionFilePath = path.join(sessionDir, `${type}-${timestamp}.txt`);
     const logStream = createWriteStream(sessionFilePath);
 
+    const instruction = `\n\nIMPORTANT: At the end of your run, you MUST output your final response for the user wrapped in <anton-response>...</anton-response> tags. For example:\n<anton-response>\nYour final response here\n</anton-response>`;
+    const promptWithInstruction = `${prompt}${instruction}`;
+
     const subprocess = execa(
       'agy',
-      ['-p', prompt, '--sandbox', '--dangerously-skip-permissions', '--model', selectedModel],
+      ['-p', promptWithInstruction, '--sandbox', '--dangerously-skip-permissions', '--model', selectedModel],
       {
         cwd: issueDir,
         stdin: 'ignore',
@@ -73,7 +76,7 @@ export async function executeAntigravity(
 
     try {
       await subprocess;
-      return fullOutput;
+      return extractAntonResponse(fullOutput);
     } catch (error: any) {
       const output = (error.stdout || '') + (error.stderr || '') + (error.message || '');
       if (output.includes('429')) {
@@ -96,3 +99,21 @@ export async function executeAntigravity(
     }
   }
 }
+
+function extractAntonResponse(output: string): string {
+  const regex = /<anton-response>([\s\S]*?)<\/anton-response>/i;
+  const match = output.match(regex);
+  if (match) {
+    return match[1].trim();
+  }
+
+  const openRegex = /<anton-response>([\s\S]*)$/i;
+  const openMatch = output.match(openRegex);
+  if (openMatch) {
+    return openMatch[1].trim();
+  }
+
+  console.warn('Could not find <anton-response> tags in output, falling back to full output.');
+  return output.trim();
+}
+
