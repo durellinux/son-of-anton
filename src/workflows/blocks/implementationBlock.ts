@@ -1,6 +1,7 @@
 import * as restate from '@restatedev/restate-sdk';
 import { fetchIssueState, updateRepository } from '../actions/issuesActions';
 import { IssueState } from '../../../issueState';
+import { getPlanningSession } from '../actions/planActions';
 import { geminiLoop } from './geminiLoop';
 
 export async function implementationBlock(
@@ -24,7 +25,20 @@ export async function implementationBlock(
     return;
   }
 
-  const prompt = `follow the anton-implement skill flow for issue ${issueNumber} on the repo ${issueRepo}`;
+  const localPlanningSession = await ctx.run(`${prefix}-get-planning-session`, () =>
+    getPlanningSession(issueNumber),
+  );
+
+  let prompt = `follow the anton-implement skill flow for issue ${issueNumber} on the repo ${issueRepo}`;
+  if (
+    localPlanningSession &&
+    localPlanningSession.history &&
+    localPlanningSession.history.length > 0
+  ) {
+    const approvedPlan = localPlanningSession.history[localPlanningSession.history.length - 1].plan;
+    prompt += `\n\nHere is the approved plan you must implement:\n${approvedPlan}`;
+  }
+
   await geminiLoop(ctx, `${prefix}-execute-gemini`, issueNumber, prompt, 'implement');
 
   // Update state after implementation
