@@ -52,6 +52,7 @@ export async function executeAntigravity(
       ['-p', prompt, '--sandbox', '--dangerously-skip-permissions', '--model', selectedModel],
       {
         cwd: issueDir,
+        stdin: 'ignore',
       },
     );
 

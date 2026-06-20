@@ -49,6 +49,7 @@ export async function executeGemini(id: number, prompt: string, type: string): P
       ['-p', prompt, '--sandbox', 'true', '--approval-mode', 'yolo', '--model', selectedModel],
       {
         cwd: issueDir,
+        stdin: 'ignore',
       },
     );
 
