@@ -52,7 +52,14 @@ export async function executeAntigravity(
 
     const subprocess = execa(
       'agy',
-      ['-p', promptWithInstruction, '--sandbox', '--dangerously-skip-permissions', '--model', selectedModel],
+      [
+        '-p',
+        promptWithInstruction,
+        '--sandbox',
+        '--dangerously-skip-permissions',
+        '--model',
+        selectedModel,
+      ],
       {
         cwd: issueDir,
         stdin: 'ignore',
@@ -116,4 +123,3 @@ function extractAntonResponse(output: string): string {
   console.warn('Could not find <anton-response> tags in output, falling back to full output.');
   return output.trim();
 }
-

@@ -144,7 +144,7 @@ Tasks:
     },
   },
   options: {
-      inactivityTimeout: { minutes: 60 },
-      abortTimeout: { minutes: 60 },
+    inactivityTimeout: { minutes: 60 },
+    abortTimeout: { minutes: 60 },
   },
 });

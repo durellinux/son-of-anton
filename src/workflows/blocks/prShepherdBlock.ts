@@ -39,13 +39,7 @@ export async function prShepherdBlock(
     const issueParam = `for issue ${issueNumber}`;
     const prompt = `use the anton-pr-fix skill flow ${issueParam} for PR ${prNumber} on branch ${prDetails.headRefName} in repo ${fullRepo}. Fix the CI failures.`;
 
-    await llmLoop(
-      ctx,
-      `${prefix}-fix-ci-${iteration}-${prNumber}`,
-      issueNumber,
-      prompt,
-      'pr-fix',
-    );
+    await llmLoop(ctx, `${prefix}-fix-ci-${iteration}-${prNumber}`, issueNumber, prompt, 'pr-fix');
     return { state: IssueState.WAITING, waitTimeMs: 5 * 60 * 1000 };
   }
 

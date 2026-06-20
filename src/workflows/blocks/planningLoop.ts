@@ -48,7 +48,13 @@ export async function planningLoop(
       );
 
       const prompt = buildPlanningPrompt(issueNumber, issueRepo, state);
-      const planOutput = await llmLoop(ctx, `${prefix}-execute-llm-${iteration}`, issueNumber, prompt, 'plan');
+      const planOutput = await llmLoop(
+        ctx,
+        `${prefix}-execute-llm-${iteration}`,
+        issueNumber,
+        prompt,
+        'plan',
+      );
 
       await ctx.run(`${prefix}-save-plan-${iteration}`, () =>
         savePlanningSession(issueNumber, planOutput),
@@ -65,4 +71,3 @@ export async function planningLoop(
 
   throw new Error(`Planning loop exceeded maximum iterations: ${maxIterations}`);
 }
-
