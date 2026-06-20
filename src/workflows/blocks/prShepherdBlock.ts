@@ -11,7 +11,7 @@ export async function prShepherdBlock(
   iteration: number,
   prefix: string = 'pr-shepherd',
 ): Promise<{ state: IssueState; waitTimeMs: number }> {
-  const { state, prDetails, unaddressedCommentIds } = await ctx.run(
+  const { state, prDetails, unaddressedCommentIds, unaddressedComments } = await ctx.run(
     `${prefix}-fetch-pr-state-${iteration}-${prNumber}`,
     () => fetchPrState(prNumber, fullRepo),
   );
@@ -50,8 +50,17 @@ export async function prShepherdBlock(
   }
 
   if (unaddressedCommentIds.length > 0) {
+    let commentsPrompt = `Here are the unaddressed review comments on the PR:\n\n`;
+    for (const comment of unaddressedComments || []) {
+      commentsPrompt += `- **File**: ${comment.path}:${comment.line}\n`;
+      commentsPrompt += `  **Comment**: ${comment.body}\n`;
+      if (comment.diffHunk) {
+        commentsPrompt += `  **Diff Hunk**:\n\`\`\`diff\n${comment.diffHunk}\n\`\`\`\n\n`;
+      }
+    }
+
     const issueParam = `for issue ${issueNumber}`;
-    const prompt = `use the anton-pr-fix skill flow ${issueParam} for PR ${prNumber} on branch ${prDetails.headRefName} in repo ${fullRepo}. Address comment IDs ${unaddressedCommentIds.join(', ')}.`;
+    const prompt = `use the anton-pr-fix skill flow ${issueParam} for PR ${prNumber} on branch ${prDetails.headRefName} in repo ${fullRepo}. Address comment IDs ${unaddressedCommentIds.join(', ')}.\n\n${commentsPrompt}`;
 
     await geminiLoop(
       ctx,

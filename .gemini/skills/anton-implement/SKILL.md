@@ -16,26 +16,15 @@ description: This skill implements an approved plan for a specific GitHub issue.
 
 Made by: #son-of-anton"
    ```
-2. Setup the work environment:
-   - Define the workspace path: `workspaces/{repo}`.
-   - Check if the workspace directory exists.
-   - If it doesn't exist:
-     - Clone the repository: `git clone https://github.com/{repo} workspaces/{repo}`.
-     - `cd workspaces/{repo}`.
-     - Create a new branch: `git checkout -b anton/{issue_number}`.
-   - If it exists:
-     - `cd workspaces/{repo}`.
-     - Reuse the existing clone.
-     - Ensure you are on the `anton/{issue_number}` branch.
-3. If the branch already existed, check the current state of the code in the workspace and use it as a starting point.
-4. Implement the fix in the workspace.
-5. Apply edits using file-system tools.
-6. Run tests to verify the fix (if available):
+2. Work in the pre-configured workspace path: `workspaces/{repo}`. You are already positioned in the workspace on the correct `anton/{issue_number}` branch.
+3. Implement the fix in the workspace.
+4. Apply edits using file-system tools.
+5. Run tests to verify the fix (if available):
    ```bash
    npm test
    ```
-7. If tests fail, analyze the output and self-correct until they pass.
-8. Commit changes and open a Pull Request:
+6. If tests fail, analyze the output and self-correct until they pass.
+7. Commit changes and open a Pull Request:
    ```bash
    gh pr create --label "son-of-anton" --title "Fix issue #{{issue_number}}" --body "Automated fix by Anton.
 

@@ -13,23 +13,10 @@ description: This skill addresses review comments on a Pull Request. Use when yo
 ## Tasks
 
 1. Setup the work environment:
-   - Identify the target repository from the `repo` parameter (e.g., `owner/repo`).
-   - Extract the repo name (e.g., `repo`).
-   - Define the workspace path: `workspaces/{repo}`.
-   - Check if the workspace directory exists.
-   - If it doesn't exist:
-     - Clone the repository: `git clone https://github.com/{{repo}} workspaces/{repo}`.
-     - `cd workspaces/{repo}`.
-     - Checkout the PR branch: `git checkout {{branch_name}}`.
-   - If it exists:
-     - `cd workspaces/{repo}`.
-     - Reuse the existing clone.
-     - Ensure you are on the `{{branch_name}}` branch.
-2. Fetch review comments:
-   ```bash
-   gh api repos/{{repo}}/pulls/{{pr_number}}/comments
-   ```
-3. For each open/relevant comment (skip comments with 👍 already applied):
+   - Note that the workspace path `workspaces/{repo}` is already prepared, clean, and you are positioned in it on the correct `{{branch_name}}` branch.
+2. Review comments:
+   - The relevant unaddressed comments, files, lines, and diff hunks are provided directly in the prompt.
+3. For each unaddressed comment:
    - Identify the file and line number.
    - Read the feedback.
    - Research the code around the comment.
@@ -37,7 +24,7 @@ description: This skill addresses review comments on a Pull Request. Use when yo
    - Verify with tests: `npm test`.
    - React with 👍 to the comment:
      ```bash
-     gh api repos/:owner/:repo/pulls/comments/{{comment_id}}/reactions -f content='+1'
+     gh api repos/{{repo}}/pulls/comments/{{comment_id}}/reactions -f content='+1'
      ```
 4. After addressing all comments:
    - Commit and push changes:
