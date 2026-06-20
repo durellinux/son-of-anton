@@ -88,7 +88,6 @@ export function IssueDetail() {
     },
   });
 
-
   if (isLoadingIssue)
     return (
       <Center h={400}>
@@ -110,7 +109,9 @@ export function IssueDetail() {
     <Stack gap="xl">
       <Group justify="space-between">
         <Breadcrumbs>
-          <Anchor component={Link} to="/">Dashboard</Anchor>
+          <Anchor component={Link} to="/">
+            Dashboard
+          </Anchor>
           <Text>Issue #{issue.data.number}</Text>
         </Breadcrumbs>
         <Button color="red" variant="light" onClick={() => setDeleteModalOpen(true)}>
@@ -285,10 +286,19 @@ export function IssueDetail() {
         centered
       >
         <Stack>
-          <Text>Are you sure you want to delete all local data and the Restate workflow for this issue? This action cannot be undone.</Text>
+          <Text>
+            Are you sure you want to delete all local data and the Restate workflow for this issue?
+            This action cannot be undone.
+          </Text>
           <Group justify="flex-end">
-            <Button variant="outline" onClick={() => setDeleteModalOpen(false)}>Cancel</Button>
-            <Button color="red" onClick={() => deleteMutation.mutate()} loading={deleteMutation.isPending}>
+            <Button variant="outline" onClick={() => setDeleteModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              color="red"
+              onClick={() => deleteMutation.mutate()}
+              loading={deleteMutation.isPending}
+            >
               Delete
             </Button>
           </Group>
