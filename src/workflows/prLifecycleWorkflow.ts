@@ -96,7 +96,7 @@ export const prLifecycleWorkflow = restate.workflow({
     },
   },
   options: {
-    inactivityTimeout: { minutes: 30 },
-    abortTimeout: { minutes: 30 },
+    inactivityTimeout: { minutes: 60 },
+    abortTimeout: { minutes: 60 },
   },
 });

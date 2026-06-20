@@ -63,6 +63,7 @@ export async function executeAntigravity(
       {
         cwd: issueDir,
         stdin: 'ignore',
+        timeout: 30 * 60 * 1000,
       },
     );
 
@@ -85,6 +86,10 @@ export async function executeAntigravity(
       await subprocess;
       return extractAntonResponse(fullOutput);
     } catch (error: any) {
+      if (error.timedOut) {
+        logStream.write('\n\n[Timeout] Agent execution timed out after 30 minutes.\n');
+        throw new Error('Agent execution timed out after 30 minutes.', { cause: error });
+      }
       const output = (error.stdout || '') + (error.stderr || '') + (error.message || '');
       if (output.includes('429')) {
         let cooldownMs = 60 * 60 * 1000; // default 1 hour

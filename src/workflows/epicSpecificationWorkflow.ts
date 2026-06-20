@@ -104,7 +104,7 @@ Do not stop until the PR is created.`;
     },
   },
   options: {
-    inactivityTimeout: { minutes: 30 },
-    abortTimeout: { minutes: 30 },
+    inactivityTimeout: { minutes: 60 },
+    abortTimeout: { minutes: 60 },
   },
 });
