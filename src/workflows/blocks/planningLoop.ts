@@ -3,7 +3,7 @@ import * as restate from '@restatedev/restate-sdk';
 import { fetchIssueState, updateRepository } from '../actions/issuesActions';
 import { IssueState } from '../../../issueState';
 import { buildPlanningPrompt, commitPlan } from '../actions/planActions';
-import { geminiLoop } from './geminiLoop';
+import { llmLoop } from './llmLoop';
 
 const MAX_PLAN_ITERATIONS = 1000;
 
@@ -48,7 +48,7 @@ export async function planningLoop(
       );
 
       const prompt = buildPlanningPrompt(issueNumber, issueRepo, state);
-      await geminiLoop(ctx, `${prefix}-execute-gemini-${iteration}`, issueNumber, prompt, 'plan');
+      await llmLoop(ctx, `${prefix}-execute-llm-${iteration}`, issueNumber, prompt, 'plan');
 
       // Update state after planning
       await ctx.run(`${prefix}-update-repository-final-${iteration}`, () =>

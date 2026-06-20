@@ -46,4 +46,8 @@ export const issueWorkflowV1 = restate.workflow({
       ctx.promise<void>(`approval-${req.iteration}`).resolve();
     },
   },
+    options: {
+        inactivityTimeout: { minutes: 60 },
+        abortTimeout: { minutes: 60 },
+    },
 });

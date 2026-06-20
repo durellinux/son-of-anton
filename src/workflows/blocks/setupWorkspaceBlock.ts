@@ -1,6 +1,6 @@
 import * as restate from '@restatedev/restate-sdk';
 import { setupWorkspace, RebaseConflictError } from '../actions/workspaceActions';
-import { geminiLoop } from './geminiLoop';
+import { llmLoop } from './llmLoop';
 
 export async function setupWorkspaceBlock(
   ctx: restate.WorkflowContext,
@@ -33,7 +33,7 @@ Instructions:
 
 Once the rebase is finished, summarize what was done.`;
 
-      await geminiLoop(
+      await llmLoop(
         ctx,
         `${prefix}-resolve-rebase-conflict`,
         issueNumber,

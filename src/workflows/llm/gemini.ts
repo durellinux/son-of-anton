@@ -2,6 +2,7 @@ import path from 'node:path';
 import { mkdir, cp } from 'node:fs/promises';
 import { createWriteStream } from 'node:fs';
 import { execa } from 'execa';
+import { NoModelsAvailableError } from './types';
 
 const MODELS = [
   'gemini-3.1-pro-preview',
@@ -14,13 +15,6 @@ const MODELS = [
 
 // Map of model name to the timestamp (in ms) when it will be available again
 const modelCooldowns = new Map<string, number>();
-
-export class NoModelsAvailableError extends Error {
-  constructor(public waitTimeMs: number) {
-    super(`No models available. Wait time: ${waitTimeMs}ms`);
-    this.name = 'NoModelsAvailableError';
-  }
-}
 
 export async function executeGemini(id: number, prompt: string, type: string): Promise<string> {
   const issueDir = path.join('.anton', String(id));

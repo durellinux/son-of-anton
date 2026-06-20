@@ -1,7 +1,7 @@
 import * as restate from '@restatedev/restate-sdk';
 import { fetchPrState } from '../actions/prActions';
 import { IssueState } from '../../../issueState';
-import { geminiLoop } from './geminiLoop';
+import { llmLoop } from './llmLoop';
 
 const MAX_PLAN_ITERATIONS = 1000;
 
@@ -36,7 +36,7 @@ export async function prReviewLoop(
       const issueNumber = issueMatch ? issueMatch[1] : `pr-${prNumber}`;
       const issueParam = `for issue ${issueNumber} `;
       const prompt = `use the anton-pr-fix skill flow ${issueParam} for PR ${prNumber} on branch ${prDetails.headRefName} in repo ${fullRepo} with comment IDs ${unaddressedCommentIds.join(', ')}`;
-      await geminiLoop(ctx, `${prefix}-execute-gemini-${iteration}`, prNumber, prompt, 'pr-fix');
+      await llmLoop(ctx, `${prefix}-execute-llm-${iteration}`, prNumber, prompt, 'pr-fix');
     }
 
     await ctx.sleep(5 * 60 * 1000);

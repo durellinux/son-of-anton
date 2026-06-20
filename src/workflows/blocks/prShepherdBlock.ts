@@ -1,7 +1,7 @@
 import * as restate from '@restatedev/restate-sdk';
 import { fetchPrState, updateBranch } from '../actions/prActions';
 import { IssueState } from '../../../issueState';
-import { geminiLoop } from './geminiLoop';
+import { llmLoop } from './llmLoop';
 
 export async function prShepherdBlock(
   ctx: restate.WorkflowContext,
@@ -39,7 +39,7 @@ export async function prShepherdBlock(
     const issueParam = `for issue ${issueNumber}`;
     const prompt = `use the anton-pr-fix skill flow ${issueParam} for PR ${prNumber} on branch ${prDetails.headRefName} in repo ${fullRepo}. Fix the CI failures.`;
 
-    await geminiLoop(
+    await llmLoop(
       ctx,
       `${prefix}-fix-ci-${iteration}-${prNumber}`,
       issueNumber,
@@ -62,7 +62,7 @@ export async function prShepherdBlock(
     const issueParam = `for issue ${issueNumber}`;
     const prompt = `use the anton-pr-fix skill flow ${issueParam} for PR ${prNumber} on branch ${prDetails.headRefName} in repo ${fullRepo}. Address comment IDs ${unaddressedCommentIds.join(', ')}.\n\n${commentsPrompt}`;
 
-    await geminiLoop(
+    await llmLoop(
       ctx,
       `${prefix}-fix-comments-${iteration}-${prNumber}`,
       issueNumber,
