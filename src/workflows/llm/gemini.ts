@@ -68,10 +68,26 @@ export async function executeGemini(id: number, prompt: string, type: string): P
       logStream.write(data);
     });
 
+    let timeoutId: NodeJS.Timeout | undefined;
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      timeoutId = setTimeout(() => {
+        try {
+          logStream.write('\n\n[Timeout] Agent execution timed out after 30 minutes.\n');
+          subprocess.kill();
+        } catch (e) {
+          // ignore
+        }
+        reject(new Error('Agent execution timed out after 30 minutes.'));
+      }, 30 * 60 * 1000);
+    });
+
     try {
-      await subprocess;
+      await Promise.race([subprocess, timeoutPromise]);
       return fullOutput;
     } catch (error: any) {
+      if (error.message === 'Agent execution timed out after 30 minutes.') {
+        throw error;
+      }
       const output = (error.stdout || '') + (error.stderr || '') + (error.message || '');
       if (output.includes('429')) {
         let cooldownMs = 60 * 60 * 1000; // default 1 hour
@@ -89,6 +105,9 @@ export async function executeGemini(id: number, prompt: string, type: string): P
       }
       throw error;
     } finally {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
       logStream.end();
     }
   }
