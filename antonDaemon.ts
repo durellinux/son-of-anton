@@ -12,6 +12,7 @@ import { epicPlannerWorkflow } from './src/workflows/epicPlannerWorkflow';
 import { implementationAgentWorkflow } from './src/workflows/implementationAgentWorkflow';
 import { prLifecycleWorkflow } from './src/workflows/prLifecycleWorkflow';
 import { GitHubPoller } from './src/services/githubPoller';
+import { setActiveModel } from './src/workflows/llm';
 
 const RESTATE_URL = process.env.RESTATE_URL || 'http://localhost:8080';
 const restateClient = restateClients.connect({ url: RESTATE_URL });
@@ -44,6 +45,7 @@ async function startPolling() {
 
 const start = async () => {
   try {
+    setActiveModel('antigravity');
     // 1. Start Restate Service
     await restate
       .endpoint()

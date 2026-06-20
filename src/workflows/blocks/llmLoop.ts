@@ -1,7 +1,7 @@
 import * as restate from '@restatedev/restate-sdk';
-import { executeGemini, NoModelsAvailableError } from '../gemini';
+import { getLlmExecutor, NoModelsAvailableError } from '../llm';
 
-export async function geminiLoop(
+export async function llmLoop(
   ctx: restate.WorkflowContext,
   runNamePrefix: string,
   id: number,
@@ -12,7 +12,8 @@ export async function geminiLoop(
   while (true) {
     const result = await ctx.run(`${runNamePrefix}-attempt-${attempt}`, async () => {
       try {
-        const output = await executeGemini(id, prompt, type);
+        const executeLlm = getLlmExecutor();
+        const output = await executeLlm(id, prompt, type);
         return { success: true, output };
       } catch (error: any) {
         if (error instanceof NoModelsAvailableError || error.name === 'NoModelsAvailableError') {

@@ -6,7 +6,7 @@ import {
   updateRepository,
 } from './actions/issuesActions';
 import { setupWorkspaceBlock } from './blocks/setupWorkspaceBlock';
-import { geminiLoop } from './blocks/geminiLoop';
+import { llmLoop } from './blocks/llmLoop';
 import { IssueState } from '../../issueState';
 import { FileSystemIssueRepository } from '../repositories/fileSystemIssueRepository';
 
@@ -73,7 +73,7 @@ Tasks:
           }
         }
 
-        const geminiOutput = await geminiLoop(
+        const geminiOutput = await llmLoop(
           ctx,
           `propose-tasks-${iteration}`,
           issueNumber,
@@ -142,5 +142,9 @@ Tasks:
     submitApproval: async (ctx: restate.WorkflowSharedContext, req: { iteration: number }) => {
       ctx.promise<void>(`approval-${req.iteration}`).resolve();
     },
+  },
+  options: {
+      inactivityTimeout: { minutes: 60 },
+      abortTimeout: { minutes: 60 },
   },
 });

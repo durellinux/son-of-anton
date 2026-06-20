@@ -9,7 +9,7 @@ import {
 import { findPullRequest } from './actions/workspaceActions';
 import { prReviewLoop } from './blocks/prReviewLoop';
 import { labelBootstrappingBlock } from './blocks/labelBootstrappingBlock';
-import { geminiLoop } from './blocks/geminiLoop';
+import { llmLoop } from './blocks/llmLoop';
 import { setupWorkspaceBlock } from './blocks/setupWorkspaceBlock';
 import { IssueState } from '../../issueState';
 import { fetchPrFiles } from './actions/prActions';
@@ -62,7 +62,7 @@ Tasks:
 
 Do not stop until the PR is created.`;
 
-      await geminiLoop(ctx, 'research-and-draft-adr', issueNumber, prompt, 'specification');
+      await llmLoop(ctx, 'research-and-draft-adr', issueNumber, prompt, 'specification');
 
       // Wait for PR
       const { prNumber, prUrl } = await ctx.run('find-pr', () =>
@@ -103,4 +103,8 @@ Do not stop until the PR is created.`;
       }
     },
   },
+    options: {
+        inactivityTimeout: { minutes: 60 },
+        abortTimeout: { minutes: 60 },
+    },
 });

@@ -1,5 +1,5 @@
 import * as restate from '@restatedev/restate-sdk';
-import { geminiLoop } from './geminiLoop';
+import { llmLoop } from './llmLoop';
 
 export async function prReviewerBlock(
   ctx: restate.WorkflowContext,
@@ -9,5 +9,5 @@ export async function prReviewerBlock(
   prefix: string,
 ) {
   const prompt = `Use the anton-pr-review skill to perform an automated code review on PR ${prNumber} in repo ${fullRepo}.`;
-  await geminiLoop(ctx, `${prefix}-pr-review-${prNumber}`, issueNumber, prompt, 'pr-review');
+  await llmLoop(ctx, `${prefix}-pr-review-${prNumber}`, issueNumber, prompt, 'pr-review');
 }
