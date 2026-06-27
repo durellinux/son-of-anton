@@ -1,122 +1,136 @@
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { FileSystemIssueRepository } from './fileSystemIssueRepository';
 import { IssueStatus, PlanningSessionStatus } from '../api';
 import { rm, mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
-async function test() {
+describe('FileSystemIssueRepository', () => {
   const testDir = path.join('.anton', 'test-state');
-  await rm(testDir, { recursive: true, force: true });
-  await mkdir(testDir, { recursive: true });
+  let repo: FileSystemIssueRepository;
 
-  const repo = new FileSystemIssueRepository(testDir);
+  beforeEach(async () => {
+    await rm(testDir, { recursive: true, force: true });
+    await mkdir(testDir, { recursive: true });
+    repo = new FileSystemIssueRepository(testDir);
+  });
 
-  console.log('Testing saveIssue and getIssue...');
-  const issue = {
-    number: 37,
-    title: 'Test Issue',
-    url: 'http://test.com',
-    status: IssueStatus.YOLO,
-  };
-  await repo.saveIssue(issue);
+  afterEach(async () => {
+    await rm(testDir, { recursive: true, force: true });
+  });
 
-  const fetched = await repo.getIssue(37);
-  if (!fetched || fetched.number !== 37 || fetched.title !== 'Test Issue') {
-    throw new Error('getIssue failed');
-  }
-  console.log('saveIssue and getIssue passed.');
+  it('should save and get issue correctly', async () => {
+    const issue = {
+      number: 37,
+      title: 'Test Issue',
+      url: 'http://test.com',
+      status: IssueStatus.YOLO,
+    };
+    await repo.saveIssue(issue);
 
-  console.log('Testing listIssues...');
-  const list = await repo.listIssues();
-  if (list.length !== 1 || list[0].number !== 37) {
-    throw new Error('listIssues failed');
-  }
-  console.log('listIssues passed.');
+    const fetched = await repo.getIssue(37);
+    expect(fetched).toBeDefined();
+    expect(fetched?.number).toBe(37);
+    expect(fetched?.title).toBe('Test Issue');
+  });
 
-  console.log('Testing sessions...');
-  const sessionDir = path.join(testDir, '37', 'sessions');
-  await mkdir(sessionDir, { recursive: true });
-  const sessionContent = 'Log content';
-  await writeFile(path.join(sessionDir, 'session1.txt'), sessionContent);
+  it('should list issues correctly', async () => {
+    const issue = {
+      number: 37,
+      title: 'Test Issue',
+      url: 'http://test.com',
+      status: IssueStatus.YOLO,
+    };
+    await repo.saveIssue(issue);
 
-  const sessions = await repo.listSessions(37);
-  if (!sessions || sessions.length !== 1 || sessions[0].id !== 'session1') {
-    throw new Error('listSessions failed');
-  }
+    const list = await repo.listIssues();
+    expect(list.length).toBe(1);
+    expect(list[0].number).toBe(37);
+  });
 
-  const content = await repo.getSessionContent(37, 'session1');
-  if (content !== sessionContent) {
-    throw new Error('getSessionContent failed');
-  }
-  console.log('sessions passed.');
+  it('should list and retrieve session content correctly', async () => {
+    const sessionDir = path.join(testDir, '37', 'sessions');
+    await mkdir(sessionDir, { recursive: true });
+    const sessionContent = 'Log content';
+    await writeFile(path.join(sessionDir, 'session1.txt'), sessionContent);
 
-  console.log('Testing planning sessions...');
-  const planningSession = {
-    number: 37,
-    status: PlanningSessionStatus.WAITING_APPROVAL,
-    history: [
-      {
-        plan: 'My plan',
-        timestamp: new Date().toISOString(),
-      },
-    ],
-  };
-  await repo.savePlanningSession(planningSession);
+    const sessions = await repo.listSessions(37);
+    expect(sessions).toBeDefined();
+    expect(sessions?.length).toBe(1);
+    expect(sessions?.[0].id).toBe('session1');
 
-  const fetchedPlanning = await repo.getPlanningSession(37);
-  if (
-    !fetchedPlanning ||
-    fetchedPlanning.number !== 37 ||
-    fetchedPlanning.status !== PlanningSessionStatus.WAITING_APPROVAL
-  ) {
-    throw new Error('getPlanningSession failed');
-  }
-  if (fetchedPlanning.history.length !== 1 || fetchedPlanning.history[0].plan !== 'My plan') {
-    throw new Error('getPlanningSession history failed');
-  }
-  console.log('planning sessions passed.');
+    const content = await repo.getSessionContent(37, 'session1');
+    expect(content).toBe(sessionContent);
+  });
 
-  console.log('Testing deletion methods...');
+  it('should handle planning sessions correctly', async () => {
+    const planningSession = {
+      number: 37,
+      status: PlanningSessionStatus.WAITING_APPROVAL,
+      history: [
+        {
+          plan: 'My plan',
+          timestamp: new Date().toISOString(),
+        },
+      ],
+    };
+    await repo.savePlanningSession(planningSession);
 
-  // Test deleteIssue
-  await repo.deleteIssue(37);
-  const deletedIssue = await repo.getIssue(37);
-  if (deletedIssue !== undefined) {
-    throw new Error('deleteIssue failed: issue still exists');
-  }
+    const fetchedPlanning = await repo.getPlanningSession(37);
+    expect(fetchedPlanning).toBeDefined();
+    expect(fetchedPlanning?.number).toBe(37);
+    expect(fetchedPlanning?.status).toBe(PlanningSessionStatus.WAITING_APPROVAL);
+    expect(fetchedPlanning?.history.length).toBe(1);
+    expect(fetchedPlanning?.history[0].plan).toBe('My plan');
+  });
 
-  // Test deleteSessions
-  await repo.deleteSessions(37);
-  const deletedSessions = await repo.listSessions(37);
-  if (deletedSessions !== undefined) {
-    throw new Error('deleteSessions failed: sessions still exist');
-  }
-  const deletedPlanning = await repo.getPlanningSession(37);
-  if (deletedPlanning !== undefined) {
-    throw new Error('deleteSessions failed: planning session still exists');
-  }
+  describe('deletion methods', () => {
+    beforeEach(async () => {
+      // Setup an issue with session and workspaces
+      const issue = {
+        number: 37,
+        title: 'Test Issue',
+        url: 'http://test.com',
+        status: IssueStatus.YOLO,
+      };
+      await repo.saveIssue(issue);
 
-  // Test deleteWorkspace
-  const workspaceDir = path.join(testDir, '37', 'workspaces');
-  await mkdir(workspaceDir, { recursive: true });
-  await writeFile(path.join(workspaceDir, 'code.ts'), 'content');
+      const sessionDir = path.join(testDir, '37', 'sessions');
+      await mkdir(sessionDir, { recursive: true });
+      await writeFile(path.join(sessionDir, 'session1.txt'), 'Log content');
 
-  await repo.deleteWorkspace(37);
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const fs = require('node:fs/promises');
-    await fs.stat(workspaceDir);
-    throw new Error('deleteWorkspace failed: workspace directory still exists');
-  } catch (e: any) {
-    if (e.code !== 'ENOENT') throw e;
-  }
+      const planningSession = {
+        number: 37,
+        status: PlanningSessionStatus.WAITING_APPROVAL,
+        history: [{ plan: 'My plan', timestamp: new Date().toISOString() }],
+      };
+      await repo.savePlanningSession(planningSession);
+    });
 
-  console.log('deletion methods passed.');
+    it('should delete issue correctly', async () => {
+      await repo.deleteIssue(37);
+      const deletedIssue = await repo.getIssue(37);
+      expect(deletedIssue).toBeUndefined();
+    });
 
-  await rm(testDir, { recursive: true, force: true });
-  console.log('All repository tests passed!');
-}
+    it('should delete sessions and planning session correctly', async () => {
+      await repo.deleteSessions(37);
+      const deletedSessions = await repo.listSessions(37);
+      expect(deletedSessions).toBeUndefined();
 
-test().catch((err) => {
-  console.error(err);
-  process.exit(1);
+      const deletedPlanning = await repo.getPlanningSession(37);
+      expect(deletedPlanning).toBeUndefined();
+    });
+
+    it('should delete workspace correctly', async () => {
+      const workspaceDir = path.join(testDir, '37', 'workspaces');
+      await mkdir(workspaceDir, { recursive: true });
+      await writeFile(path.join(workspaceDir, 'code.ts'), 'content');
+
+      await repo.deleteWorkspace(37);
+      
+      const fs = require('node:fs/promises');
+      await expect(fs.stat(workspaceDir)).rejects.toThrow();
+    });
+  });
 });
+

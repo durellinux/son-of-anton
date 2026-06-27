@@ -1,3 +1,4 @@
+import { describe, it, expect } from 'vitest';
 import {
   determineIssueState,
   determinePRState,
@@ -7,12 +8,6 @@ import {
   PRComment,
   PlanningSessionStatus,
 } from './issueState';
-
-function assert(condition: boolean, message: string) {
-  if (!condition) {
-    throw new Error(message);
-  }
-}
 
 const issueTests = [
   {
@@ -165,32 +160,39 @@ const commentTests = [
   },
 ];
 
-for (const test of issueTests) {
-  if ((test as any).skip) continue;
-  console.log(`Running issue test: ${test.name}`);
-  const actual = determineIssueState(test.issue as Issue);
-  assert(actual === test.expected, `Expected ${test.expected}, but got ${actual}`);
-}
+describe('Issue State Helpers', () => {
+  describe('determineIssueState', () => {
+    for (const test of issueTests) {
+      it(test.name, () => {
+        const actual = determineIssueState(test.issue as Issue);
+        expect(actual).toBe(test.expected);
+      });
+    }
 
-for (const test of localPlanningTests) {
-  console.log(`Running local planning test: ${test.name}`);
-  const actual = determineIssueState(test.issue as unknown as Issue, test.localPlanning as any);
-  assert(actual === test.expected, `Expected ${test.expected}, but got ${actual}`);
-}
+    for (const test of localPlanningTests) {
+      it(test.name, () => {
+        const actual = determineIssueState(test.issue as unknown as Issue, test.localPlanning as any);
+        expect(actual).toBe(test.expected);
+      });
+    }
+  });
 
-for (const test of prTests) {
-  console.log(`Running PR test: ${test.name}`);
-  const actual = determinePRState(test.pr as any);
-  assert(actual === test.expected, `Expected ${test.expected}, but got ${actual}`);
-}
+  describe('determinePRState', () => {
+    for (const test of prTests) {
+      it(test.name, () => {
+        const actual = determinePRState(test.pr as any);
+        expect(actual).toBe(test.expected);
+      });
+    }
+  });
 
-for (const test of commentTests) {
-  console.log(`Running comment test: ${test.name}`);
-  const actual = getUnaddressedPRComments(test.comments);
-  assert(
-    JSON.stringify(actual) === JSON.stringify(test.expected),
-    `Expected ${JSON.stringify(test.expected)}, but got ${JSON.stringify(actual)}`,
-  );
-}
+  describe('getUnaddressedPRComments', () => {
+    for (const test of commentTests) {
+      it(test.name, () => {
+        const actual = getUnaddressedPRComments(test.comments);
+        expect(actual).toEqual(test.expected);
+      });
+    }
+  });
+});
 
-console.log('All tests passed!');
