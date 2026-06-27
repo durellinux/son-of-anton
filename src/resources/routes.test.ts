@@ -1,4 +1,5 @@
-import Fastify from 'fastify';
+import { describe, it, expect, beforeAll } from 'vitest';
+import Fastify, { FastifyInstance } from 'fastify';
 import { registerRoutes } from './routes';
 import { IssueRepository } from '../repositories/repositories';
 import { Issue, Session, IssueStatus, PlanningSession } from '../api';
@@ -42,52 +43,51 @@ const mockRestateClient = {
   }),
 } as any;
 
-async function test() {
-  const fastify = Fastify();
-  const repository = new MockRepository();
-  const issueService = new IssueService(repository, mockRestateClient);
-  fastify.register(registerRoutes, { issueService });
+describe('Routes API', () => {
+  let fastify: FastifyInstance;
 
-  console.log('Testing GET /api/issues...');
-  let response = await fastify.inject({ method: 'GET', url: '/api/issues' });
-  if (response.statusCode !== 200 || JSON.parse(response.body).items.length !== 1) {
-    throw new Error('GET /api/issues failed');
-  }
+  beforeAll(() => {
+    fastify = Fastify();
+    const repository = new MockRepository();
+    const issueService = new IssueService(repository, mockRestateClient);
+    fastify.register(registerRoutes, { issueService });
+  });
 
-  console.log('Testing GET /api/issues/1...');
-  response = await fastify.inject({ method: 'GET', url: '/api/issues/1' });
-  if (response.statusCode !== 200 || JSON.parse(response.body).number !== 1) {
-    throw new Error('GET /api/issues/1 failed');
-  }
+  it('GET /api/issues should list issues', async () => {
+    const response = await fastify.inject({ method: 'GET', url: '/api/issues' });
+    expect(response.statusCode).toBe(200);
+    const parsed = JSON.parse(response.body);
+    expect(parsed.items.length).toBe(1);
+  });
 
-  console.log('Testing GET /api/issues/2 (404)...');
-  response = await fastify.inject({ method: 'GET', url: '/api/issues/2' });
-  if (response.statusCode !== 404) {
-    throw new Error('GET /api/issues/2 should be 404');
-  }
+  it('GET /api/issues/1 should return the specific issue', async () => {
+    const response = await fastify.inject({ method: 'GET', url: '/api/issues/1' });
+    expect(response.statusCode).toBe(200);
+    const parsed = JSON.parse(response.body);
+    expect(parsed.number).toBe(1);
+  });
 
-  console.log('Testing DELETE /api/issues/1...');
-  response = await fastify.inject({ method: 'DELETE', url: '/api/issues/1' });
-  if (response.statusCode !== 204) {
-    throw new Error('DELETE /api/issues/1 failed');
-  }
+  it('GET /api/issues/2 should return 404', async () => {
+    const response = await fastify.inject({ method: 'GET', url: '/api/issues/2' });
+    expect(response.statusCode).toBe(404);
+  });
 
-  console.log('Testing GET /api/issues/1/sessions...');
-  response = await fastify.inject({ method: 'GET', url: '/api/issues/1/sessions' });
-  if (response.statusCode !== 200 || JSON.parse(response.body).items.length !== 1) {
-    throw new Error('GET /api/issues/1/sessions failed');
-  }
+  it('DELETE /api/issues/1 should return 204', async () => {
+    const response = await fastify.inject({ method: 'DELETE', url: '/api/issues/1' });
+    expect(response.statusCode).toBe(204);
+  });
 
-  console.log('Testing GET /api/issues/1/sessions/s1...');
-  response = await fastify.inject({ method: 'GET', url: '/api/issues/1/sessions/s1' });
-  if (response.statusCode !== 200 || response.body !== 'content') {
-    throw new Error('GET /api/issues/1/sessions/s1 failed');
-  }
+  it('GET /api/issues/1/sessions should list sessions', async () => {
+    const response = await fastify.inject({ method: 'GET', url: '/api/issues/1/sessions' });
+    expect(response.statusCode).toBe(200);
+    const parsed = JSON.parse(response.body);
+    expect(parsed.items.length).toBe(1);
+  });
 
-  console.log('All API tests passed!');
-}
-
-test().catch((err) => {
-  console.error(err);
-  process.exit(1);
+  it('GET /api/issues/1/sessions/s1 should return session content', async () => {
+    const response = await fastify.inject({ method: 'GET', url: '/api/issues/1/sessions/s1' });
+    expect(response.statusCode).toBe(200);
+    expect(response.body).toBe('content');
+  });
 });
+
