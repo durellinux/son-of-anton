@@ -171,7 +171,10 @@ describe('Issue State Helpers', () => {
 
     for (const test of localPlanningTests) {
       it(test.name, () => {
-        const actual = determineIssueState(test.issue as unknown as Issue, test.localPlanning as any);
+        const actual = determineIssueState(
+          test.issue as unknown as Issue,
+          test.localPlanning as any,
+        );
         expect(actual).toBe(test.expected);
       });
     }
@@ -195,4 +198,3 @@ describe('Issue State Helpers', () => {
     }
   });
 });
-

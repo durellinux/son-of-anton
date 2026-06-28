@@ -12,4 +12,3 @@ describe('RebaseConflictError', () => {
     expect(error).toBeInstanceOf(Error);
   });
 });
-
