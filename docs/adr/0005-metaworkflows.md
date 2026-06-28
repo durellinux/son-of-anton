@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed
+Approved
 
 ## Context
 
@@ -12,95 +12,106 @@ To enable rapid iteration and easy extensibility, we need a mechanism to define 
 
 ## Decision
 
-We will implement a dynamic orchestration system called **Metaworkflows** using a single Restate workflow `GenericWorkflow`. This workflow will interpret and run workflow definitions defined in JSON or YAML.
+We will implement a dynamic orchestration system called **Metaworkflows** using a single Restate workflow `GenericWorkflow`. This workflow will interpret and run workflow definitions defined in JSON or YAML conforming to a **Temporal DSL** specification. 
+
+By adopting a Temporal-aligned DSL, we ensure support for advanced control flow constructs (such as loops, conditionals, and parallel execution) and make it easier to migrate to a standard Temporal deployment in the future.
 
 ### 1. Workflow Schema and Syntax
 
-Workflows will be represented by a minimal schema containing metadata, trigger rules, inputs, and a list of steps.
+Workflows will be represented by a schema containing metadata, input/variable definitions, and a tree of execution blocks (activities and control flow constructs).
 
-Example workflow definition in JSON format:
+Example workflow definition in JSON format conforming to the Temporal-aligned DSL:
 ```json
 {
   "id": "epic-specification",
   "name": "Epic Specification Workflow",
   "version": 1,
-  "inputs": {
+  "variables": {
     "number": "number",
     "title": "string",
     "url": "string",
-    "repository": "string"
+    "repository": "string",
+    "issueDetails": "object"
   },
-  "steps": [
-    {
-      "id": "bootstrap-labels",
-      "action": "bootstrapLabels",
-      "inputs": {
-        "repository": "${workflow.input.repository}"
+  "root": {
+    "sequence": [
+      {
+        "activity": "bootstrapLabels",
+        "inputs": {
+          "repository": "${variables.repository}"
+        }
+      },
+      {
+        "activity": "addLabel",
+        "inputs": {
+          "issueNumber": "${variables.number}",
+          "repository": "${variables.repository}",
+          "label": "status:specifying"
+        }
+      },
+      {
+        "activity": "fetchIssueDetails",
+        "inputs": {
+          "issueNumber": "${variables.number}",
+          "repository": "${variables.repository}"
+        },
+        "result": "variables.issueDetails"
+      },
+      {
+        "activity": "setupWorkspace",
+        "inputs": {
+          "issueNumber": "${variables.number}",
+          "repository": "${variables.repository}",
+          "branch": "${variables.issueDetails.branch}"
+        }
       }
-    },
-    {
-      "id": "transition-labels",
-      "action": "addLabel",
-      "inputs": {
-        "issueNumber": "${workflow.input.number}",
-        "repository": "${workflow.input.repository}",
-        "label": "status:specifying"
-      }
-    },
-    {
-      "id": "fetch-github-details",
-      "action": "fetchIssueDetails",
-      "inputs": {
-        "issueNumber": "${workflow.input.number}",
-        "repository": "${workflow.input.repository}"
-      }
-    },
-    {
-      "id": "setup-workspace",
-      "action": "setupWorkspace",
-      "inputs": {
-        "issueNumber": "${workflow.input.number}",
-        "repository": "${workflow.input.repository}",
-        "branch": "${steps.fetch-github-details.output.branch}"
-      }
-    }
-  ]
+    ]
+  }
 }
 ```
 
 ### 2. Variables and Data Flow
 
-To allow passing inputs and outputs across blocks, we will support expression interpolation. The runtime will resolve variables using a context object:
-- `${workflow.input.key}`: References workflow-level inputs.
-- `${steps.stepId.output.key}`: References the output of a previously executed step. If the output is a primitive, `${steps.stepId.output}` can be used.
+The runtime will maintain a workflow state/variable context:
+- `${variables.key}`: References workflow-level variables/inputs.
+- Outputs of activities can be stored back into variables using the `"result"` field.
+- Expressions inside input fields are dynamically interpolated prior to executing the activity.
 
-### 3. Action Registry
+### 3. Control Flow Constructs
 
-To make the system easily extensible, we will define a centralized `ActionRegistry`. Each step in the workflow maps to an action in the registry. 
+Unlike simple sequential lists, the Temporal DSL supports nested control blocks:
+- **`sequence`**: Runs a list of blocks sequentially.
+- **`parallel`**: Runs a list of blocks concurrently.
+- **`if`**: Conditional block with `condition`, `then`, and `else` branches.
+- **`while` / `forEach`**: Loops to support repetitive operations natively.
 
-- New actions can be added by registering a TypeScript function conforming to a standard signature:
+### 4. Activity Registry
+
+To make the system easily extensible, we will define a centralized `ActivityRegistry`. Each leaf activity in the workflow definition maps to a registered handler.
+
+- New activities can be added by registering a TypeScript function conforming to a standard signature:
   ```typescript
-  type ActionContext = {
+  type ActivityContext = {
     restateContext: restate.WorkflowContext;
     // other shared services
   };
 
-  type ActionExecutor = (ctx: ActionContext, inputs: Record<string, any>) => Promise<any>;
+  type ActivityExecutor = (ctx: ActivityContext, inputs: Record<string, any>) => Promise<any>;
   ```
-- The `GenericWorkflow` loop will execute each step by looking up the action executor in the registry, resolving its inputs, and running it inside a Restate durable step:
+- The `GenericWorkflow` interpreter will walk the definition tree and run activities inside Restate durable steps:
   ```typescript
-  const output = await ctx.run(step.id, () => actionExecutor(actionCtx, resolvedInputs));
+  const output = await ctx.run(activityId, () => activityExecutor(activityCtx, resolvedInputs));
   ```
 
-### 4. API and Validation
+### 5. API and Validation
 
 We will expose Restate/Fastify endpoints for creating and updating workflow definitions. Upon creation or modification:
-- **Schema Validation**: Verify the definition structure using a validation library like `Zod`.
-- **DAG / Dependency Validation**: Verify that the step graph is a directed acyclic graph (no cycles).
-- **Variable Verification**: Ensure all interpolated variables (`${steps.stepId.output.key}`) refer to steps that are guaranteed to execute before the current step and exist in the schema.
-- **Action Verification**: Check that all actions used in steps are registered in the `ActionRegistry`.
+- **Schema Validation**: Verify the definition structure conforms to the Temporal DSL schema using `Zod`.
+- **Control Flow Validation**: Ensure control constructs are valid (e.g., condition expressions are safe, loop limits are set to prevent infinite execution).
+- **Variable Verification**: Ensure all interpolated variables refer to defined variables in the schema.
+- **Activity Verification**: Check that all activities used in the workflow are registered in the `ActivityRegistry`.
 
-### 5. Immutability & Versioning
+### 6. Immutability & Versioning
 
 Because Restate workflows must be deterministic and are registered statically:
 - Workflow definitions stored in the repository/database are strictly **immutable**.
@@ -109,20 +120,20 @@ Because Restate workflows must be deterministic and are registered statically:
 
 ## Alternatives Considered
 
+### Custom Interpretation Engine
+Designing a bespoke JSON/YAML-based step format.
+- **Pros**: Slightly simpler parsing logic initially.
+- **Cons**: Difficult to scale when adding loops, conditionals, and error retry handlers. Migrating to standard workflow solutions in the future would require a complete rewrite of all workflow definitions.
+
 ### Code Generation
 Instead of interpreting a JSON/YAML schema at runtime, we could generate TypeScript code and register it.
 - **Pros**: Pure TypeScript compile-time type safety.
 - **Cons**: High deployment complexity, requires recompiling and redeploying or dynamically loading JS bundles which introduces security risks and violates Restate's stable execution model.
 
-### Temporal DSL / State Chart XML (SCXML)
-Using an existing standard format like SCXML or Temporal's DSL patterns.
-- **Pros**: Reuses existing specifications.
-- **Cons**: Extremely verbose and complex to write manually, violating our goal of having a syntax that is "as minimal as possible to be able to quickly iterate."
-
 ## Rationale
 
-- **JSON/YAML Interpretation**: Highly flexible and allows defining workflows purely as data, which can be stored in git or a database.
-- **Dynamic Context Interpolation**: Allows steps to be chained together sequentially or as a DAG without writing any TypeScript orchestrations.
+- **Temporal DSL Alignment**: Future-proofs our workflow definitions by conforming to a standard design. Native support for complex structures like loops, parallel blocks, and conditionals.
+- **Durable Restate Execution**: We get the benefits of Restate's high-performance durable execution while keeping the definitions configurable as data.
 - **Zod + DAG Analyzer**: Provides bulletproof validation at the API boundary, rejecting invalid workflows before they are run.
 - **Versioned Instances**: Satisfies Restate's requirement that workflows are unmodifiable/deterministic, avoiding runtime replay errors.
 
