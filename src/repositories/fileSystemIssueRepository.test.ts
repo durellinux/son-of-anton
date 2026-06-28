@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { FileSystemIssueRepository } from './fileSystemIssueRepository';
 import { IssueStatus, PlanningSessionStatus } from '../api';
-import { rm, mkdir, writeFile } from 'node:fs/promises';
+import { rm, mkdir, writeFile, stat } from 'node:fs/promises';
 import path from 'node:path';
 
 describe('FileSystemIssueRepository', () => {
@@ -127,9 +127,7 @@ describe('FileSystemIssueRepository', () => {
       await writeFile(path.join(workspaceDir, 'code.ts'), 'content');
 
       await repo.deleteWorkspace(37);
-      
-      const fs = require('node:fs/promises');
-      await expect(fs.stat(workspaceDir)).rejects.toThrow();
+      await expect(stat(workspaceDir)).rejects.toThrow();
     });
   });
 });
