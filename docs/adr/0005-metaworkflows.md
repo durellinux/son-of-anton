@@ -12,20 +12,23 @@ To enable rapid iteration and easy extensibility, we need a mechanism to define 
 
 ## Decision
 
-We will implement a dynamic orchestration system called **Metaworkflows** using a single Restate workflow `GenericWorkflow`. This workflow will interpret and run workflow definitions defined in JSON or YAML conforming to a **Temporal DSL** specification. 
+We will implement a dynamic orchestration system called **Metaworkflows** using a single Restate workflow `GenericWorkflow`. This workflow will interpret and run workflow definitions defined in JSON or YAML conforming to the CNCF **Serverless Workflow** specification (version 1.0.3). 
 
-By adopting a Temporal-aligned DSL, we ensure support for advanced control flow constructs (such as loops, conditionals, and parallel execution) and make it easier to migrate to a standard Temporal deployment in the future.
+By adopting the Serverless Workflow specification, we benefit from a standardized schema (located at `https://serverlessworkflow.io/schemas/1.0.3/workflow.json`), making validation straightforward using standard JSON Schema validators and enabling compatibility with broader ecosystem tooling.
 
 ### 1. Workflow Schema and Syntax
 
-Workflows will be represented by a schema containing metadata, input/variable definitions, and a tree of execution blocks (activities and control flow constructs).
+Workflows will be represented by a schema containing document metadata, input/variable definitions, and a list of execution activities and control flow constructs conforming to the Serverless Workflow standard.
 
-Example workflow definition in JSON format conforming to the Temporal-aligned DSL:
+Example workflow definition in JSON format:
 ```json
 {
-  "id": "epic-specification",
-  "name": "Epic Specification Workflow",
-  "version": 1,
+  "document": {
+    "dsl": "1.0.3",
+    "namespace": "son-of-anton",
+    "name": "epic-specification",
+    "version": "1.0.0"
+  },
   "variables": {
     "number": "number",
     "title": "string",
@@ -33,40 +36,46 @@ Example workflow definition in JSON format conforming to the Temporal-aligned DS
     "repository": "string",
     "issueDetails": "object"
   },
-  "root": {
-    "sequence": [
-      {
-        "activity": "bootstrapLabels",
-        "inputs": {
+  "do": [
+    {
+      "bootstrapLabels": {
+        "call": "activity:bootstrapLabels",
+        "with": {
           "repository": "${variables.repository}"
         }
-      },
-      {
-        "activity": "addLabel",
-        "inputs": {
+      }
+    },
+    {
+      "addLabel": {
+        "call": "activity:addLabel",
+        "with": {
           "issueNumber": "${variables.number}",
           "repository": "${variables.repository}",
           "label": "status:specifying"
         }
-      },
-      {
-        "activity": "fetchIssueDetails",
-        "inputs": {
+      }
+    },
+    {
+      "fetchIssueDetails": {
+        "call": "activity:fetchIssueDetails",
+        "with": {
           "issueNumber": "${variables.number}",
           "repository": "${variables.repository}"
         },
         "result": "variables.issueDetails"
-      },
-      {
-        "activity": "setupWorkspace",
-        "inputs": {
+      }
+    },
+    {
+      "setupWorkspace": {
+        "call": "activity:setupWorkspace",
+        "with": {
           "issueNumber": "${variables.number}",
           "repository": "${variables.repository}",
           "branch": "${variables.issueDetails.branch}"
         }
       }
-    ]
-  }
+    }
+  ]
 }
 ```
 
@@ -75,19 +84,19 @@ Example workflow definition in JSON format conforming to the Temporal-aligned DS
 The runtime will maintain a workflow state/variable context:
 - `${variables.key}`: References workflow-level variables/inputs.
 - Outputs of activities can be stored back into variables using the `"result"` field.
-- Expressions inside input fields are dynamically interpolated prior to executing the activity.
+- Expressions inside input fields (`with`) are dynamically interpolated prior to executing the activity.
 
 ### 3. Control Flow Constructs
 
-Unlike simple sequential lists, the Temporal DSL supports nested control blocks:
-- **`sequence`**: Runs a list of blocks sequentially.
+The Serverless Workflow DSL supports sequential, conditional, parallel, and repetitive control blocks:
+- **`do` (Sequence)**: Runs a list of blocks sequentially.
 - **`parallel`**: Runs a list of blocks concurrently.
-- **`if`**: Conditional block with `condition`, `then`, and `else` branches.
-- **`while` / `forEach`**: Loops to support repetitive operations natively.
+- **`switch` / `if`**: Conditional block with `condition`, `then`, and `else` branches.
+- **`forEach` / `while`**: Loops to support repetitive operations natively.
 
 ### 4. Activity Registry
 
-To make the system easily extensible, we will define a centralized `ActivityRegistry`. Each leaf activity in the workflow definition maps to a registered handler.
+To make the system easily extensible, we will define a centralized `ActivityRegistry`. Each leaf activity invocation in the workflow definition maps to a registered handler.
 
 - New activities can be added by registering a TypeScript function conforming to a standard signature:
   ```typescript
@@ -106,7 +115,7 @@ To make the system easily extensible, we will define a centralized `ActivityRegi
 ### 5. API and Validation
 
 We will expose Restate/Fastify endpoints for creating and updating workflow definitions. Upon creation or modification:
-- **Schema Validation**: Verify the definition structure conforms to the Temporal DSL schema using `Zod`.
+- **Schema Validation**: Verify the definition structure conforms to the Serverless Workflow Zod schema generated from the official JSON Schema.
 - **Control Flow Validation**: Ensure control constructs are valid (e.g., condition expressions are safe, loop limits are set to prevent infinite execution).
 - **Variable Verification**: Ensure all interpolated variables refer to defined variables in the schema.
 - **Activity Verification**: Check that all activities used in the workflow are registered in the `ActivityRegistry`.
@@ -115,7 +124,7 @@ We will expose Restate/Fastify endpoints for creating and updating workflow defi
 
 Because Restate workflows must be deterministic and are registered statically:
 - Workflow definitions stored in the repository/database are strictly **immutable**.
-- Any update request creates a new version of the workflow (e.g., incrementing the `version` field).
+- Any update request creates a new version of the workflow (e.g., incrementing the `version` field in the document metadata).
 - Existing running workflow instances will continue executing the version of the workflow definition they started with.
 
 ## Alternatives Considered
@@ -132,7 +141,7 @@ Instead of interpreting a JSON/YAML schema at runtime, we could generate TypeScr
 
 ## Rationale
 
-- **Temporal DSL Alignment**: Future-proofs our workflow definitions by conforming to a standard design. Native support for complex structures like loops, parallel blocks, and conditionals.
+- **Serverless Workflow Alignment**: Future-proofs our workflow definitions by conforming to a CNCF standard design, making validation straightforward using standard schema tools. Native support for complex structures like loops, parallel blocks, and conditionals.
 - **Durable Restate Execution**: We get the benefits of Restate's high-performance durable execution while keeping the definitions configurable as data.
 - **Zod + DAG Analyzer**: Provides bulletproof validation at the API boundary, rejecting invalid workflows before they are run.
 - **Versioned Instances**: Satisfies Restate's requirement that workflows are unmodifiable/deterministic, avoiding runtime replay errors.
