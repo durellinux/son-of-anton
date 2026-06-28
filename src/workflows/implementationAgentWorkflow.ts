@@ -2,6 +2,7 @@ import * as restate from '@restatedev/restate-sdk';
 import { addLabel, removeLabel } from './actions/issuesActions';
 import { planningLoop } from './blocks/planningLoop';
 import { implementationBlock } from './blocks/implementationBlock';
+import { setupWorkspaceBlock } from './blocks/setupWorkspaceBlock';
 
 export const implementationAgentWorkflow = restate.workflow({
   name: 'ImplementationAgentWorkflow',
@@ -12,6 +13,8 @@ export const implementationAgentWorkflow = restate.workflow({
     ) => {
       const { number: issueNumber, repository: issueRepo } = params;
       const workflowUrl = `http://localhost:8080/visualize/ImplementationAgentWorkflow/${ctx.key}`;
+
+      await setupWorkspaceBlock(ctx, issueNumber, issueRepo, undefined);
 
       // 1. Planning and Approval Phase
       await planningLoop(ctx, issueNumber, issueRepo, params.title, params.url, workflowUrl);
