@@ -3,6 +3,7 @@ import { fetchConnectedPRs, updateRepository } from './actions/issuesActions';
 import { prReviewerBlock } from './blocks/prReviewerBlock';
 import { prShepherdBlock } from './blocks/prShepherdBlock';
 import { IssueState } from '../../issueState';
+import { setupWorkspaceBlock } from './blocks/setupWorkspaceBlock';
 
 const MAX_PLAN_ITERATIONS = 1000;
 
@@ -16,6 +17,8 @@ export const prLifecycleWorkflow = restate.workflow({
       const issueNumber = params.number;
       const repository = params.repository;
       const workflowUrl = `http://localhost:8080/visualize/PrLifecycleWorkflow/${ctx.key}`;
+
+      await setupWorkspaceBlock(ctx, issueNumber, repository, `anton/${issueNumber}`);
 
       const prNumbers = await ctx.run('fetch-connected-prs', () =>
         fetchConnectedPRs(issueNumber, repository),
@@ -86,6 +89,9 @@ export const prLifecycleWorkflow = restate.workflow({
         }
 
         if (allCompleted) {
+          await ctx.run(`set-completed-${iteration}`, () =>
+            updateRepository(issueNumber, params.title, params.url, IssueState.MERGED, workflowUrl),
+          );
           break;
         }
 
