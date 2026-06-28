@@ -20,63 +20,71 @@ By adopting the Serverless Workflow specification, we benefit from a standardize
 
 Workflows will be represented by a schema containing document metadata, input/variable definitions, and a list of execution activities and control flow constructs conforming to the Serverless Workflow standard.
 
-Example workflow definition in JSON format:
-```json
-{
-  "document": {
-    "dsl": "1.0.3",
-    "namespace": "son-of-anton",
-    "name": "epic-specification",
-    "version": "1.0.0"
-  },
-  "variables": {
-    "number": "number",
-    "title": "string",
-    "url": "string",
-    "repository": "string",
-    "issueDetails": "object"
-  },
-  "do": [
-    {
-      "bootstrapLabels": {
-        "call": "activity:bootstrapLabels",
-        "with": {
-          "repository": "${variables.repository}"
-        }
-      }
-    },
-    {
-      "addLabel": {
-        "call": "activity:addLabel",
-        "with": {
-          "issueNumber": "${variables.number}",
-          "repository": "${variables.repository}",
-          "label": "status:specifying"
-        }
-      }
-    },
-    {
-      "fetchIssueDetails": {
-        "call": "activity:fetchIssueDetails",
-        "with": {
-          "issueNumber": "${variables.number}",
-          "repository": "${variables.repository}"
-        },
-        "result": "variables.issueDetails"
-      }
-    },
-    {
-      "setupWorkspace": {
-        "call": "activity:setupWorkspace",
-        "with": {
-          "issueNumber": "${variables.number}",
-          "repository": "${variables.repository}",
-          "branch": "${variables.issueDetails.branch}"
-        }
-      }
-    }
-  ]
-}
+Example workflow definition in YAML format:
+```yaml
+document:
+  dsl: 1.0.3
+  namespace: son-of-anton
+  name: epic-planning
+  version: 1.0.0
+variables:
+  number: number
+  title: string
+  url: string
+  repository: string
+  issueDetails: object
+  session: object
+  geminiOutput: string
+  approvalResult: object
+do:
+  - updateRepoStatus:
+      call: activity:updateRepository
+      with:
+        issueNumber: ${variables.number}
+        status: status:planning
+  - fetchIssueDetails:
+      call: activity:fetchIssueDetails
+      with:
+        issueNumber: ${variables.number}
+        repository: ${variables.repository}
+      result: variables.issueDetails
+  - setupWorkspace:
+      call: activity:setupWorkspace
+      with:
+        issueNumber: ${variables.number}
+        repository: ${variables.repository}
+        branch: ${variables.issueDetails.branch}
+  - planningLoop:
+      for:
+        each: iteration
+        in: ${[1, 2, 3]}
+      while: ${variables.session.status != 'approved'}
+      do:
+        - getSessionBefore:
+            call: activity:getPlanningSession
+            with:
+              issueNumber: ${variables.number}
+            result: variables.session
+        - proposeTasks:
+            call: activity:proposeTasks
+            with:
+              issueNumber: ${variables.number}
+              title: ${variables.title}
+              body: ${variables.issueDetails.body}
+              feedback: ${variables.session.feedback}
+            result: variables.geminiOutput
+        - waitApproval:
+            listen:
+              to:
+                on:
+                  - type: approvalSignal
+                    source: github
+            result: variables.approvalResult
+        - getSessionAfter:
+            call: activity:getPlanningSession
+            with:
+              issueNumber: ${variables.number}
+            result: variables.session
 ```
 
 ### 2. Variables and Data Flow
