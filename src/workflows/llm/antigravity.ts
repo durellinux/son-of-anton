@@ -39,6 +39,7 @@ export async function executeAntigravity(
     // Copy .gemini and GEMINI.md to issue directory
     try {
       await cp('.gemini', path.join(issueDir, '.gemini'), { recursive: true, force: true });
+      await cp('.gemini/AGENTS.md', path.join(issueDir, 'AGENTS.md'), { force: true });
       await cp('GEMINI.md', path.join(issueDir, 'GEMINI.md'), { force: true });
     } catch (e) {
       console.error(`Failed to copy .gemini or GEMINI.md to ${issueDir}:`, e);
