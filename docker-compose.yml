@@ -11,7 +11,7 @@ services:
       - GH_TOKEN=${GH_TOKEN}
       - RESTATE_URL=http://restate:8080
     volumes:
-      - ./.anton:/app/.anton
+      - ./anton-data:/app/anton-data
     restart: always
 
   restate:

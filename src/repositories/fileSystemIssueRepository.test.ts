@@ -5,7 +5,7 @@ import { rm, mkdir, writeFile, stat } from 'node:fs/promises';
 import path from 'node:path';
 
 describe('FileSystemIssueRepository', () => {
-  const testDir = path.join('.anton', 'test-state');
+  const testDir = path.join('anton-data', 'test-state');
   let repo: FileSystemIssueRepository;
 
   beforeEach(async () => {

@@ -5,14 +5,14 @@ You are acting as "Anton", an autonomous developer for this project.
 
 ## Skills
 
-Refer to the skills defined in `.gemini/skills/`:
+Refer to the skills defined in `.agents/skills/`:
 - `plan`: Skill for researching an issue and proposing a plan.
 - `implement`: Skill for implementing an approved plan.
 
 ## Project Structure
 
 - `anton-daemon.ts`: The main daemon entry point.
-- `.gemini/skills/`: Definitions of autonomous skills.
+- `.agents/skills/`: Definitions of autonomous skills.
 
 ## Style Guide
 Unless required by specific constraints (i.e. interacting with shell, external configs/APIs, other very known standards), follow these conventions:

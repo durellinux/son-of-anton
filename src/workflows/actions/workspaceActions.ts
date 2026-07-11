@@ -15,7 +15,7 @@ export async function setupWorkspace(
   branch: string | undefined,
 ) {
   const [owner, repoName] = issueRepo.split('/');
-  const workspacePath = path.join('.anton', String(issueNumber), 'workspaces', owner);
+  const workspacePath = path.join('anton-data', String(issueNumber), 'workspaces', owner);
 
   // Create workspace folder
   await mkdir(workspacePath, { recursive: true });
@@ -76,7 +76,7 @@ export async function findPullRequest(
   issueRepo: string,
 ): Promise<{ prNumber: number; prUrl: string }> {
   const [owner, repoName] = issueRepo.split('/');
-  const repoPath = path.join('.anton', String(issueNumber), 'workspaces', owner, repoName);
+  const repoPath = path.join('anton-data', String(issueNumber), 'workspaces', owner, repoName);
 
   // Compute branch name from branch in repo folder in workspace
   const { stdout: branchName } = await execa('git', ['branch', '--show-current'], {
