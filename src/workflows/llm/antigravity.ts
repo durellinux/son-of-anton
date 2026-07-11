@@ -20,7 +20,7 @@ export async function executeAntigravity(
   prompt: string,
   type: string,
 ): Promise<string> {
-  const issueDir = path.join('.anton', String(id));
+  const issueDir = path.join('anton-data', String(id));
   const sessionDir = path.join(issueDir, 'sessions');
 
   while (true) {
@@ -36,13 +36,12 @@ export async function executeAntigravity(
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     await mkdir(sessionDir, { recursive: true });
 
-    // Copy .gemini and GEMINI.md to issue directory
+    // Copy .agents and GEMINI.md to issue directory
     try {
-      await cp('.gemini', path.join(issueDir, '.gemini'), { recursive: true, force: true });
-      await cp('.gemini/AGENTS.md', path.join(issueDir, 'AGENTS.md'), { force: true });
-      await cp('GEMINI.md', path.join(issueDir, 'GEMINI.md'), { force: true });
+      await cp('.agents', path.join(issueDir, '.agents'), { recursive: true, force: true });
+      await cp('.agents/AGENTS.md', path.join(issueDir, 'AGENTS.md'), { force: true });
     } catch (e) {
-      console.error(`Failed to copy .gemini or GEMINI.md to ${issueDir}:`, e);
+      console.error(`Failed to copy .agents or AGENTS.md to ${issueDir}:`, e);
     }
 
     const sessionFilePath = path.join(sessionDir, `${type}-${timestamp}.txt`);

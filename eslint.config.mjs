@@ -67,7 +67,7 @@ export default tseslint.config(
       'dist/',
       'tsp-output/',
       'src/api/',
-      '.anton/',
+      'anton-data/',
       'ui/',
       '**/*.md',
       '**/*.gen.ts',

@@ -2,10 +2,10 @@ node_modules/
 .env
 .idea
 dist/
-.anton/sessions/
-.anton/worktrees/
-.anton/workspaces/
+anton-data/sessions/
+anton-data/worktrees/
+anton-data/workspaces/
 tsp-output/
 restate-data
-.anton
+anton-data
 comments.json

@@ -6,7 +6,7 @@ import { IssueRepository } from './repositories';
 export class FileSystemIssueRepository implements IssueRepository {
   private baseDir: string;
 
-  constructor(baseDir: string = '.anton') {
+  constructor(baseDir: string = 'anton-data') {
     this.baseDir = baseDir;
   }
 

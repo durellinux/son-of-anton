@@ -2,7 +2,7 @@ node_modules/
 dist/
 tsp-output/
 src/api/
-.anton/
+anton-data/
 ui/
 **/*.md
 **/*.gen.ts
