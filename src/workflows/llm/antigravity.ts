@@ -1,4 +1,5 @@
 import path from 'node:path';
+import os from 'node:os';
 import { mkdir, cp } from 'node:fs/promises';
 import { createWriteStream } from 'node:fs';
 import { execa } from 'execa';
@@ -60,6 +61,40 @@ export async function executeAntigravity(
     const gid = process.getgid ? process.getgid() : undefined;
     const userArg = uid !== undefined && gid !== undefined ? `${uid}:${gid}` : undefined;
 
+    // Create a local isolated .gemini structure for this issue run
+    const issueGeminiDir = path.join(issueDir, '.gemini');
+    await mkdir(path.join(issueGeminiDir, 'antigravity-cli'), { recursive: true });
+
+    // Copy only the required files for authentication to isolate from host settings/history
+    const hostOauthPath = path.join(os.homedir(), '.gemini/oauth_creds.json');
+    const hostAccountsPath = path.join(os.homedir(), '.gemini/google_accounts.json');
+    const hostTokenPath = path.join(
+      os.homedir(),
+      '.gemini/antigravity-cli/antigravity-oauth-token',
+    );
+
+    try {
+      await cp(hostOauthPath, path.join(issueGeminiDir, 'oauth_creds.json'), { force: true });
+    } catch {
+      // ignore if missing
+    }
+    try {
+      await cp(hostAccountsPath, path.join(issueGeminiDir, 'google_accounts.json'), {
+        force: true,
+      });
+    } catch {
+      // ignore if missing
+    }
+    try {
+      await cp(
+        hostTokenPath,
+        path.join(issueGeminiDir, 'antigravity-cli/antigravity-oauth-token'),
+        { force: true },
+      );
+    } catch {
+      // ignore if missing
+    }
+
     const dockerArgs = ['run', '--rm'];
 
     if (userArg) {
@@ -69,6 +104,8 @@ export async function executeAntigravity(
     dockerArgs.push(
       '-v',
       `${hostIssueDir}:/workspace`,
+      '-v',
+      `${path.join(hostIssueDir, '.gemini')}:/tmp/.gemini`,
       '-w',
       '/workspace',
       '-e',
@@ -77,6 +114,8 @@ export async function executeAntigravity(
       `GH_TOKEN=${process.env.GH_TOKEN || ''}`,
       '-e',
       'HOME=/tmp',
+      '-e',
+      'GEMINI_DIR=/tmp/.gemini',
       image,
       'agy',
       '-p',

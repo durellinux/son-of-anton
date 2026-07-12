@@ -19,17 +19,17 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | d
     && apt-get install gh -y \
     && rm -rf /var/lib/apt/lists/*
 
+# Install Antigravity CLI
+RUN curl -fsSL https://antigravity.google/cli/install.sh | bash -s -- --dir /usr/local/bin
+
 # Configure git system-wide for the sandbox
 RUN git config --system credential.helper '!gh auth git-credential' \
     && git config --system safe.directory '*' \
     && git config --system user.name "Son of Anton" \
     && git config --system user.email "anton@sonofanton.local"
 
+# Create a writable directory for gemini config files at runtime
+RUN mkdir -p /tmp/.gemini && chmod 777 /tmp/.gemini
+
 # Default directory
 WORKDIR /workspace
-
-USER node
-
-# Install Gemini CLI globally
-RUN curl -fsSL https://antigravity.google/cli/install.sh | bash
-
