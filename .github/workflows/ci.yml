@@ -55,5 +55,4 @@ jobs:
           cd ui
           yarn install
       - name: Run tests
-        run: yarn vitest run
-
+        run: yarn test
