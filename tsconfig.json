@@ -11,5 +11,5 @@
     "rootDir": "./"
   },
   "include": ["**/*.ts"],
-  "exclude": ["node_modules", "ui"]
+  "exclude": ["node_modules", "ui", "anton-data"]
 }

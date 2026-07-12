@@ -50,22 +50,47 @@ export async function executeAntigravity(
     const instruction = `\n\nIMPORTANT: At the end of your run, you MUST output your final response for the user wrapped in <anton-response>...</anton-response> tags. For example:\n<anton-response>\nYour final response here\n</anton-response>`;
     const promptWithInstruction = `${prompt}${instruction}`;
 
-    const subprocess = execa(
+    const hostAntonDataDir = process.env.HOST_ANTON_DATA_DIR
+      ? path.resolve(process.env.HOST_ANTON_DATA_DIR)
+      : path.resolve('anton-data');
+    const hostIssueDir = path.join(hostAntonDataDir, String(id));
+    const image = process.env.ANTON_AGENT_IMAGE || 'anton-sandbox:latest';
+
+    const uid = process.getuid ? process.getuid() : undefined;
+    const gid = process.getgid ? process.getgid() : undefined;
+    const userArg = uid !== undefined && gid !== undefined ? `${uid}:${gid}` : undefined;
+
+    const dockerArgs = ['run', '--rm'];
+
+    if (userArg) {
+      dockerArgs.push('--user', userArg);
+    }
+
+    dockerArgs.push(
+      '-v',
+      `${hostIssueDir}:/workspace`,
+      '-w',
+      '/workspace',
+      '-e',
+      `GEMINI_API_KEY=${process.env.GEMINI_API_KEY || ''}`,
+      '-e',
+      `GH_TOKEN=${process.env.GH_TOKEN || ''}`,
+      '-e',
+      'HOME=/tmp',
+      image,
       'agy',
-      [
-        '-p',
-        promptWithInstruction,
-        '--sandbox',
-        '--dangerously-skip-permissions',
-        '--model',
-        selectedModel,
-      ],
-      {
-        cwd: issueDir,
-        stdin: 'ignore',
-        timeout: 30 * 60 * 1000,
-      },
+      '-p',
+      promptWithInstruction,
+      '--sandbox',
+      '--dangerously-skip-permissions',
+      '--model',
+      selectedModel,
     );
+
+    const subprocess = execa('docker', dockerArgs, {
+      stdin: 'ignore',
+      timeout: 30 * 60 * 1000,
+    });
 
     let fullOutput = '';
 

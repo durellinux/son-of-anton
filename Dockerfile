@@ -7,6 +7,8 @@ RUN apt-get update && apt-get install -y \
     gnupg \
     software-properties-common \
     git \
+    apt-transport-https \
+    ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 # Install GitHub CLI
@@ -14,30 +16,20 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | d
     && chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \
     && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
     && apt-get update \
-    && apt-get install gh -y
+    && apt-get install gh -y \
+    && rm -rf /var/lib/apt/lists/*
+
+# Configure git system-wide for the sandbox
+RUN git config --system credential.helper '!gh auth git-credential' \
+    && git config --system safe.directory '*' \
+    && git config --system user.name "Son of Anton" \
+    && git config --system user.email "anton@sonofanton.local"
+
+# Default directory
+WORKDIR /workspace
+
+USER node
 
 # Install Gemini CLI globally
-RUN yarn global add @google/gemini-cli
+RUN curl -fsSL https://antigravity.google/cli/install.sh | bash
 
-# Create and set the working directory
-WORKDIR /app
-
-# Copy package files and install dependencies
-COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile
-
-# Copy the rest of the application code
-COPY . .
-
-# Expose the port the app runs on
-EXPOSE 3000
-
-# Set environment variables
-ENV NODE_ENV=production
-
-# Healthcheck
-HEALTHCHECK --interval=30s --timeout=3s \
-  CMD curl -f http://localhost:3000/health || exit 1
-
-# Start the application
-CMD ["yarn", "start"]
