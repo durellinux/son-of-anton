@@ -11,15 +11,16 @@ import { epicSpecificationWorkflow } from './src/workflows/epicSpecificationWork
 import { epicPlannerWorkflow } from './src/workflows/epicPlannerWorkflow';
 import { implementationAgentWorkflow } from './src/workflows/implementationAgentWorkflow';
 import { prLifecycleWorkflow } from './src/workflows/prLifecycleWorkflow';
-import { issueObject, issueIndexObject } from './src/restate/issueObject';
+import { issueObject } from './src/restate/issueObject';
+import { issueIndexObject } from './src/restate/issueIndexObject';
 import { GitHubPoller } from './src/services/githubPoller';
 import { setActiveModel } from './src/workflows/llm';
 
 const RESTATE_URL = process.env.RESTATE_URL || 'http://localhost:8080';
 const restateClient = restateClients.connect({ url: RESTATE_URL });
 
-const repository = new RestateIssueRepository(restateClient as any);
-const issueService = new IssueService(repository, restateClient as any);
+const repository = new RestateIssueRepository(restateClient);
+const issueService = new IssueService(repository, restateClient);
 
 const fastify = Fastify({
   logger: {
@@ -33,7 +34,7 @@ const fastify = Fastify({
   },
 });
 
-const githubPoller = new GitHubPoller(restateClient as any, fastify.log);
+const githubPoller = new GitHubPoller(restateClient, fastify.log);
 const POLL_INTERVAL = 5 * 60 * 1000; // 5 minutes
 
 // Start the polling loop

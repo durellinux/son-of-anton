@@ -1,4 +1,5 @@
 import { execa } from 'execa';
+import * as restateClients from '@restatedev/restate-sdk-clients';
 import { epicSpecificationWorkflow } from '../workflows/epicSpecificationWorkflow';
 import { epicPlannerWorkflow } from '../workflows/epicPlannerWorkflow';
 import { implementationAgentWorkflow } from '../workflows/implementationAgentWorkflow';
@@ -10,11 +11,11 @@ export interface WorkflowMapping {
 }
 
 export class GitHubPoller {
-  private restateClient: any;
+  private restateClient: restateClients.Ingress;
   private mappings: WorkflowMapping[];
   private log: any;
 
-  constructor(restateClient: any, log: any) {
+  constructor(restateClient: restateClients.Ingress, log: any) {
     this.restateClient = restateClient;
     this.log = log;
     this.mappings = [

@@ -4,6 +4,20 @@ import { IssueStatus, PlanningSessionStatus, Issue, PlanningSession } from '../a
 import { rm, mkdir, writeFile, stat } from 'node:fs/promises';
 import path from 'node:path';
 
+function findStartIndex(sorted: number[], cursorNum: number): number {
+  let low = 0;
+  let high = sorted.length;
+  while (low < high) {
+    const mid = Math.floor((low + high) / 2);
+    if (sorted[mid] < cursorNum) {
+      high = mid;
+    } else {
+      low = mid + 1;
+    }
+  }
+  return low;
+}
+
 function createMockRestateClient() {
   const issues = new Map<string, Issue>();
   const plans = new Map<string, PlanningSession>();
@@ -26,8 +40,10 @@ function createMockRestateClient() {
             const sorted = [...issueNumbers].sort((a, b) => b - a);
             const cursor = req?.cursor;
             const limit = req?.limit ?? 100;
-            const startIndex = cursor ? sorted.indexOf(parseInt(cursor, 10)) : 0;
-            if (startIndex === -1 && cursor) return [];
+            if (!cursor) return sorted.slice(0, limit);
+            const cursorNum = parseInt(cursor, 10);
+            if (isNaN(cursorNum)) return [];
+            const startIndex = findStartIndex(sorted, cursorNum);
             return sorted.slice(startIndex, startIndex + limit);
           },
         };
@@ -44,11 +60,11 @@ function createMockRestateClient() {
           },
           deleteIssue: async () => {
             const issue = issues.get(key);
-            issues.delete(key);
             const num = issue?.number ?? parseInt(key, 10);
             if (!isNaN(num)) {
               issueNumbers = issueNumbers.filter((n) => n !== num);
             }
+            issues.delete(key);
           },
           getPlanningSession: async () => {
             return plans.get(key);
@@ -118,6 +134,28 @@ describe('RestateIssueRepository', () => {
     expect(list.length).toBe(2);
     expect(list[0].number).toBe(20);
     expect(list[1].number).toBe(10);
+  });
+
+  it('should support binary search cursor pagination including deleted cursor items', async () => {
+    const issues: Issue[] = [10, 20, 30, 40, 50].map((num) => ({
+      number: num,
+      title: `Issue ${num}`,
+      url: `http://test.com/${num}`,
+      status: IssueStatus.YOLO,
+    }));
+
+    for (const issue of issues) {
+      await repo.saveIssue(issue);
+    }
+
+    // List after cursor '30' -> should return [20, 10]
+    const after30 = await repo.listIssues('30', 10);
+    expect(after30.map((i) => i.number)).toEqual([20, 10]);
+
+    // Delete issue 30, then list after cursor '30' -> should still return [20, 10]
+    await repo.deleteIssue(30);
+    const after30Deleted = await repo.listIssues('30', 10);
+    expect(after30Deleted.map((i) => i.number)).toEqual([20, 10]);
   });
 
   it('should handle planning sessions via Restate client', async () => {

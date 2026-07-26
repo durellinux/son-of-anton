@@ -3,61 +3,62 @@ import path from 'node:path';
 import * as restateClients from '@restatedev/restate-sdk-clients';
 import { Issue, Session, PlanningSession } from '../api';
 import { IssueRepository } from './repositories';
-import { issueObject, issueIndexObject } from '../restate/issueObject';
+import { issueObject } from '../restate/issueObject';
+import { issueIndexObject } from '../restate/issueIndexObject';
 
 export class RestateIssueRepository implements IssueRepository {
-  private restateClient: restateClients.IngressClient<any>;
+  private restateClient: restateClients.Ingress;
   private baseDir: string;
 
-  constructor(restateClient: restateClients.IngressClient<any>, baseDir: string = '.anton') {
+  constructor(restateClient: restateClients.Ingress, baseDir: string = '.anton') {
     this.restateClient = restateClient;
     this.baseDir = baseDir;
   }
 
   async listIssues(cursor?: string, limit: number = 100): Promise<Issue[]> {
-    const indexClient: any = this.restateClient.objectClient(issueIndexObject as any, 'global');
+    const indexClient = this.restateClient.objectClient(issueIndexObject, 'global');
     const numbers: number[] = await indexClient.listIssues({ cursor, limit });
     const items = await Promise.all(numbers.map((n) => this.getIssue(n)));
     return items.filter((i): i is Issue => i !== undefined);
   }
 
   async getIssue(number: number): Promise<Issue | undefined> {
-    const issueClient: any = this.restateClient.objectClient(issueObject as any, String(number));
+    const issueClient = this.restateClient.objectClient(issueObject, String(number));
     return await issueClient.getIssue();
   }
 
   async saveIssue(issue: Issue): Promise<void> {
-    const issueClient: any = this.restateClient.objectClient(
-      issueObject as any,
+    const issueClient = this.restateClient.objectClient(
+      issueObject,
       String(issue.number),
     );
     await issueClient.saveIssue(issue);
   }
 
   async deleteIssue(number: number): Promise<void> {
-    const issueClient: any = this.restateClient.objectClient(issueObject as any, String(number));
+    const issueClient = this.restateClient.objectClient(issueObject, String(number));
     await issueClient.deleteIssue();
   }
 
   async getPlanningSession(issueNumber: number): Promise<PlanningSession | undefined> {
-    const issueClient: any = this.restateClient.objectClient(
-      issueObject as any,
+    const issueClient = this.restateClient.objectClient(
+      issueObject,
       String(issueNumber),
     );
     return await issueClient.getPlanningSession();
   }
 
   async savePlanningSession(session: PlanningSession): Promise<void> {
-    const issueClient: any = this.restateClient.objectClient(
-      issueObject as any,
+    const issueClient = this.restateClient.objectClient(
+      issueObject,
       String(session.number),
     );
     await issueClient.savePlanningSession(session);
   }
 
   async deletePlanningSession(issueNumber: number): Promise<void> {
-    const issueClient: any = this.restateClient.objectClient(
-      issueObject as any,
+    const issueClient = this.restateClient.objectClient(
+      issueObject,
       String(issueNumber),
     );
     await issueClient.deletePlanningSession();

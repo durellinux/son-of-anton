@@ -10,7 +10,7 @@ export type Paged<T> = {
 export class IssueService {
   constructor(
     private repository: IssueRepository,
-    private restateClient: restateClients.IngressClient<any>,
+    private restateClient: restateClients.Ingress,
   ) {}
 
   async getIssues(cursor?: string, limit: number = 100): Promise<Paged<Issue>> {
