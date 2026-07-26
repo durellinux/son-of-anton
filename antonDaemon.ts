@@ -3,7 +3,7 @@ import fastifyStatic from '@fastify/static';
 import path from 'node:path';
 import * as restate from '@restatedev/restate-sdk';
 import * as restateClients from '@restatedev/restate-sdk-clients';
-import { FileSystemIssueRepository } from './src/repositories/fileSystemIssueRepository';
+import { RestateIssueRepository } from './src/repositories/restateIssueRepository';
 import { registerRoutes } from './src/resources/routes';
 import { IssueService } from './src/services/issueService';
 import { issueWorkflowV1 } from './src/workflows/issueWorkflowV1';
@@ -11,13 +11,14 @@ import { epicSpecificationWorkflow } from './src/workflows/epicSpecificationWork
 import { epicPlannerWorkflow } from './src/workflows/epicPlannerWorkflow';
 import { implementationAgentWorkflow } from './src/workflows/implementationAgentWorkflow';
 import { prLifecycleWorkflow } from './src/workflows/prLifecycleWorkflow';
+import { issueObject, issueIndexObject } from './src/restate/issueObject';
 import { GitHubPoller } from './src/services/githubPoller';
 import { setActiveModel } from './src/workflows/llm';
 
 const RESTATE_URL = process.env.RESTATE_URL || 'http://localhost:8080';
 const restateClient = restateClients.connect({ url: RESTATE_URL });
 
-const repository = new FileSystemIssueRepository();
+const repository = new RestateIssueRepository(restateClient as any);
 const issueService = new IssueService(repository, restateClient as any);
 
 const fastify = Fastify({
@@ -54,6 +55,8 @@ const start = async () => {
       .bind(epicPlannerWorkflow)
       .bind(implementationAgentWorkflow)
       .bind(prLifecycleWorkflow)
+      .bind(issueObject)
+      .bind(issueIndexObject)
       .listen(9080);
 
     fastify.log.info('Restate service is running on port 9080');
