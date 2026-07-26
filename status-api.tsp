@@ -51,6 +51,8 @@ model Issue {
   @doc("URL to the workflow in Restate")
   workflowUrl?: string;
 
+  @doc("Docker command to start bash inside the container for this issue")
+  dockerBashCommand?: string;
 }
 
 model Session {

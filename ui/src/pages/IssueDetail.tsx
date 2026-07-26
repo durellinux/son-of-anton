@@ -19,6 +19,7 @@ import {
   Modal,
   Textarea,
   Divider,
+  CopyButton,
 } from '@mantine/core';
 import ReactMarkdown from 'react-markdown';
 import {
@@ -131,15 +132,36 @@ export function IssueDetail() {
           <Text size="lg" c="dimmed">
             Branch: {issue.data.branchName || 'N/A'}
           </Text>
-          {issue.data.url && (
-            <Anchor href={issue.data.url} target="_blank">
-              View on GitHub
-            </Anchor>
-          )}
-          {issue.data.workflowUrl && (
-            <Anchor href={issue.data.workflowUrl} target="_blank" ml="md">
-              View Workflow
-            </Anchor>
+          <Group gap="md">
+            {issue.data.url && (
+              <Anchor href={issue.data.url} target="_blank">
+                View on GitHub
+              </Anchor>
+            )}
+            {issue.data.workflowUrl && (
+              <Anchor href={issue.data.workflowUrl} target="_blank">
+                View Workflow
+              </Anchor>
+            )}
+          </Group>
+          {issue.data.dockerBashCommand && (
+            <Group gap="xs" mt="sm">
+              <Text size="sm" fw={500}>
+                Docker Sandbox:
+              </Text>
+              <CopyButton value={issue.data.dockerBashCommand}>
+                {({ copied, copy }) => (
+                  <Button
+                    color={copied ? 'teal' : 'blue'}
+                    variant="light"
+                    size="xs"
+                    onClick={copy}
+                  >
+                    {copied ? 'Copied Bash Command' : 'Copy Bash Command'}
+                  </Button>
+                )}
+              </CopyButton>
+            </Group>
           )}
         </Stack>
       </Card>
