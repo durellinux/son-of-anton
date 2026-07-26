@@ -31,6 +31,9 @@ describe('FileSystemIssueRepository', () => {
     expect(fetched).toBeDefined();
     expect(fetched?.number).toBe(37);
     expect(fetched?.title).toBe('Test Issue');
+    expect(fetched?.dockerBashCommand).toContain('docker run');
+    expect(fetched?.dockerBashCommand).toContain('/bin/bash');
+    expect(fetched?.dockerBashCommand).toContain('anton-data/test-state/37');
   });
 
   it('should list issues correctly', async () => {

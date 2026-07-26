@@ -6,6 +6,7 @@ import { execa } from 'execa';
 import { NoModelsAvailableError } from './types';
 
 const MODELS = [
+  'Gemini 3.6 Flash (Low)',
   'Gemini 3.5 Flash (Low)',
   'Gemini 3.1 Pro (Low)',
   'Claude Sonnet 4.6 (Thinking)',
@@ -108,8 +109,6 @@ export async function executeAntigravity(
       `${path.join(hostIssueDir, '.gemini')}:/tmp/.gemini`,
       '-w',
       '/workspace',
-      '-e',
-      `GEMINI_API_KEY=${process.env.GEMINI_API_KEY || ''}`,
       '-e',
       `GH_TOKEN=${process.env.GH_TOKEN || ''}`,
       '-e',

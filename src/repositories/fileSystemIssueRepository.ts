@@ -48,7 +48,21 @@ export class FileSystemIssueRepository implements IssueRepository {
     const filePath = path.join(this.baseDir, String(number), 'issue.json');
     try {
       const content = await readFile(filePath, 'utf-8');
-      return JSON.parse(content) as Issue;
+      const issue = JSON.parse(content) as Issue;
+
+      const hostAntonDataDir = process.env.HOST_ANTON_DATA_DIR
+        ? path.resolve(process.env.HOST_ANTON_DATA_DIR)
+        : path.resolve(this.baseDir);
+      const hostIssueDir = path.join(hostAntonDataDir, String(number));
+      const image = process.env.ANTON_AGENT_IMAGE || 'anton-sandbox:latest';
+
+      const uid = process.getuid ? process.getuid() : undefined;
+      const gid = process.getgid ? process.getgid() : undefined;
+      const userArg = uid !== undefined && gid !== undefined ? `--user ${uid}:${gid} ` : '';
+
+      issue.dockerBashCommand = `docker run -it --rm ${userArg}-v "${hostIssueDir}:/workspace" -v "${path.join(hostIssueDir, '.gemini')}:/tmp/.gemini" -w /workspace -e GH_TOKEN -e HOME=/tmp -e GEMINI_DIR=/tmp/.gemini ${image} /bin/bash`;
+
+      return issue;
     } catch (e) {
       if ((e as any).code === 'ENOENT') {
         return undefined;
