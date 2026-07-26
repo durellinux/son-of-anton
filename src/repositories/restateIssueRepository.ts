@@ -28,10 +28,7 @@ export class RestateIssueRepository implements IssueRepository {
   }
 
   async saveIssue(issue: Issue): Promise<void> {
-    const issueClient = this.restateClient.objectClient(
-      issueObject,
-      String(issue.number),
-    );
+    const issueClient = this.restateClient.objectClient(issueObject, String(issue.number));
     await issueClient.saveIssue(issue);
   }
 
@@ -41,26 +38,17 @@ export class RestateIssueRepository implements IssueRepository {
   }
 
   async getPlanningSession(issueNumber: number): Promise<PlanningSession | undefined> {
-    const issueClient = this.restateClient.objectClient(
-      issueObject,
-      String(issueNumber),
-    );
+    const issueClient = this.restateClient.objectClient(issueObject, String(issueNumber));
     return await issueClient.getPlanningSession();
   }
 
   async savePlanningSession(session: PlanningSession): Promise<void> {
-    const issueClient = this.restateClient.objectClient(
-      issueObject,
-      String(session.number),
-    );
+    const issueClient = this.restateClient.objectClient(issueObject, String(session.number));
     await issueClient.savePlanningSession(session);
   }
 
   async deletePlanningSession(issueNumber: number): Promise<void> {
-    const issueClient = this.restateClient.objectClient(
-      issueObject,
-      String(issueNumber),
-    );
+    const issueClient = this.restateClient.objectClient(issueObject, String(issueNumber));
     await issueClient.deletePlanningSession();
   }
 
