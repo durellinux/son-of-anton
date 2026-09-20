@@ -56,7 +56,7 @@ export async function buildPlanningPrompt(
   issueRepo: string,
   state: IssueState,
 ): Promise<string> {
-  let prompt = '';
+  let prompt: string;
   if (state === IssueState.YOLO) {
     prompt = `Research, plan and implement the fix for issue ${issueNumber} on the repo ${issueRepo}. Follow the anton-plan and anton-implement skills workflow.`;
   } else if (state === IssueState.NEEDS_PLANNING) {

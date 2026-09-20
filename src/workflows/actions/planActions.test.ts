@@ -16,13 +16,19 @@ describe('buildPlanningPrompt', () => {
   });
 
   it('should build initial planning prompt when no session exists', async () => {
-    const prompt = await buildPlanningPrompt(testIssueNumber, 'durellinux/son-of-anton', IssueState.NEEDS_PLANNING);
-    expect(prompt).toBe('follow the anton-plan skill flow for issue 99999 on the repo durellinux/son-of-anton');
+    const prompt = await buildPlanningPrompt(
+      testIssueNumber,
+      'durellinux/son-of-anton',
+      IssueState.NEEDS_PLANNING,
+    );
+    expect(prompt).toBe(
+      'follow the anton-plan skill flow for issue 99999 on the repo durellinux/son-of-anton',
+    );
   });
 
   it('should include user feedback in prompt when planning session has feedback', async () => {
     await savePlanningSession(testIssueNumber, 'Initial Plan Content');
-    
+
     // Simulate user feedback on the initial plan
     const session = await repository.getPlanningSession(testIssueNumber);
     if (session && session.history.length > 0) {
@@ -30,8 +36,14 @@ describe('buildPlanningPrompt', () => {
       await repository.savePlanningSession(session);
     }
 
-    const prompt = await buildPlanningPrompt(testIssueNumber, 'durellinux/son-of-anton', IssueState.NEEDS_PLANNING);
-    expect(prompt).toContain('follow the anton-plan skill flow for issue 99999 on the repo durellinux/son-of-anton');
+    const prompt = await buildPlanningPrompt(
+      testIssueNumber,
+      'durellinux/son-of-anton',
+      IssueState.NEEDS_PLANNING,
+    );
+    expect(prompt).toContain(
+      'follow the anton-plan skill flow for issue 99999 on the repo durellinux/son-of-anton',
+    );
     expect(prompt).toContain('User feedback from previous iteration:');
     expect(prompt).toContain('Please add more details about performance optimizations.');
     expect(prompt).toContain('Please update the plan to incorporate this feedback.');
