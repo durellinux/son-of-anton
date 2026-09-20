@@ -4,6 +4,6 @@ export default defineConfig({
   test: {
     maxWorkers: 1,
     isolate: false,
-    exclude: ['**/node_modules/**', '**/dist/**', 'apps/ui/**', 'anton-data/**'],
+    exclude: ['**/node_modules/**', '**/dist/**', 'anton-data/**'],
   },
 });

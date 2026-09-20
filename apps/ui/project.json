@@ -1,0 +1,22 @@
+{
+  "name": "ui",
+  "projectType": "application",
+  "sourceRoot": "apps/ui",
+  "targets": {
+    "build": {
+      "command": "tsc -b && vite build"
+    },
+    "dev": {
+      "command": "vite"
+    },
+    "preview": {
+      "command": "vite preview"
+    },
+    "test": {
+      "command": "vitest run"
+    },
+    "typecheck": {
+      "command": "tsc -b"
+    }
+  }
+}

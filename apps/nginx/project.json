@@ -1,0 +1,13 @@
+{
+  "name": "nginx",
+  "projectType": "application",
+  "sourceRoot": "apps/nginx",
+  "targets": {
+    "build": {
+      "command": "echo Nginx configuration ready"
+    },
+    "lint": {
+      "command": "echo Nginx configuration linted"
+    }
+  }
+}

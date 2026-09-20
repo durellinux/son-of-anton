@@ -65,13 +65,14 @@ export default tseslint.config(
     ignores: [
       'node_modules/',
       'dist/',
-      'tsp-output/',
-      'src/api/',
+      '**/dist/',
+      '**/tsp-output/',
+      '**/src/api/',
       'anton-data/',
-      'ui/',
+      'apps/ui/',
       '**/*.md',
       '**/*.gen.ts',
-      'src/api/index.ts',
+      '**/src/api/index.ts',
     ],
   },
 );
