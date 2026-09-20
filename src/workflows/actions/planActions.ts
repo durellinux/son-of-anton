@@ -51,16 +51,27 @@ export async function commitPlan(issueNumber: number, issueRepo: string) {
   return commentJson;
 }
 
-export function buildPlanningPrompt(
+export async function buildPlanningPrompt(
   issueNumber: number,
   issueRepo: string,
   state: IssueState,
-): string {
+): Promise<string> {
+  let prompt = '';
   if (state === IssueState.YOLO) {
-    return `Research, plan and implement the fix for issue ${issueNumber} on the repo ${issueRepo}. Follow the anton-plan and anton-implement skills workflow.`;
+    prompt = `Research, plan and implement the fix for issue ${issueNumber} on the repo ${issueRepo}. Follow the anton-plan and anton-implement skills workflow.`;
   } else if (state === IssueState.NEEDS_PLANNING) {
-    return `follow the anton-plan skill flow for issue ${issueNumber} on the repo ${issueRepo}`;
+    prompt = `follow the anton-plan skill flow for issue ${issueNumber} on the repo ${issueRepo}`;
+  } else {
+    throw new Error(`Unsupported state: ${state}`);
   }
 
-  throw new Error(`Unsupported state: ${state}`);
+  const session = await getPlanningSession(issueNumber);
+  if (session?.history && session.history.length > 0) {
+    const lastFeedback = session.history[session.history.length - 1].feedback;
+    if (lastFeedback) {
+      prompt += `\nUser feedback from previous iteration:\n${lastFeedback}\nPlease update the plan to incorporate this feedback.`;
+    }
+  }
+
+  return prompt;
 }
