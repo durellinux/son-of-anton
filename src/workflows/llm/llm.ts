@@ -1,6 +1,7 @@
 import { LlmProvider, LlmExecutor } from './types';
 import { executeGemini } from './gemini';
 import { executeAntigravity } from './antigravity';
+import { executeOpenCode } from './opencode';
 
 let activeModel: LlmProvider = 'antigravity';
 
@@ -18,6 +19,8 @@ export function getLlmExecutor(): LlmExecutor {
       return executeGemini;
     case 'antigravity':
       return executeAntigravity;
+    case 'opencode':
+      return executeOpenCode;
     default:
       throw new Error(`Unsupported LLM provider: ${activeModel}`);
   }

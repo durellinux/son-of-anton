@@ -1,4 +1,4 @@
-export type LlmProvider = 'gemini' | 'antigravity';
+export type LlmProvider = 'gemini' | 'antigravity' | 'opencode';
 
 export type LlmExecutor = (id: number, prompt: string, type: string) => Promise<string>;
 
