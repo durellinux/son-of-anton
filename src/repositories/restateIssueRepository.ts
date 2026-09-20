@@ -84,8 +84,8 @@ export class RestateIssueRepository implements IssueRepository {
       );
 
       return items;
-    } catch (e) {
-      if ((e as any).code === 'ENOENT') {
+    } catch (e: unknown) {
+      if (typeof e === 'object' && e !== null && 'code' in e && e.code === 'ENOENT') {
         return undefined;
       }
       throw new Error(
@@ -104,8 +104,13 @@ export class RestateIssueRepository implements IssueRepository {
     );
     try {
       return await readFile(filePathFull, 'utf-8');
-    } catch (e) {
-      if ((e as any).code === 'ENOENT') {
+    } catch (e: unknown) {
+      if (
+        typeof e === 'object' &&
+        e !== null &&
+        'code' in e &&
+        (e as { code?: unknown }).code === 'ENOENT'
+      ) {
         return undefined;
       }
       throw new Error(
