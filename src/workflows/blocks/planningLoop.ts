@@ -47,7 +47,9 @@ export async function planningLoop(
         updateRepository(issueNumber, title, issueUrl, state, workflowUrl),
       );
 
-      const prompt = buildPlanningPrompt(issueNumber, issueRepo, state);
+      const prompt = await ctx.run(`${prefix}-build-planning-prompt-${iteration}`, () =>
+        buildPlanningPrompt(issueNumber, issueRepo, state),
+      );
       const planOutput = await llmLoop(
         ctx,
         `${prefix}-execute-llm-${iteration}`,
