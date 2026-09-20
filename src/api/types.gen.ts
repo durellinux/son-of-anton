@@ -142,6 +142,22 @@ export type IssuesListResponses = {
 
 export type IssuesListResponse = IssuesListResponses[keyof IssuesListResponses];
 
+export type IssuesSyncData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/issues/sync';
+};
+
+export type IssuesSyncResponses = {
+    /**
+     * There is no content to send for this request, but the headers may be useful.
+     */
+    204: void;
+};
+
+export type IssuesSyncResponse = IssuesSyncResponses[keyof IssuesSyncResponses];
+
 export type IssuesDeleteData = {
     body?: never;
     path: {

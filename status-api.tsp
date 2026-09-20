@@ -136,4 +136,8 @@ interface Issues {
   @doc("Provide feedback on the current plan for an issue")
   @route("/{number}/planning/feedback")
   @post provideFeedback(@path number: int32, @body feedback: { feedback: string }): void | { @statusCode _: 404 };
+
+  @doc("Sync issues from GitHub immediately")
+  @route("/sync")
+  @post sync(): void;
 }
