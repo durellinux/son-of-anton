@@ -3,7 +3,7 @@ import fastifyStatic from '@fastify/static';
 import path from 'node:path';
 import * as restate from '@restatedev/restate-sdk';
 import * as restateClients from '@restatedev/restate-sdk-clients';
-import { RestateIssueRepository } from './src/repositories/restateIssueRepository';
+import { FileSystemIssueRepository } from './src/repositories/fileSystemIssueRepository';
 import { registerRoutes } from './src/resources/routes';
 import { IssueService } from './src/services/issueService';
 import { issueWorkflowV1 } from './src/workflows/issueWorkflowV1';
@@ -19,7 +19,7 @@ import { setActiveModel } from './src/workflows/llm';
 const RESTATE_URL = process.env.RESTATE_URL || 'http://localhost:8080';
 const restateClient = restateClients.connect({ url: RESTATE_URL });
 
-const repository = new RestateIssueRepository(restateClient);
+const repository = new FileSystemIssueRepository();
 const issueService = new IssueService(repository, restateClient);
 
 const fastify = Fastify({
