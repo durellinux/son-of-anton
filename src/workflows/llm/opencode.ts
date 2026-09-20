@@ -14,11 +14,7 @@ const MODELS = [
 // Map of model name to the timestamp (in ms) when it will be available again
 const modelCooldowns = new Map<string, number>();
 
-export async function executeOpenCode(
-  id: number,
-  prompt: string,
-  type: string,
-): Promise<string> {
+export async function executeOpenCode(id: number, prompt: string, type: string): Promise<string> {
   const issueDir = path.join('anton-data', String(id));
   const sessionDir = path.join(issueDir, 'sessions');
 
@@ -51,7 +47,7 @@ export async function executeOpenCode(
 
     const subprocess = execa(
       'opencode',
-      ['run', '-p', promptWithInstruction, '--sandbox', 'true', '--model', selectedModel],
+      ['run', '--model', selectedModel, '--auto', promptWithInstruction],
       {
         cwd: issueDir,
         stdin: 'ignore',
