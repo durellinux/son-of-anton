@@ -1,19 +1,26 @@
 import { FastifyInstance } from 'fastify';
 import { IssueService } from '../services/issueService';
+import { GitHubPoller } from '../services/githubPoller';
 import { RouteHandlers } from '../api/fastify.gen';
 
 export function registerRoutes(
   fastify: FastifyInstance,
-  options: { issueService: IssueService },
+  options: { issueService: IssueService; githubPoller?: GitHubPoller },
   done: (err?: Error) => void,
 ) {
-  const { issueService } = options;
+  const { issueService, githubPoller } = options;
 
   const handlers: RouteHandlers = {
     issuesList: async (request, reply) => {
       const { cursor, limit } = request.query || {};
       const result = await issueService.getIssues(cursor, limit);
       await reply.send(result as any);
+    },
+    issuesSync: async (_request, reply) => {
+      if (githubPoller) {
+        await githubPoller.poll();
+      }
+      await reply.code(204).send();
     },
     issuesGet: async (request, reply) => {
       const { number } = request.params;
@@ -83,6 +90,7 @@ export function registerRoutes(
   };
 
   fastify.get('/api/issues', handlers.issuesList);
+  fastify.post('/api/issues/sync', handlers.issuesSync);
   fastify.get('/api/issues/:number', handlers.issuesGet);
   fastify.delete('/api/issues/:number', handlers.issuesDelete);
   fastify.get('/api/issues/:number/sessions', handlers.issuesListSessions);

@@ -2,7 +2,7 @@
 
 import { client } from './client.gen.js';
 import type { Client, Options as Options2, TDataShape } from './client/index.js';
-import type { IssuesApprovePlanData, IssuesApprovePlanErrors, IssuesApprovePlanResponses, IssuesDeleteData, IssuesDeleteErrors, IssuesDeleteResponses, IssuesGetData, IssuesGetErrors, IssuesGetPlanningSessionData, IssuesGetPlanningSessionErrors, IssuesGetPlanningSessionResponses, IssuesGetResponses, IssuesGetSessionContentData, IssuesGetSessionContentErrors, IssuesGetSessionContentResponses, IssuesListData, IssuesListResponses, IssuesListSessionsData, IssuesListSessionsErrors, IssuesListSessionsResponses, IssuesProvideFeedbackData, IssuesProvideFeedbackErrors, IssuesProvideFeedbackResponses } from './types.gen.js';
+import type { IssuesApprovePlanData, IssuesApprovePlanErrors, IssuesApprovePlanResponses, IssuesDeleteData, IssuesDeleteErrors, IssuesDeleteResponses, IssuesGetData, IssuesGetErrors, IssuesGetPlanningSessionData, IssuesGetPlanningSessionErrors, IssuesGetPlanningSessionResponses, IssuesGetResponses, IssuesGetSessionContentData, IssuesGetSessionContentErrors, IssuesGetSessionContentResponses, IssuesListData, IssuesListResponses, IssuesListSessionsData, IssuesListSessionsErrors, IssuesListSessionsResponses, IssuesProvideFeedbackData, IssuesProvideFeedbackErrors, IssuesProvideFeedbackResponses, IssuesSyncData, IssuesSyncResponses } from './types.gen.js';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -22,6 +22,11 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
  * List all issues worked by Son of Anton
  */
 export const issuesList = <ThrowOnError extends boolean = false>(options?: Options<IssuesListData, ThrowOnError>) => (options?.client ?? client).get<IssuesListResponses, unknown, ThrowOnError>({ url: '/api/issues', ...options });
+
+/**
+ * Sync issues from GitHub immediately
+ */
+export const issuesSync = <ThrowOnError extends boolean = false>(options?: Options<IssuesSyncData, ThrowOnError>) => (options?.client ?? client).post<IssuesSyncResponses, unknown, ThrowOnError>({ url: '/api/issues/sync', ...options });
 
 /**
  * Delete all data for an issue and terminate its workflow

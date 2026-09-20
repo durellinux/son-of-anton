@@ -60,6 +60,11 @@ describe('Routes API', () => {
     expect(parsed.items.length).toBe(1);
   });
 
+  it('POST /api/issues/sync should trigger issue sync', async () => {
+    const response = await fastify.inject({ method: 'POST', url: '/api/issues/sync' });
+    expect(response.statusCode).toBe(204);
+  });
+
   it('GET /api/issues/1 should return the specific issue', async () => {
     const response = await fastify.inject({ method: 'GET', url: '/api/issues/1' });
     expect(response.statusCode).toBe(200);

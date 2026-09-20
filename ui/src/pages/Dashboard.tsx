@@ -1,13 +1,21 @@
-import { useQuery } from '@tanstack/react-query';
-import { Table, Badge, Title, Anchor, Loader, Center, Group } from '@mantine/core';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Table, Badge, Title, Anchor, Loader, Center, Group, Button } from '@mantine/core';
 import { Link } from 'react-router-dom';
-import { issuesList } from '../api/sdk.gen';
+import { issuesList, issuesSync } from '../api/sdk.gen';
 import { IssueStatus } from '../api/types.gen';
 
 export function Dashboard() {
+  const queryClient = useQueryClient();
   const { data, isLoading, error } = useQuery({
     queryKey: ['issues'],
     queryFn: () => issuesList(),
+  });
+
+  const syncMutation = useMutation({
+    mutationFn: () => issuesSync(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['issues'] });
+    },
   });
 
   if (isLoading)
@@ -29,6 +37,9 @@ export function Dashboard() {
     <div>
       <Group justify="space-between" mb="xl">
         <Title order={2}>Tracked Issues</Title>
+        <Button loading={syncMutation.isPending} onClick={() => syncMutation.mutate()}>
+          Sync issues
+        </Button>
       </Group>
 
       <Table striped highlightOnHover>

@@ -35,7 +35,7 @@ const fastify = Fastify({
 });
 
 const githubPoller = new GitHubPoller(restateClient, fastify.log);
-const POLL_INTERVAL = 5 * 60 * 1000; // 5 minutes
+const POLL_INTERVAL = 30 * 60 * 1000; // 30 minutes
 
 // Start the polling loop
 async function startPolling() {
@@ -80,7 +80,7 @@ const start = async () => {
       reply.sendFile('index.html');
     });
 
-    fastify.register(registerRoutes, { issueService });
+    fastify.register(registerRoutes, { issueService, githubPoller });
 
     await fastify.listen({ port: 3000, host: '0.0.0.0' });
     fastify.log.info('Son of Anton Daemon is running on port 3000');
