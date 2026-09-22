@@ -1,6 +1,4 @@
 import Fastify from 'fastify';
-import fastifyStatic from '@fastify/static';
-import path from 'node:path';
 import * as restate from '@restatedev/restate-sdk';
 import * as restateClients from '@restatedev/restate-sdk-clients';
 import { FileSystemIssueRepository } from './src/repositories/fileSystemIssueRepository';
@@ -69,15 +67,6 @@ const start = async () => {
 
     fastify.get('/ready', async () => {
       return { status: 'ok' };
-    });
-
-    fastify.register(fastifyStatic, {
-      root: path.join(__dirname, 'ui', 'dist'),
-      prefix: '/',
-    });
-
-    fastify.setNotFoundHandler((request, reply) => {
-      reply.sendFile('index.html');
     });
 
     fastify.register(registerRoutes, { issueService, githubPoller });

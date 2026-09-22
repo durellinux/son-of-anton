@@ -1,0 +1,22 @@
+{
+  "name": "daemon",
+  "projectType": "application",
+  "sourceRoot": "apps/daemon",
+  "targets": {
+    "build": {
+      "command": "yarn generate"
+    },
+    "dev": {
+      "command": "tsx antonDaemon.ts"
+    },
+    "start": {
+      "command": "tsx antonDaemon.ts"
+    },
+    "test": {
+      "command": "vitest run --config apps/daemon/vitest.config.ts"
+    },
+    "typecheck": {
+      "command": "tsc --noEmit"
+    }
+  }
+}

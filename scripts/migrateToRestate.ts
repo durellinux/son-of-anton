@@ -1,7 +1,7 @@
 import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import * as restateClients from '@restatedev/restate-sdk-clients';
-import { issueObject } from '../src/restate/issueObject';
+import { issueObject } from '../apps/daemon/src/restate/issueObject';
 
 async function migrate() {
   const baseDir = process.argv[2] || '.anton';

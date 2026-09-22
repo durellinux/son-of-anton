@@ -9,3 +9,5 @@ tsp-output/
 restate-data
 anton-data
 comments.json
+.nx/
+

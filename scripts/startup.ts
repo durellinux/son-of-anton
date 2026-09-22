@@ -15,14 +15,20 @@ async function poll(url: string) {
 }
 
 async function main() {
-  console.log('Starting restate-server and dev server...');
+  console.log('Starting restate-server, daemon, and UI servers...');
   const restateServer = execa('yarn', ['restate-server'], {
     stdio: 'inherit',
     env: { ...process.env, FORCE_COLOR: '1' },
     detached: true,
   });
 
-  const devServer = execa('yarn', ['run', 'dev'], {
+  const daemonServer = execa('yarn', ['nx', 'run', 'daemon:dev'], {
+    stdio: 'inherit',
+    env: { ...process.env, FORCE_COLOR: '1' },
+    detached: true,
+  });
+
+  const uiServer = execa('yarn', ['nx', 'run', 'ui:dev'], {
     stdio: 'inherit',
     env: { ...process.env, FORCE_COLOR: '1' },
     detached: true,
@@ -33,8 +39,11 @@ async function main() {
     if (restateServer.pid) {
       process.kill(-restateServer.pid, 'SIGTERM');
     }
-    if (devServer.pid) {
-      process.kill(-devServer.pid, 'SIGTERM');
+    if (daemonServer.pid) {
+      process.kill(-daemonServer.pid, 'SIGTERM');
+    }
+    if (uiServer.pid) {
+      process.kill(-uiServer.pid, 'SIGTERM');
     }
   };
 
@@ -74,7 +83,7 @@ async function main() {
   console.log('Service registered successfully.');
 
   try {
-    await Promise.race([restateServer, devServer]);
+    await Promise.race([restateServer, daemonServer, uiServer]);
   } catch (err) {
     console.error('A server exited with an error:', err);
     cleanup();

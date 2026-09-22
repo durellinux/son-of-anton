@@ -1,0 +1,16 @@
+{
+  "name": "daemon",
+  "version": "1.0.0",
+  "private": true,
+  "main": "antonDaemon.ts",
+  "scripts": {
+    "start": "tsx antonDaemon.ts",
+    "dev": "tsx antonDaemon.ts",
+    "test": "vitest run --config apps/daemon/vitest.config.ts",
+    "tsp:compile": "tsp compile status-api.tsp",
+    "tsp:generate": "openapi-ts",
+    "generate": "yarn tsp:compile && yarn tsp:generate",
+    "build": "yarn generate",
+    "typecheck": "tsc --noEmit"
+  }
+}
