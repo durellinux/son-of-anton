@@ -17,6 +17,7 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: path.resolve(import.meta.dirname, './src/setupTests.ts'),
+    exclude: ['**/node_modules/**', '**/dist/**', 'dist/**', '**/apps/daemon/**', 'anton-data/**'],
   },
 });
 

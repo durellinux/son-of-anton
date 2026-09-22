@@ -13,7 +13,7 @@
       "command": "tsx antonDaemon.ts"
     },
     "test": {
-      "command": "vitest run"
+      "command": "vitest run --config apps/daemon/vitest.config.ts"
     },
     "typecheck": {
       "command": "tsc --noEmit"

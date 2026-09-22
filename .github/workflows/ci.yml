@@ -16,10 +16,6 @@ jobs:
           cache: 'yarn'
       - name: Install dependencies
         run: yarn install
-      - name: Install UI dependencies
-        run: |
-          cd ui
-          yarn install
       - name: Run lint
         run: yarn lint
   typecheck:
@@ -33,10 +29,6 @@ jobs:
           cache: 'yarn'
       - name: Install dependencies
         run: yarn install
-      - name: Install UI dependencies
-        run: |
-          cd ui
-          yarn install
       - name: Run typecheck
         run: yarn typecheck
   test:
@@ -50,9 +42,5 @@ jobs:
           cache: 'yarn'
       - name: Install dependencies
         run: yarn install
-      - name: Install UI dependencies
-        run: |
-          cd ui
-          yarn install
       - name: Run tests
         run: yarn test

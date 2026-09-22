@@ -6,7 +6,7 @@
   "scripts": {
     "start": "tsx antonDaemon.ts",
     "dev": "tsx antonDaemon.ts",
-    "test": "vitest run",
+    "test": "vitest run --config apps/daemon/vitest.config.ts",
     "tsp:compile": "tsp compile status-api.tsp",
     "tsp:generate": "openapi-ts",
     "generate": "yarn tsp:compile && yarn tsp:generate",

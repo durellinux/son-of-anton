@@ -2,8 +2,9 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   test: {
+    fileParallelism: false,
     maxWorkers: 1,
     isolate: false,
-    exclude: ['**/node_modules/**', '**/dist/**', 'anton-data/**'],
+    exclude: ['**/node_modules/**', '**/dist/**', 'dist/**', '**/apps/ui/**', 'anton-data/**'],
   },
 });

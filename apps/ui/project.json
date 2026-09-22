@@ -13,7 +13,7 @@
       "command": "vite preview"
     },
     "test": {
-      "command": "vitest run"
+      "command": "vitest run --config apps/ui/vite.config.ts"
     },
     "typecheck": {
       "command": "tsc -b"
